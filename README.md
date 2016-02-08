@@ -1,7 +1,7 @@
 # Angara.Table
 A library for tabular data manipulation, for scientific programming and visualization, and for reading and writing delimited files (e.g. CSV files).
 
-## Table API
+## Table API (F#)
 
 _to do_
 
@@ -22,3 +22,7 @@ let table : Table = ...
 use stream = File.OpenWrite("data.csv")
 table |> Table.Write WriteSettings.CommaDelimited stream
 ```
+
+## View a table in HTML
+
+_to do_
