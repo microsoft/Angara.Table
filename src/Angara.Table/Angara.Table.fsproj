@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>3ef758e5-f5fe-40ef-8364-fe29f9338d79</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Angara.Table</RootNamespace>
+    <AssemblyName>Angara.Table</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFSharpCoreVersion>4.4.0.0</TargetFSharpCoreVersion>
+    <Name>Angara.Table</Name>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <Tailcalls>false</Tailcalls>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <WarningLevel>3</WarningLevel>
+    <DocumentationFile>bin\Debug\Angara.Table.XML</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <Tailcalls>true</Tailcalls>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <WarningLevel>3</WarningLevel>
+    <DocumentationFile>bin\Release\Angara.Table.XML</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
+  </PropertyGroup>
+  <Choose>
+    <When Condition="'$(VisualStudioVersion)' == '11.0'">
+      <PropertyGroup Condition="Exists('$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets')">
+        <FSharpTargetsPath>$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets</FSharpTargetsPath>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.Targets')">
+        <FSharpTargetsPath>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.Targets</FSharpTargetsPath>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
+  <Import Project="$(FSharpTargetsPath)" />
+  <ItemGroup>
+    <Content Include="app.config" />
+    <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Csv.fsi" />
+    <Compile Include="Csv.fs" />
+    <Compile Include="Funcs.fs" />
+    <Compile Include="Table.fsi" />
+    <Compile Include="Table.fs" />
+    <Compile Include="ReinstateSerializer.fs" />
+    <Compile Include="HtmlSerializer.fs" />
+    <Compile Include="Register.fs" />
+    <Content Include="packages.config" />
+    <None Include="Angara.Table.nuspec" />
+    <Content Include="License.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Angara.InfoSet">
+      <HintPath>..\..\ext\nuget\Angara.InfoSet.0.1.0.0\lib\net452\Angara.InfoSet.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Angara.Statistics">
+      <HintPath>..\..\sln\Angara.Table\packages\Angara.Statistics.0.1.1.0\lib\net45\Angara.Statistics.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="FSharp.Core, Version=4.4.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
+  </ItemGroup>
+  <Target Name="AfterBuild" Condition=" '$(Configuration)' == 'Release'">
+    <Exec Command="&quot;../../ext/nuget-commandline/nuget.exe&quot; pack $(MSBuildProjectFile) -Prop Configuration=$(Configuration) -IncludeReferencedProjects">
+    </Exec>
+    <ItemGroup>
+      <Packages Include="*.nupkg" />
+    </ItemGroup>
+    <Copy SourceFiles="@(Packages)" DestinationFolder="../../packages/$(Configuration)" />
+  </Target>
+  <!--<Target Name="AfterBuild" Condition=" '$(Configuration)' == 'Debug'">
+    <Exec Command="&quot;../../ext/nuget-commandline/nuget.exe&quot; pack $(MSBuildProjectFile) -Prop Configuration=$(Configuration) -IncludeReferencedProjects -Symbols">
+    </Exec>
+    <ItemGroup>
+      <Packages Include="*.nupkg" />
+    </ItemGroup>
+    <Copy SourceFiles="@(Packages)" DestinationFolder="../../packages/$(Configuration)" />
+  </Target>-->
+</Project>
