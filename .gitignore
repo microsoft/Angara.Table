@@ -160,3 +160,9 @@ $RECYCLE.BIN/
 
 /src/**/nuget.exe
 /src/**/*.nupkg
+/src/Angara.TableJS/lib
+.vscode
+bower_components
+node_modules
+typings
+dist

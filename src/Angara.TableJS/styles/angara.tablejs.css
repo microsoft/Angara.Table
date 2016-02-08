@@ -1,0 +1,330 @@
+﻿.tableviewer_container {
+    height: 90%;
+    height: calc(100% - 45px);
+    overflow: auto;
+    width: 100%;
+}
+
+.summary-numeric {
+    display: none;
+    background-color: transparent;
+}
+
+.summary-nonnumeric {
+    display: none;
+    background-color: transparent;
+}
+
+.content-chart {
+    height: 120px;
+}
+
+.titleCommand {
+    margin-right: 10px;
+    margin-left: 20px;
+    color: black;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+    .titleCommand:hover {
+        color: black;
+    }
+
+.titleCommand-on {
+    margin-right: 10px;
+    margin-left: 20px;
+    color: black;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.notImportantText {
+    color: gray;
+}
+
+table.dataTable {
+    width: auto;
+    margin: 0;
+}
+
+.dataTables_wrapper {
+    display: inline-block;
+}
+
+.dataTables_length {
+	margin-bottom: 10px;
+}
+
+.table-correlationView {
+}
+
+    .table-correlationView .figure {
+        min-width: 600px;
+        height: 600px;
+        float: left;
+        margin-right: 20px;
+        margin-bottom: 20px;
+    }
+
+    .table-correlationView .legend {
+        margin-top: 20px;
+        width: 190px;
+    }
+
+    .table-correlationView .highlighted {
+        font-weight: bold;
+    }
+
+    .table-correlationView .error {
+        color: red;
+    }
+
+    .table-correlationView .hint {
+        font-style: italic;
+        color: gray;
+    }
+
+    .table-correlationView .horz-axis-item-container {
+        width: 100px;
+        height: 20px;
+        text-align: left;
+        transform: rotate(-90deg);
+        transform-origin: 50% 50%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 38px;
+    }
+
+    .table-correlationView .horz-axis-item {
+        width: 100%;
+        font-size: 10pt;
+        background-color: white;
+    }
+
+    .table-correlationView .vert-axis-item {
+        width: 70px;
+        font-size: 10pt;
+        text-overflow: ellipsis;
+        background-color: white;
+    }
+
+.table-tableView {
+    margin: 20px;
+    height: 95%;
+    height: calc(100% - 85px);
+    width: 95%;
+    width: calc(100% - 40px);
+}
+
+.table-tileView {
+}
+
+.table-tileView-panel {
+    clear: both;
+}
+
+    .table-tileView-panel ul {
+        padding-left: 0pt;
+    }
+
+        .table-tileView-panel ul li {
+            display: inline-block;
+            list-style-type: none;
+            vertical-align: top;
+        }
+
+.table-tile {
+    overflow: hidden;
+    margin: 5px 5px 5px 5px;
+    padding: 5px 5px 5px 5px;
+    width: 290px;
+    height: 190px;
+    border: 1px solid #727272;
+    cursor: default;
+}
+
+    .table-tile:hover {
+        /*background-color: #F1F9FF;*/
+        border-color: black;
+    }
+
+    .table-tile .header {
+        overflow: hidden;
+        height: 31px;
+        position: relative;
+        /*border: 1px solid red;*/
+    }
+
+        .table-tile .header .name {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 200px;
+            height: 31px;
+            text-align: start;
+            -ms-text-overflow: clip;
+            -o-text-overflow: clip;
+            text-overflow: clip;
+            overflow-x: hidden;
+            font-size: 24px;
+            /*border: 1px solid red;*/
+        }
+
+        .table-tile .header .rightContainer {
+            position: absolute;
+            right: 0px;
+            top: 0px;
+            height: 31px;
+            text-align: start;
+            background-color: white;
+            font-size: 10pt;
+        }
+
+            .table-tile .header .rightContainer .type {
+                text-align: right;
+                /*border: 1px solid red;*/
+            }
+
+    .table-tile .content-summary {
+        margin-top: 3px;
+        display: block;
+        overflow: hidden;
+        width: 280px;
+        font-size: 10pt;
+        -moz-column-count: 1;
+        -webkit-column-count: 1;
+        column-count: 1;
+        /*border: 1px solid red;*/
+    }
+
+    .table-tile .chart {
+        display: block;
+        overflow: hidden;
+        margin-top: 0px;
+        width: 280px;
+        height: 130px;
+        /*border: 1px solid red;*/
+    }
+
+    .table-tile .boxplot {
+        width: 280px;
+        height: 25px;
+        /*border: 1px solid red;*/
+    }
+
+
+.auto_format_on
+{
+    background: url('img/round_on.png') no-repeat top left;
+}
+.auto_format_off
+{
+    background: url('img/round_off.png') no-repeat top left;
+}
+
+.round_btn {
+    margin-left: 10px;
+    padding-top: 3px;
+    width: 20px;
+    height: 20px;
+    vertical-align: central;
+    float: left;
+}
+
+.headerExponent {
+    display: inline;
+    margin-left: 5px;
+}
+
+/*
+ * Table
+ */
+table.dataTable {
+    clear: both;
+    /*width: 100%;*/
+    margin-bottom: 10px;
+}
+
+    table.dataTable thead th {
+        background-color: #365C95;
+        color: white;
+        text-align: center;
+        padding: 3px 28px 3px 20px;
+        border-bottom: 1px solid black;
+        font-weight: bold;
+        cursor: pointer;
+        *cursor: hand;
+    }
+
+    table.dataTable tfoot th {
+        padding: 3px 28px 3px 20px;
+        border-top: 1px solid black;
+        font-weight: bold;
+    }
+
+    table.dataTable td {
+        padding: 3px 28px 3px 20px;
+    }
+
+        table.dataTable td.center,
+        table.dataTable td.dataTables_empty {
+            text-align: center;
+        }
+
+    table.dataTable tr.odd {
+        background-color: #F1F9FF;
+    }
+
+    table.dataTable tr.even {
+        background-color: white;
+    }
+
+    table.dataTable tr td.active {
+        animation-duration: 2s;
+        animation-name: showActive; 
+    }
+
+@keyframes showActive {
+    from {
+        background: none;
+    }
+    
+    30% {
+        background: #ECFFB3;
+    }
+
+    to {
+        background: none;
+    }
+}
+
+table.dataTable tr:hover,
+table.dataTable tr td.highlighted {
+    background-color: #ECFFB3;
+}
+
+
+table.dataTable tr.odd td.sorting_1 {
+    background-color: #E0F2FF;
+}
+
+table.dataTable tr.odd td.sorting_2 {
+    background-color: #F1F9FF;
+}
+
+table.dataTable tr.odd td.sorting_3 {
+    background-color: #E0E2FF;
+}
+
+table.dataTable tr.even td.sorting_1 {
+    background-color: #F4FAFF;
+}
+
+table.dataTable tr.even td.sorting_2 {
+    background-color: #F2F3FF;
+}
+
+table.dataTable tr.even td.sorting_3 {
+    background-color: #F9F9FF;
+}
