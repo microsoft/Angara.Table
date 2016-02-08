@@ -1,7 +1,7 @@
 # Angara.Table
 A library for tabular data manipulation, for scientific programming and visualization, and for reading and writing delimited files (e.g. CSV files).
 
-## Using a table in F#
+## Table API
 
 _to do_
 
