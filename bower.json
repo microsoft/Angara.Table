@@ -25,6 +25,7 @@
     ".vscode",
     "bower_components",
     "node_modules",
+    "packages",
     "sln",
     "src",
     "typings",
