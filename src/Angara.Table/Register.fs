@@ -6,8 +6,8 @@ open Angara.Serialization
 let Register(libraries: SerializerLibrary seq) =
     for lib in libraries do
         match lib.Name with
-        | "reinstate" -> 
+        | "Reinstate" -> 
             lib.Register(TableReinstateSerializer()) 
-        | "html" ->
+        | "Html" ->
             lib.Register(TableHtmlSerializer())
         | _ -> () // nothing to register
