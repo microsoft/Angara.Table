@@ -251,22 +251,16 @@ let ``import correct file``() =
     resultingdata.Length |> should equal 3
 
     let lons = (resultingdata.[0] |> snd) :?> double[]
-    Assert.AreEqual(lons.Length, 691)
+    Assert.AreEqual(lons.Length, 4)
     Assert.AreEqual(lons.[0], 111.5, 0.1)
-    Assert.AreEqual(lons.[416], 34.5, 0.1)
-    Assert.AreEqual(lons.[690], 1.5, 0.1)
 
     let lat = (resultingdata.[1] |> snd) :?> double[]
-    Assert.AreEqual(lat.Length, 691)
+    Assert.AreEqual(lat.Length, 4)
     Assert.AreEqual(lat.[0], 45.5, 0.1)
-    Assert.AreEqual(lat.[416], -0.5, 0.1)
-    Assert.AreEqual(lat.[690], 49.5, 0.1)
 
     let wheat = (resultingdata.[2] |> snd) :?> double[]
-    Assert.AreEqual(wheat.Length, 691)
+    Assert.AreEqual(wheat.Length, 4)
     Assert.AreEqual(wheat.[0], 0.004388, 0.1)
-    Assert.AreEqual(wheat.[416], 1.60134, 0.1)
-    Assert.AreEqual(wheat.[690], 8.044737, 0.1)
 
  
 [<Test; Category("CI")>]
@@ -320,22 +314,16 @@ let ``Read a table from a file with header by default``() =
     table.Columns.Count |> should equal 3
 
     let lons = table |> Table.ToArray<float[]> "lon"
-    Assert.AreEqual(lons.Length, 691)
+    Assert.AreEqual(lons.Length, 4)
     Assert.AreEqual(lons.[0], 111.5, 0.1)
-    Assert.AreEqual(lons.[416], 34.5, 0.1)
-    Assert.AreEqual(lons.[690], 1.5, 0.1)
 
     let lats = table |> Table.ToArray<float[]> "lat"
-    Assert.AreEqual(lats.Length, 691)
+    Assert.AreEqual(lats.Length, 4)
     Assert.AreEqual(lats.[0], 45.5, 0.1)
-    Assert.AreEqual(lats.[416], -0.5, 0.1)
-    Assert.AreEqual(lats.[690], 49.5, 0.1)
 
     let wheat = table |> Table.ToArray<float[]> "wheat"
-    Assert.AreEqual(wheat.Length, 691)
+    Assert.AreEqual(wheat.Length, 4)
     Assert.AreEqual(wheat.[0], 0.004388, 0.1)
-    Assert.AreEqual(wheat.[416], 1.60134, 0.1)
-    Assert.AreEqual(wheat.[690], 8.044737, 0.1)
 
 [<Test; Category("CI")>]
 let ``Read a table from a file without header``() =
@@ -345,22 +333,16 @@ let ``Read a table from a file without header``() =
     table.Columns.Count |> should equal 3
 
     let lons = table |> Table.ToArray<float[]> "A"
-    Assert.AreEqual(lons.Length, 691)
+    Assert.AreEqual(lons.Length, 4)
     Assert.AreEqual(lons.[0], 111.5, 0.1)
-    Assert.AreEqual(lons.[416], 34.5, 0.1)
-    Assert.AreEqual(lons.[690], 1.5, 0.1)
 
     let lats = table |> Table.ToArray<float[]> "B"
-    Assert.AreEqual(lats.Length, 691)
+    Assert.AreEqual(lats.Length, 4)
     Assert.AreEqual(lats.[0], 45.5, 0.1)
-    Assert.AreEqual(lats.[416], -0.5, 0.1)
-    Assert.AreEqual(lats.[690], 49.5, 0.1)
 
     let wheat = table |> Table.ToArray<float[]> "C"
-    Assert.AreEqual(wheat.Length, 691)
+    Assert.AreEqual(wheat.Length, 4)
     Assert.AreEqual(wheat.[0], 0.004388, 0.1)
-    Assert.AreEqual(wheat.[416], 1.60134, 0.1)
-    Assert.AreEqual(wheat.[690], 8.044737, 0.1)
 
 [<Test; Category("CI")>]
 let ``Read a table from an empty file with a header``() =

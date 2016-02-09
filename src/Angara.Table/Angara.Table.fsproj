@@ -66,7 +66,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Angara.InfoSet">
-      <HintPath>..\..\ext\nuget\Angara.InfoSet.0.1.0.0\lib\net452\Angara.InfoSet.dll</HintPath>
+      <HintPath>..\..\sln\Angara.Table\packages\Angara.InfoSet.0.1.0.0\lib\net452\Angara.InfoSet.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Angara.Statistics">
@@ -80,7 +80,7 @@
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <Target Name="AfterBuild" Condition=" '$(Configuration)' == 'Release'">
-    <Exec Command="&quot;../../ext/nuget-commandline/nuget.exe&quot; pack $(MSBuildProjectFile) -Prop Configuration=$(Configuration) -IncludeReferencedProjects">
+    <Exec Command="&quot;C:\gitmsr-cs\Angara\ext\nuget-commandline\nuget.exe&quot; pack $(MSBuildProjectFile) -Prop Configuration=$(Configuration) -IncludeReferencedProjects">
     </Exec>
     <ItemGroup>
       <Packages Include="*.nupkg" />
