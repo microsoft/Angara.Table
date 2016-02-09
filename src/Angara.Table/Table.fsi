@@ -120,7 +120,7 @@ type ColumnSummary =
 type Column =
     /// Return a new column
     /// 'a may be one of:
-    ///     Column, IRArray<'b>, 'b[], seq<'b>, Lazy<'b[]>
+    ///     Column, IRArray<'b>, 'b[], seq<'b>, Lazy<'b[]>, System.Array with element type 'b
     /// where 'b may be one of:
     ///     int, float, string, DateTime, bool
     static member New<'a> : data:'a -> Column

@@ -216,26 +216,39 @@ type Column =
         | t when t = typeof<IRArray<int>> -> IntColumn (data |> Util.coerce<'a,IRArray<int>>)
         | t when t = typeof<IRArray<float>> -> RealColumn (data |> Util.coerce<'a,IRArray<float>>)
         | t when t = typeof<IRArray<string>> -> StringColumn (data |> Util.coerce<'a,IRArray<string>>)
-        | t when t = typeof<IRArray<DateTime>> ->DateColumn (data |> Util.coerce<'a,IRArray<DateTime>>)
-        | t when t = typeof<IRArray<Boolean>> ->BooleanColumn (data |> Util.coerce<'a,IRArray<Boolean>>)
+        | t when t = typeof<IRArray<DateTime>> -> DateColumn (data |> Util.coerce<'a,IRArray<DateTime>>)
+        | t when t = typeof<IRArray<Boolean>> -> BooleanColumn (data |> Util.coerce<'a,IRArray<Boolean>>)
 
         | t when t = typeof<int[]> -> IntColumn (RArray<int>(data |> Util.coerce<'a,int[]>))
         | t when t = typeof<float[]> -> RealColumn (RArray<float>(data |> Util.coerce<'a,float[]>))
         | t when t = typeof<string[]> -> StringColumn (RArray<string>(data |> Util.coerce<'a,string[]>))
-        | t when t = typeof<DateTime[]> ->DateColumn (RArray<DateTime>(data |> Util.coerce<'a,DateTime[]>))
-        | t when t = typeof<Boolean[]> ->BooleanColumn (RArray<Boolean>(data |> Util.coerce<'a,Boolean[]>))
+        | t when t = typeof<DateTime[]> -> DateColumn (RArray<DateTime>(data |> Util.coerce<'a,DateTime[]>))
+        | t when t = typeof<Boolean[]> -> BooleanColumn (RArray<Boolean>(data |> Util.coerce<'a,Boolean[]>))
 
         | t when typeof<seq<int>>.IsAssignableFrom(t) -> IntColumn (RArray<int>(data |> Util.coerce<'a,seq<int>>))
         | t when typeof<seq<float>>.IsAssignableFrom(t) -> RealColumn (RArray<float>(data |> Util.coerce<'a,seq<float>>))
         | t when typeof<seq<string>>.IsAssignableFrom(t) -> StringColumn (RArray<string>(data |> Util.coerce<'a,seq<string>>))
-        | t when typeof<seq<DateTime>>.IsAssignableFrom(t) ->DateColumn (RArray<DateTime>(data |> Util.coerce<'a,seq<DateTime>>))
-        | t when typeof<seq<Boolean>>.IsAssignableFrom(t) ->BooleanColumn (RArray<Boolean>(data |> Util.coerce<'a,seq<Boolean>>))
+        | t when typeof<seq<DateTime>>.IsAssignableFrom(t) -> DateColumn (RArray<DateTime>(data |> Util.coerce<'a,seq<DateTime>>))
+        | t when typeof<seq<Boolean>>.IsAssignableFrom(t) -> BooleanColumn (RArray<Boolean>(data |> Util.coerce<'a,seq<Boolean>>))
 
         | t when t = typeof<Lazy<int[]>> -> IntColumn (LazyRArray<int>(data |> Util.coerce<'a,Lazy<int[]>>))
         | t when t = typeof<Lazy<float[]>> -> RealColumn (LazyRArray<float>(data |> Util.coerce<'a,Lazy<float[]>>))
         | t when t = typeof<Lazy<string[]>> -> StringColumn (LazyRArray<string>(data |> Util.coerce<'a,Lazy<string[]>>))
-        | t when t = typeof<Lazy<DateTime[]>> ->DateColumn (LazyRArray<DateTime>(data |> Util.coerce<'a,Lazy<DateTime[]>>))
-        | t when t = typeof<Lazy<Boolean[]>> ->BooleanColumn (LazyRArray<Boolean>(data |> Util.coerce<'a,Lazy<Boolean[]>>))
+        | t when t = typeof<Lazy<DateTime[]>> -> DateColumn (LazyRArray<DateTime>(data |> Util.coerce<'a,Lazy<DateTime[]>>))
+        | t when t = typeof<Lazy<Boolean[]>> -> BooleanColumn (LazyRArray<Boolean>(data |> Util.coerce<'a,Lazy<Boolean[]>>))
+        
+        | t when t = typeof<System.Array> ->
+            let array = data |> Util.coerce<'a,System.Array>
+            match array with
+            | null -> failwith("Array is null")
+            | _ ->
+                match array.GetType().GetElementType() with
+                | et when et = typeof<int> -> IntColumn (RArray<int>(data |> Util.coerce<'a,int[]>))
+                | et when et = typeof<float> -> RealColumn (RArray<float>(data |> Util.coerce<'a,float[]>))
+                | et when et = typeof<string> -> StringColumn (RArray<string>(data |> Util.coerce<'a,string[]>))
+                | et when et = typeof<DateTime> -> DateColumn (RArray<DateTime>(data |> Util.coerce<'a,DateTime[]>))
+                | et when et = typeof<Boolean> -> BooleanColumn (RArray<Boolean>(data |> Util.coerce<'a,Boolean[]>))
+                | _ -> failwith("Unexpected type")
 
         | _ -> failwith("Unexpected type")
 

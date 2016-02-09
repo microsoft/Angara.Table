@@ -446,3 +446,30 @@ type ColumnTestsF =
 
         ColumnTestsF.TestColumn<DateTime> data column0 Common.random true
 
+    static member ColumnNewTest<'t when 't:equality>(data: 't[]) =
+        let c1 = Column.New<'t[]>(data)
+        Assert.AreEqual(c1 |> Column.ToArray, data, "'t[]")
+        
+        let c2 = Column.New<IRArray<'t>>(RArray(data))
+        Assert.AreEqual(c2 |> Column.ToArray, data, "IRArray<'t>")
+        
+        let c3 = Column.New<'t seq>(data |> Array.toSeq)
+        Assert.AreEqual(c3 |> Column.ToArray, data, "''t seq")
+        
+        let c4 = Column.New<Lazy<'t[]>>(lazy(data))
+        Assert.AreEqual(c4 |> Column.ToArray, data, "Lazy<'t[]")
+        
+        let c5 = Column.New<System.Array>(data :> System.Array)
+        Assert.AreEqual(c5 |> Column.ToArray, data, "System.Array")
+
+        let c0 = Column.New<Column>(c1)
+        Assert.AreEqual(c0 |> Column.ToArray, data, "Column")
+
+
+    [<Test; Category("CI")>]
+    static member ``Create column using Column.New``() =
+        ColumnTestsF.ColumnNewTest([| 0; 1; 2 |])
+        ColumnTestsF.ColumnNewTest([| 0.0; 0.1; 0.2 |])
+        ColumnTestsF.ColumnNewTest([| "0.0"; "0.1"; "0.2" |])
+        ColumnTestsF.ColumnNewTest([| System.DateTime(2000, 1, 1) |])
+        ColumnTestsF.ColumnNewTest([| false; true |])
