@@ -90,8 +90,8 @@
     <Compile Include="FsCheckAddin.fs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Angara.InfoSet">
-      <HintPath>..\..\sln\Angara.Table\packages\Angara.InfoSet.0.1.0.0\lib\net452\Angara.InfoSet.dll</HintPath>
+    <Reference Include="Angara.Serialization">
+      <HintPath>..\..\sln\Angara.Table\packages\Angara.Serialization.1.0.0.0\lib\net452\Angara.Serialization.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="FsCheck">

@@ -79,8 +79,8 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
   </ItemGroup>
-  <Target Name="AfterBuild" Condition=" '$(Configuration)' == 'Release'">
-    <Exec Command="&quot;C:\git\msr-cs\Angara\ext\nuget-commandline\nuget.exe&quot; pack $(MSBuildProjectFile) -Prop Configuration=$(Configuration) -IncludeReferencedProjects">
+  <Target Name="AfterBuild">
+    <Exec Command="&quot;C:\git\msr-cs\Angara\ext\nuget-commandline\nuget.exe&quot; pack $(MSBuildProjectFile) -Prop Configuration=$(Configuration) -IncludeReferencedProjects -Symbols">
     </Exec>
     <ItemGroup>
       <Packages Include="*.nupkg" />

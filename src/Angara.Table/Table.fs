@@ -677,7 +677,7 @@ type Table(names:seq<string>, columns:seq<Column>) =
         new Table([columnName, Column.New columnData])
 
     static member FromArrays (columns: (string * Array) seq) : Table =
-        new Table(columns |> Seq.map(fun (n,a) -> n, Column.New a))
+        new Table(columns |> Seq.map(fun (n,a) -> n, Column.New<System.Array> a))
 
     static member Add<'a> (name:string) (data:'a) (table:Table) : Table =
         let column:Column = Column.New<'a> data
