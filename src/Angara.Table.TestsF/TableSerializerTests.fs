@@ -10,7 +10,7 @@ open Angara.Data.TestsF.Common
 
 let buildCustomLib() = 
     let lib = SerializerLibrary("Reinstate")
-    Angara.Data.Serialization.Serializers.Register([lib])
+    Angara.Data.TableSerializers.Register([lib])
     SerializerCompositeResolver([ lib; CoreSerializerResolver.Instance ])
 
 [<Test; Category("CI")>]

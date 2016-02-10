@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Angara.Table</RootNamespace>
     <AssemblyName>Angara.Table</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <TargetFSharpCoreVersion>4.4.0.0</TargetFSharpCoreVersion>
     <Name>Angara.Table</Name>
     <TargetFrameworkProfile />
@@ -57,9 +57,7 @@
     <Compile Include="Funcs.fs" />
     <Compile Include="Table.fsi" />
     <Compile Include="Table.fs" />
-    <Compile Include="ReinstateSerializer.fs" />
-    <Compile Include="HtmlSerializer.fs" />
-    <Compile Include="Register.fs" />
+    <Compile Include="Serializers.fs" />
     <Content Include="packages.config" />
     <None Include="Angara.Table.nuspec" />
     <Content Include="License.txt" />
@@ -73,7 +71,7 @@
       <HintPath>..\..\sln\Angara.Table\packages\Angara.Statistics.0.1.1.0\lib\net45\Angara.Statistics.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="FSharp.Core, Version=4.4.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     <Reference Include="mscorlib" />
     <Reference Include="System" />
     <Reference Include="System.Core" />

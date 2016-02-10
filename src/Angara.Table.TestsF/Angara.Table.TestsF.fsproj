@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Angara.Methods.ImportGEMEnvironment.Tests</RootNamespace>
     <AssemblyName>Angara.Table.TestsF</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <TargetFSharpCoreVersion>4.4.0.0</TargetFSharpCoreVersion>
     <Name>Angara.Methods.ImportGEMEnvironment.Tests</Name>
     <TargetFrameworkProfile />
@@ -106,7 +106,7 @@
       <HintPath>..\..\sln\Angara.Table\packages\FsCheck.NUnit.2.2.4\lib\net45\FsCheck.NUnit.Addin.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="FSharp.Core, Version=4.4.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     <Reference Include="FsUnit.NUnit">
       <HintPath>..\..\sln\Angara.Table\packages\FsUnit.1.4.1.0\lib\net45\FsUnit.NUnit.dll</HintPath>
       <Private>True</Private>
