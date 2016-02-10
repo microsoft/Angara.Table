@@ -91,7 +91,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Angara.Serialization">
-      <HintPath>..\..\sln\Angara.Table\packages\Angara.Serialization.1.0.0.0\lib\net452\Angara.Serialization.dll</HintPath>
+      <HintPath>..\..\sln\Angara.Table\packages\Angara.Serialization.0.1.0.0\lib\net461\Angara.Serialization.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="FsCheck">
