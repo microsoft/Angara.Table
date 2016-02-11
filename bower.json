@@ -36,7 +36,7 @@
   "dependencies": {
     "modernizr": "~2.8.3",
     "rxjs": "~4.0.6",
-    "idd": "https://github.com/predictionmachines/InteractiveDataDisplay.git#~1.0.3",
+    "idd": "~1.1.0",
     "jquery": "~2.1.4",
     "DataTables": "~1.9.4"
   },

@@ -94,6 +94,10 @@
       <HintPath>..\..\sln\Angara.Table\packages\Angara.Serialization.0.1.0.0\lib\net461\Angara.Serialization.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Angara.Serialization.Json">
+      <HintPath>..\..\sln\Angara.Table\packages\Angara.Serialization.Json.0.1.0.0\lib\net461\Angara.Serialization.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="FsCheck">
       <HintPath>..\..\sln\Angara.Table\packages\FsCheck.2.2.4\lib\net45\FsCheck.dll</HintPath>
       <Private>True</Private>
@@ -112,6 +116,10 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="mscorlib" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\sln\Angara.Table\packages\Newtonsoft.Json.8.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="NHamcrest">
       <HintPath>..\..\sln\Angara.Table\packages\FsUnit.1.4.1.0\lib\net45\NHamcrest.dll</HintPath>
       <Private>True</Private>

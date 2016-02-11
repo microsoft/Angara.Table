@@ -1,0 +1,59 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="utf-8" />
+    <!-- bower:css -->
+    <link rel="stylesheet" href="../../../bower_components/idd/dist/idd.css" />
+    <link rel="stylesheet" href="../../../bower_components/idd/dist/chartViewer.css" />
+    <link rel="stylesheet" href="../../../bower_components/DataTables/media/css/jquery.dataTables.css" />
+    <!-- endbower -->
+    <!-- bower:js -->
+    <script src="../../../bower_components/jquery/dist/jquery.js"></script>
+    <script src="../../../bower_components/modernizr/modernizr.js"></script>
+    <script src="../../../bower_components/rxjs/dist/rx.all.js"></script>
+    <script src="../../../bower_components/jqueryui/jquery-ui.js"></script>
+    <script src="../../../bower_components/idd/dist/idd.js"></script>
+    <script src="../../../bower_components/idd/dist/chartViewer.js"></script>
+    <script src="../../../bower_components/DataTables/media/js/jquery.dataTables.js"></script>
+    <!-- endbower -->
+    <link href="../styles/angara.tablejs.css" rel="stylesheet" />
+    <link href="../styles/samples.css" rel="stylesheet" />
+    <script src="../../../dist/angara.tablejs.js"></script>  
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var source = {
+                "summary":
+                    [{
+                        "name": "x", "type": "numeric", "totalCount": 11,
+                        "count": 11, "max": 1, "min": 0, "mean": 0.5, "variance": 0.1,
+                        "lb68": 0.32, "ub68": 0.68, "lb95": 0.05, "ub95": 0.95, "median": 0.5
+                    },
+                    {
+                        "name": "y", "type": "numeric", "totalCount": 11,
+                        "count": 11, "max": 0.84, "min": 0, "mean": 0.45, "variance": 0.07,
+                        "lb68": 0.31, "ub68": 0.63, "lb95": 0.05, "ub95": 0.81, "median": 0.45
+                    },
+                    {
+                        "name": "words", "type": "string", "totalCount": 11,
+                        "count": 11, "min": "aaa", "max": "kkk"
+                    },
+                    {
+                        "name": "booleans", "type": "bool", "totalCount": 11,
+                        "true": 9, "false": 2
+                    }], 
+                "pdf": [{ x: [0.0, 0.5, 1.0], f: [0.5, 0.5, 0.5] }], 
+                "data": [[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],
+                         [0, 0.099833417, 0.198669331, 0.295520207, 0.389418342, 0.479425539, 0.564642473, 0.644217687, 0.717356091, 0.78332691, 0.841470985],
+                         ["aaa","bbb","ccc","ddd","eee","fff","ggg","hhh","iii","jjj","kkk"],
+                         [true,true,true,false,false,true,true,true,true,true,true]],
+                "correlation": { "r": [[0.99]], "c": ["x", "y"] } };
+            TableViewer.show($("#tv"), source);
+        });
+    </script>
+</head>
+<body>
+    <h2>Table Viewer</h2>
+    <div id="tv"></div>
+</body>
+</html>

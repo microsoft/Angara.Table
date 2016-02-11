@@ -54,10 +54,23 @@
 
         var _drawSummary = function (summary) {
             var type = typeToText(column.type);
-            type = type + "[" + (summary.totalCount === summary.count ? summary.totalCount : summary.totalCount + "<span class='notImportantText'>/" + summary.count + "</span>") + "]";
+            if(column.type == "bool")
+                type = type + "[" + (summary.true + summary.false) + "]";
+            else
+                type = type + "[" + (summary.totalCount === summary.count ? summary.totalCount : summary.totalCount + "<span class='notImportantText'>/" + summary.count + "</span>") + "]";
             element.find(".type").html(type);
 
-            if (typeof (summary.min) === 'undefined') {
+            if(column.type == "bool"){
+                $(".summary-numeric", element).css("display", "none");
+                $(".summary-nonnumeric", element).css("display", "block");
+
+                element.find(".summary-nonnumeric").html("<div>true:" + summary.true + "</div><div>false:" + summary.false + "</div>");
+                if (chart.isVisible) {
+                    boxplot.isVisible = false;
+                    chart.isVisible = false;
+                    contentChart.css("display", "none");
+                }
+            } else if (typeof (summary.min) === 'undefined') {
                 $(".summary-numeric", element).css("display", "none");
                 $(".summary-nonnumeric", element).css("display", "none");
                 if (chart.isVisible) {

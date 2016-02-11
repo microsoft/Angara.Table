@@ -26,13 +26,13 @@ module.exports = function (grunt) {
                         "src/Angara.TableJS/scripts/SelectedCellPlot.js",
                         "src/Angara.TableJS/scripts/PiesPlot.js",
                         "src/Angara.TableJS/scripts/TaskQueue.js",
+                        "src/Angara.TableJS/scripts/TableSource.js",
                         "src/Angara.TableJS/scripts/TableViewModel.js",
                         "src/Angara.TableJS/scripts/UI.Tile.js",
                         "src/Angara.TableJS/scripts/UI.TileView.js",
                         "src/Angara.TableJS/scripts/UI.TableView.js",
                         "src/Angara.TableJS/scripts/UI.CorrelationView.js",
                         "src/Angara.TableJS/scripts/UI.TableViewer.js",
-                        "src/Angara.TableJS/scripts/JsonTable.js",
                         "src/Angara.TableJS/scripts/Table.footer.js"]
             }
         },

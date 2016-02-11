@@ -165,22 +165,22 @@ type RealColumnSummary = {
     Max: float
     Mean: float
     Variance: float
-    TotalRows: int
-    DataRows: int
+    TotalCount: int
+    Count: int
 }
 
 [<ReflectedDefinition>]
 type ComparableColumnSummary<'a when 'a : comparison> = {
     Min: 'a
     Max: 'a
-    TotalRows: int
-    DataRows: int
+    TotalCount: int
+    Count: int
 }
 
 [<ReflectedDefinition>]
 type BooleanColumnSummary = {
-    TrueRows: int
-    FalseRows: int
+    TrueCount: int
+    FalseCount: int
 }
 
 [<ReflectedDefinition>]
@@ -557,8 +557,8 @@ type Column =
             Max = summary.max
             Mean = summary.mean
             Variance = summary.variance
-            TotalRows = a.Count
-            DataRows = summary.count
+            TotalCount = a.Count
+            Count = summary.count
         }
 
         ccs
@@ -581,8 +581,8 @@ type Column =
         let ccs:ComparableColumnSummary<string> = {
             Min = min
             Max = max
-            TotalRows = total
-            DataRows = count
+            TotalCount = total
+            Count = count
         }
 
         ccs
@@ -601,8 +601,8 @@ type Column =
         let ccs:ComparableColumnSummary<DateTime> = {
             Min = min
             Max = max
-            TotalRows = total
-            DataRows = total
+            TotalCount = total
+            Count = total
         }
 
         ccs
@@ -612,8 +612,8 @@ type Column =
             a |> Seq.fold (fun (nT, nF) s -> if s then nT+1,nF else nT,nF+1) (0, 0)
 
         let ccs:BooleanColumnSummary = {
-             TrueRows = nT
-             FalseRows = nF
+             TrueCount = nT
+             FalseCount = nF
         }
         ccs
 

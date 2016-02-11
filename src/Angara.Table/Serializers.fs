@@ -61,33 +61,34 @@ module internal HelpersForHtml =
 
             member x.Serialize _ summary = 
                 match summary with
-                | NumericColumnSummary(sum) -> InfoSet.ofPairs([("type", InfoSet.String("numeric"))
-                                                                ("min", InfoSet.Double(sum.Min))
-                                                                ("lb95", InfoSet.Double(sum.Lb95))
-                                                                ("lb68", InfoSet.Double(sum.Lb68))
-                                                                ("median", InfoSet.Double(sum.Median))
-                                                                ("ub68", InfoSet.Double(sum.Ub68))
-                                                                ("ub95", InfoSet.Double(sum.Ub95))
-                                                                ("max", InfoSet.Double(sum.Max))
-                                                                ("mean", InfoSet.Double(sum.Mean))
-                                                                ("variance", InfoSet.Double(sum.Variance))
-                                                                ("TotalRows", InfoSet.Int(sum.TotalRows))
+                | NumericColumnSummary(sum) -> InfoSet.ofPairs(["type", InfoSet.String("numeric")
+                                                                "min", InfoSet.Double(sum.Min)
+                                                                "lb95", InfoSet.Double(sum.Lb95)
+                                                                "lb68", InfoSet.Double(sum.Lb68)
+                                                                "median", InfoSet.Double(sum.Median)
+                                                                "ub68", InfoSet.Double(sum.Ub68)
+                                                                "ub95", InfoSet.Double(sum.Ub95)
+                                                                "max", InfoSet.Double(sum.Max)
+                                                                "mean", InfoSet.Double(sum.Mean)
+                                                                "variance", InfoSet.Double(sum.Variance)
+                                                                "totalCount", InfoSet.Int(sum.TotalCount)
+                                                                "count", InfoSet.Int(sum.Count)
                                                                ])
-                | StringColumnSummary(sum) -> InfoSet.ofPairs([("type", InfoSet.String("string"))
-                                                               ("min", InfoSet.String(sum.Min))
-                                                               ("max", InfoSet.String(sum.Max))
-                                                               ("TotalRows", InfoSet.Int(sum.TotalRows))
-                                                               ("DataRows", InfoSet.Int(sum.DataRows))
+                | StringColumnSummary(sum) -> InfoSet.ofPairs(["type", InfoSet.String("string")
+                                                               "min", InfoSet.String(sum.Min)
+                                                               "max", InfoSet.String(sum.Max)
+                                                               "totalCount", InfoSet.Int(sum.TotalCount)
+                                                               "count", InfoSet.Int(sum.Count)
                                                               ])
-                | DateColumnSummary(sum) -> InfoSet.ofPairs([("type", InfoSet.String("date"))
-                                                             ("min", InfoSet.DateTime(sum.Min))
-                                                             ("max",  InfoSet.DateTime(sum.Max))
-                                                             ("TotalRows", InfoSet.Int(sum.TotalRows))
-                                                             ("DataRows", InfoSet.Int(sum.DataRows))
+                | DateColumnSummary(sum) -> InfoSet.ofPairs(["type", InfoSet.String("date")
+                                                             "min", InfoSet.DateTime(sum.Min)
+                                                             "max",  InfoSet.DateTime(sum.Max)
+                                                             "totalCount", InfoSet.Int(sum.TotalCount)
+                                                             "count", InfoSet.Int(sum.Count)
                                                             ])
                 | BooleanColumnSummary(sum) -> InfoSet.ofPairs(["type", InfoSet.String("bool")
-                                                                "false", InfoSet.Int(sum.FalseRows)
-                                                                "true", InfoSet.Int(sum.TrueRows)])
+                                                                "false", InfoSet.Int(sum.FalseCount)
+                                                                "true", InfoSet.Int(sum.TrueCount)])
 
             member x.Deserialize _ si = 
                 let map = si.ToMap()
@@ -103,27 +104,27 @@ module internal HelpersForHtml =
                                  Max = map.["max"].ToDouble()
                                  Mean = map.["mean"].ToDouble()
                                  Variance = map.["variance"].ToDouble()
-                                 TotalRows = map.["TotalRows"].ToInt()
-                                 DataRows = map.["TotalRows"].ToInt()
+                                 TotalCount = map.["TotalRows"].ToInt()
+                                 Count = map.["TotalRows"].ToInt()
                                }
                                |> NumericColumnSummary
 
                 | "string" -> { Min = map.["min"].ToStringValue()
                                 Max = map.["max"].ToStringValue()
-                                TotalRows = map.["TotalRows"].ToInt()
-                                DataRows = map.["DataRows"].ToInt()
+                                TotalCount = map.["TotalRows"].ToInt()
+                                Count = map.["DataRows"].ToInt()
                               }
                               |> StringColumnSummary
 
                 | "date" -> { Min = map.["min"].ToDateTime()
                               Max = map.["max"].ToDateTime()
-                              TotalRows = map.["TotalRows"].ToInt()
-                              DataRows = map.["DataRows"].ToInt()
+                              TotalCount = map.["TotalRows"].ToInt()
+                              Count = map.["DataRows"].ToInt()
                             }
                             |> DateColumnSummary
 
-                | "bool" -> { TrueRows = map.["true"].ToInt()
-                              FalseRows = map.["false"].ToInt() } |> BooleanColumnSummary
+                | "bool" -> { TrueCount = map.["true"].ToInt()
+                              FalseCount = map.["false"].ToInt() } |> BooleanColumnSummary
 
                 | _ -> failwith("type " + sumType + " is not supported")
 
@@ -219,18 +220,17 @@ type TableHtmlSerializer() =
             let corrSr = CorrelationSerializer() :> Angara.Serialization.ISerializer<string array * float array array>
             let summarySr = ColumnSummarySerializer() :> Angara.Serialization.ISerializer<ColumnSummary>
             let pdfSr = PdfSerializer() :> Angara.Serialization.ISerializer<float array * float array>
-            let n = t.Columns.Count
             InfoSet.EmptyMap
-                .AddInt("RowsCount", t.Count)
-                .AddInfoSet("Correlation", match Table.TryCorrelation t with
+                .AddInt("count", t.Count)
+                .AddInfoSet("correlation", match Table.TryCorrelation t with
                                            | Some(c) -> corrSr.Serialize resolver c
                                            | None -> InfoSet.Null)
-                .AddSeq("Summary", [ for colName in t.Names -> let infoSet = summarySr.Serialize resolver (Table.Summary colName t)
+                .AddSeq("summary", [ for colName in t.Names -> let infoSet = summarySr.Serialize resolver (Table.Summary colName t)
                                                                infoSet.AddString("name", colName) ])
-                .AddSeq("Pdf", [ for col in t.Columns -> match Column.TryPdf 512 col with
+                .AddSeq("pdf", [ for col in t.Columns -> match Column.TryPdf 512 col with
                                                          | Some(p) -> pdfSr.Serialize resolver p
                                                          | None -> InfoSet.Null])
-                .AddInfoSet("Data", InfoSet.Seq(t.Columns |> Seq.map SerializeColumn))
+                .AddInfoSet("data", InfoSet.Seq(t.Columns |> Seq.map SerializeColumn))
 
         member x.Deserialize _ _ = failwith "Table deserialization is not supported"
 

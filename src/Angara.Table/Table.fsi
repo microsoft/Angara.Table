@@ -71,9 +71,9 @@ type RealColumnSummary = {
     Mean: float
     Variance: float
     /// Total number of elements in the column.
-    TotalRows: int
+    TotalCount: int
     /// Number of elements in the column except for NaNs.
-    DataRows: int
+    Count: int
 }
 
 /// ComparableColumnSummary - Simple statistics for columns containing non-numeric data
@@ -84,19 +84,19 @@ type ComparableColumnSummary<'a when 'a : comparison> = {
     /// A maximum value of the column.
     Max: 'a
     /// Total number of elements in the column.
-    TotalRows: int
+    TotalCount: int
     /// Number of elements in the column except for missing values,
     /// which is null or empty string.
-    DataRows: int
+    Count: int
 }
 
 /// ComparableColumnSummary - Simple statistics for columns containing non-numeric data
 [<ReflectedDefinition>]
 type BooleanColumnSummary = {
     /// Number of rows with value "true"
-    TrueRows: int
+    TrueCount: int
     /// Number of rows with value "false"
-    FalseRows: int
+    FalseCount: int
 }
 
 /// Discriminated Union type holding statistics for each column type
@@ -268,6 +268,8 @@ type Table =
     /// Creates an new table with a single column
     /// 'a may be one of:
     ///     Column, IRArray<'b>, 'b[], seq<'b>, Lazy<'b[]>
+    /// where 'b may be one of:
+    ///     int, float, string, DateTime, bool
     static member New<'a> : columnName:string -> columnData:'a -> Table
 
     /// Creates a new table from named arrays.
