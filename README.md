@@ -9,8 +9,10 @@ _to do_
 
 The following example reads a column of real numbers named "wheat" from a CSV file:
 ```F#
+open Angara.Data
+
 use stream = File.OpenRead(@"tests\wheat.csv")
-let table = Table.Read ReadSettings.CommaDelimited stream
+let table = Table.Read DelimitedFile.ReadSettings.Default stream
 let wheat = table |> Table.ToArray<float[]> "wheat"
 ```
 
@@ -20,7 +22,7 @@ The following example writes a table to a CSV file:
 ```F#
 let table : Table = ...
 use stream = File.OpenWrite("data.csv")
-table |> Table.Write WriteSettings.CommaDelimited stream
+table |> Table.Write DelimitedFile.WriteSettings.Default stream
 ```
 
 ## View a table in HTML

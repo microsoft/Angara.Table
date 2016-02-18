@@ -222,9 +222,7 @@ open Helpers
 open System.Globalization
 
 /// Implements writer and reader for a text representation of a list of named arrays of certain types.
-/// The implementation mostly follows RFC 4180, but:
-/// 1) First line always considered as a header.
-/// 2) In addition to comma separator, it supports tab, semicolon and space.
+/// The implementation mostly follows RFC 4180, but in addition to comma separator, it supports tab, semicolon and space.
 [<AbstractClass; Sealed>]
 type internal Implementation =
     /// Writes a sequence of named arrays to a stream in a delimited text format (e.g. CSV).
