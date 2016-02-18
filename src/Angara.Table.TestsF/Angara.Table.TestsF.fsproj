@@ -91,7 +91,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Angara.Serialization">
-      <HintPath>..\..\sln\Angara.Table\packages\Angara.Serialization.0.1.0.0\lib\net461\Angara.Serialization.dll</HintPath>
+      <HintPath>..\..\sln\Angara.Table\packages\Angara.Serialization.0.1.1.0\lib\net461\Angara.Serialization.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Angara.Serialization.Json">
@@ -125,14 +125,24 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="nunit.core">
-      <HintPath>..\..\sln\Angara.Table\packages\NUnit.Runners.2.6.4\tools\lib\nunit.core.dll</HintPath>
+      <HintPath>..\..\sln\Angara.Table\packages\NUnitTestAdapter.2.0.0\lib\nunit.core.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="nunit.core.interfaces">
-      <HintPath>..\..\sln\Angara.Table\packages\NUnit.Runners.2.6.4\tools\lib\nunit.core.interfaces.dll</HintPath>
+      <HintPath>..\..\sln\Angara.Table\packages\NUnitTestAdapter.2.0.0\lib\nunit.core.interfaces.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\..\sln\Angara.Table\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
       <Private>True</Private>
+    </Reference>
+    <Reference Include="nunit.util">
+      <HintPath>..\..\sln\Angara.Table\packages\NUnitTestAdapter.2.0.0\lib\nunit.util.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="NUnit.VisualStudio.TestAdapter">
+      <HintPath>..\..\sln\Angara.Table\packages\NUnitTestAdapter.2.0.0\lib\NUnit.VisualStudio.TestAdapter.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
