@@ -9,6 +9,37 @@ open System.IO
 
 
 [<Test; Category("CI")>]
+let TableF_MapiToColumn_ManyArgs() =
+    let table:Table = 
+        Table.New "a" [1] |>
+        Table.Add "b" [2] |> 
+        Table.Add "c" [3] |> 
+        Table.Add "d" [4] |> 
+        Table.Add "e" [5] |> 
+        Table.Add "f" [6] |> 
+        Table.Add "g" [7] |>
+        Table.Add "h" [8] |>
+        Table.Add "i" [9]  
+    let table2 = table |> Table.MapiToColumn ["a"; "b"; "c"; "d"; "e"; "f"; "g"; "h"; "i"] "$" (fun idx a b c d e f g h i -> idx)
+    let col : int[] = table2 |> Table.ToArray "$"
+    Assert.AreEqual([|0|], col, "Array of the column '$' produced by MapiToColumn")
+
+[<Test; Category("CI")>]
+let TableF_MapiToColumn_OneArg() =
+    let table:Table = Table.New "a" [1] 
+    let table2 = table |> Table.MapiToColumn ["a"] "$" (fun idx (a:int) -> idx)
+    let col : int[] = table2 |> Table.ToArray "$"
+    Assert.AreEqual([|0|], col, "Array of the column '$' produced by MapiToColumn")
+
+
+[<Test; Category("CI")>]
+let TableF_MapiToColumn_ZeroArg() =
+    let table:Table = Table.New "a" [1] 
+    let table2 = table |> Table.MapiToColumn [] "$" (fun idx -> idx)
+    let col : int[] = table2 |> Table.ToArray "$"
+    Assert.AreEqual([|0|], col, "Array of the column '$' produced by MapiToColumn")
+
+[<Test; Category("CI")>]
 let TableF_MapToColumn_ManyArgs() =
     let table:Table = 
         Table.New "a" [1] |>

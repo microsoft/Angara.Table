@@ -161,9 +161,6 @@ type Column =
     /// Return the column content's count
     static member Count : column:Column -> int
 
-    /// Return the minimum count across all columns
-    static member MinimumCount : columns:seq<Column> -> int
-
     /// Return the column content's typed enumerator
     static member GetEnumerator<'a> : column:Column -> IEnumerator<'a>
 
@@ -176,24 +173,29 @@ type Column =
     /// Return an item from the column contents, if in range and the correct type
     static member Item<'a> : index:int -> column:Column -> 'a
     
-    /// Apply a map function to a set of items from a set of columns contents
-    /// The generic map function is only partially defined
+    /// <summary>Builds a new array whose elements are the results of applying the given function 'map'
+    /// to each of the rows of the given columns.</summary>
+    /// <remarks><p>The generic map function is only partially defined.
     /// If there are:
     ///     1 column, map should be map:('a->'c), where 'a is the type of the column, so 'b = 'c
     ///     2 columns, map('a->'d->'c), where 'a and 'd are the types of the columns, so 'b = 'd->'c
     ///     3 columns, map('a->'d->'e->'c), where 'a, 'd and 'e are the types of the columns, so 'b = 'd->'e->'c
     ///     n...
     /// If one input column is shorter than the other then the remaining elements of the longer column are ignored.
+    /// </p></remarks>
     static member Map<'a,'b,'c> : map:('a->'b) -> columns:seq<Column> -> 'c[]
 
-    /// Apply a map function to a set of items from a set of columns contents
-    /// The generic map function is only partially defined
+    /// <summary>Builds a new array whose elements are the results of applying the given function 'map'
+    /// to each of the rows of the given columns.
+    /// The integer index passed to the function indicates the index of row being transformed.</summary>
+    /// <remarks><p>The generic map function is only partially defined.
     /// If there are:
-    ///     1 column, map should be map:(int->'a->'c), where 'a is the type of the column, so 'b = 'c
-    ///     2 columns, map:(int->'a->'d->'c), where 'a and 'd are the types of the columns, so 'b = 'd->'c
-    ///     3 columns, map:(int->'a->'d->'e->'c), where 'a, 'd and 'e are the types of the columns, so 'b = 'd->'e->'c
+    ///     0 columns, map is called for each row of the table and should be map:(int->'c), so 'a = 'c
+    ///     1 column, map should be map:(int->'d->'c), where 'd is the type of the column, so 'a = 'd->'c
+    ///     2 columns, map:(int->'d->'e->'c), where 'd and 'e are the types of the columns, so 'a = 'd->'e->'c
     ///     n...
-    static member Mapi<'a,'b,'c> : map:(int->'a->'b) -> columns:seq<Column> -> 'c[]
+    /// </p></remarks>
+    static member Mapi<'a,'c> : map:(int->'a) -> columns:seq<Column> -> 'c[]
 
     /// Return a PDF of the column contents if the column contents are numeric
     static member TryPdf : pointCount:int -> column:Column -> (float[] * float[]) option
@@ -371,61 +373,56 @@ type Table =
     ///     n...
     static member Filteri<'a> : columnNames:seq<string> -> predicate:(int->'a->bool) -> table:Table -> Table
 
-    /// Returns a new table that contains columns of both given tables. Duplicate column names are allowed.
-    static member Join : table1:Table -> table2:Table -> Table
-
-    /// Returns a new table that contains all columns of the given table and columns that are the result of applying the given function
-    /// to certain columns of the given table.
-    /// The generic transform function is only partially defined
-    /// If there are:
-    ///     1 column, transform should be transform:('a->Table)
-    ///     2 columns, transform:('b->'c->Table), so 'a = 'b->'c
-    ///     3 columns, transform:('b->'c->'d->Table), so 'a = 'b->'c->'d
-    ///     n...
-    /// Each of these types may be one of Column, T[], IRArray<T> or Array, possibly different T's
-    static member JoinTransform<'a,'b> : columnNames:seq<string> -> transform:('a->'b) -> table:Table -> Table
-
-    /// Returns an array of objects. There will be one object for each row, the result of applying the given function
-    /// to the given columns of each row of the table.
-    /// The generic map function is only partially defined
-    /// If there are:
-    ///     1 column, map should be map:('a->'c), where 'a is the type of the column, so 'b = 'c
-    ///     2 columns, map:('a->'d->'c), where 'a and 'd are the types of the columns, so 'b = 'd->'c
-    ///     3 columns, map:('a->'d->'e->'c), where 'a, 'd and 'e are the types of the columns, so 'b = 'd->'e->'c
-    ///     n...
-    static member Map<'a,'b,'c> : columnNames:seq<string> -> map:('a->'b) -> table:Table -> 'c[]
-
-    /// Returns an array of objects. There will be one object for each row, the result of applying the given function
-    /// to the given columns of each row of the table.
-    /// The generic map function is only partially defined
-    /// If there are:
-    ///     1 column, map should be map:(int->'a->'c), where 'a is the type of the column, so 'b = 'c
-    ///     2 columns, map:(int->'a->'d->'c), where 'a and 'd are the types of the columns, so 'b = 'd->'c
-    ///     3 columns, map:(int->'a->'d->'e->'c), where 'a, 'd and 'e are the types of the columns, so 'b = 'd->'e->'c
-    ///     n...
-    static member Mapi<'a,'b,'c> : columnNames:seq<string> -> map:(int->'a->'b) -> table:Table -> 'c[]
-
-    /// Returns a new table that has all columns of the given table but with a new column or a replacement of an existing column;
-    /// data of the column is the result of applying the rowise-function to the certain columns of the given table.
-    /// The generic map function is only partially defined
+    /// <summary>Builds a new array whose elements are the results of applying the given function 'map'
+    /// to each of the rows of the given table columns.</summary>
+    /// <remarks><p>The generic map function is only partially defined.
     /// If there are:
     ///     1 column, map should be map:('a->'c), where 'a is the type of the column, so 'b = 'c
     ///     2 columns, map('a->'d->'c), where 'a and 'd are the types of the columns, so 'b = 'd->'c
     ///     3 columns, map('a->'d->'e->'c), where 'a, 'd and 'e are the types of the columns, so 'b = 'd->'e->'c
     ///     n...
-    /// 'c may be one of Int, Float, String or DateTime
+    /// If one input column is shorter than the other then the remaining elements of the longer column are ignored.
+    /// </p></remarks>
+    static member Map<'a,'b,'c> : columnNames:seq<string> -> map:('a->'b) -> table:Table -> 'c[]
+
+    /// <summary>Builds a new array whose elements are the results of applying the given function 'map'
+    /// to each of the rows of the given table columns.
+    /// The integer index passed to the function indicates the index of row being transformed.</summary>
+    /// <remarks><p>The generic map function is only partially defined.
+    /// If there are:
+    ///     0 columns, map is called for each row of the table and should be map:(int->'c), so 'a = 'c
+    ///     1 column, map should be map:(int->'d->'c), where 'd is the type of the column, so 'a = 'd->'c
+    ///     2 columns, map:(int->'d->'e->'c), where 'd and 'e are the types of the columns, so 'a = 'd->'e->'c
+    ///     n...
+    /// </p></remarks>
+    static member Mapi<'a,'c> : columnNames:seq<string> -> map:(int->'a) -> table:Table -> 'c[]
+
+    /// <summary>Builds a new table that contains all columns of the given table and a new column or a replacement of an original table column;
+    /// elements of the column are the results of applying the given function to each of the rows of the given table columns.</summary>
+    /// <remarks><p>The generic map function is only partially defined.
+    /// If there are:
+    ///     1 column, map should be map:('a->'c), where 'a is the type of the column, so 'b = 'c
+    ///     2 columns, map('a->'d->'c), where 'a and 'd are the types of the columns, so 'b = 'd->'c
+    ///     3 columns, map('a->'d->'e->'c), where 'a, 'd and 'e are the types of the columns, so 'b = 'd->'e->'c
+    ///     n...
+    /// </p>
+    /// <p>Ultimate result type of the map function must be either Int, Float, String, Bool or DateTime.</p>
+    /// </remarks>
     static member MapToColumn : columnNames:seq<string> -> newColumnName:string -> map:('a->'b) -> table:Table -> Table
 
-    /// Returns a new table that has all columns of the given table but with a new column or a replacement of an existing column;
-    /// data of the column is the result of applying the rowise-function to the certain columns of the given table.
-    /// The generic map function is only partially defined
+    /// <summary>Builds a new table that contains all columns of the given table and a new column or a replacement of an original table column;
+    /// elements of the column are the results of applying the given function to each of the rows of the given table columns.
+    /// The integer index passed to the function indicates the index of row being transformed.</summary>
+    /// <remarks><p>The generic map function is only partially defined.
     /// If there are:
-    ///     1 column, map should be map:(int->'a->'c), where 'a is the type of the column, so 'b = 'c
-    ///     2 columns, map:(int->'a->'d->'c), where 'a and 'd are the types of the columns, so 'b = 'd->'c
-    ///     3 columns, map:(int->'a->'d->'e->'c), where 'a, 'd and 'e are the types of the columns, so 'b = 'd->'e->'c
+    ///     0 columns, map is called for each row of the table and should be map:(int->'c), so 'a = 'c
+    ///     1 column, map should be map:(int->'d->'c), where 'd is the type of the column, so 'a = 'd->'c
+    ///     2 columns, map:(int->'d->'e->'c), where 'd and 'e are the types of the columns, so 'a = 'd->'e->'c
     ///     n...
-    /// 'c may be one of Int, Float, String or DateTime
-    static member MapiToColumn<'a,'b,'c> : columnNames:seq<string> -> newColumnName:string -> map:(int->'a->'b) -> table:Table -> Table
+    /// </p>
+    /// <p>Ultimate result type of the map function must be either Int, Float, String, Bool or DateTime.</p>
+    /// </remarks>
+    static member MapiToColumn : columnNames:seq<string> -> newColumnName:string -> map:(int->'a) -> table:Table -> Table
 
     /// Return a PDF of the column contents if the column contents are numeric
     static member TryPdf : columnName:string -> pointCount:int -> table:Table -> (float[] * float[]) option
@@ -445,15 +442,33 @@ type Table =
     /// Return some simple statistical properties of a column
     static member Summary : columnName:string -> table:Table -> ColumnSummary
 
-    /// Apply transform function to a set of columns' contents as arrays
-    /// The generic transform function is only partially defined
+    /// <summary>Applies the given function to the arrays of given table columns.</summary>
+    /// <remarks>
+    /// <p>The generic curried transform function is only partially defined.
     /// If there are:
-    ///     1 column, transform should be transform:('a->'c), so 'b = 'c
-    ///     2 columns, transform('a->'d->'c), so 'b = 'd->'c
-    ///     3 columns, transform('a->'d->'e->'c), so 'b = 'd->'e->'c
-    ///     n...
-    /// Each of these types may be one of Column, T[], IRArray<T> or Array, possibly different T's
+    ///     1 column, transform should be transform:('a->'c) where 'a is an array corresponding to the column type, so 'b = 'c
+    ///     2 columns, transform('a->'d->'c) where 'a, 'd are arrays corresponding to the columns types, so 'b = 'd->'c
+    ///     3 columns, transform('a->'d->'e->'c) where 'a, 'd, 'e are arrays corresponding to the columns types, so 'b = 'd->'e->'c
+    ///     n...</p>
+    /// <p>The transform function argument types may be one of: Column, T[], IRArray&lt;T&gt; or Array.</p>
+    /// </remarks>
     static member Transform<'a,'b,'c> : columnNames:seq<string> -> transform:('a->'b) -> table:Table -> 'c
+
+    /// Builds a new table that contains columns of both given tables. Duplicate column names are allowed.
+    static member Join : table1:Table -> table2:Table -> Table
+
+    /// <summary>Builds a new table that contains columns of the given table appended with columns of a table produced by the
+    /// given function applied to the arrays of given table columns.</summary>
+    /// <remarks>
+    /// <p>The generic curried transform function is only partially defined.
+    /// If there are:
+    ///     1 column, transform should be transform:('a->Table) where 'a is an array corresponding to the column type, so 'b = Table
+    ///     2 columns, transform('a->'d->Table) where 'a, 'd are arrays corresponding to the columns types, so 'b = 'd->Table
+    ///     3 columns, transform('a->'d->'e->Table) where 'a, 'd, 'e are arrays corresponding to the columns types, so 'b = 'd->'e->Table
+    ///     n...</p>
+    /// <p>The transform function argument types may be one of: Column, T[], IRArray&lt;T&gt; or Array.</p>
+    /// </remarks>
+    static member JoinTransform<'a,'b> : columnNames:seq<string> -> transform:('a->'b) -> table:Table -> Table
 
     /// If at least two of the columns are real or int then Some(Column Names * Correlations)
     /// else None

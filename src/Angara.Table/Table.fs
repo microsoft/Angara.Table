@@ -352,11 +352,6 @@ type Column =
         | DateColumn ir -> ir.Count
         | BooleanColumn ir -> ir.Count
 
-    static member MinimumCount(columns:seq<Column>) : int =
-        columns
-        |> Seq.map Column.Count
-        |> Seq.min
-
     static member GetEnumerator<'a>(column:Column) : IEnumerator<'a> =
         match column, typeof<'a> with
         | IntColumn ir, t when t = typeof<int> -> ir.GetEnumerator() :?> IEnumerator<'a>
@@ -397,31 +392,6 @@ type Column =
         Column.TryItem<'a> index column
         |> Util.unpackOrFail "Unexpected type"
 
-
-    static member Map2<'a,'b,'c> (map:('a->'b->'c)) (column1:Column) (column2:Column) : seq<'c> =
-        match column1, column2, box map with
-        | IntColumn ir1, IntColumn ir2, (:? (int->int->'c) as tmap) -> Seq.map2 tmap ir1 ir2
-        | IntColumn ir1, RealColumn ir2, (:? (int->float->'c) as tmap) -> Seq.map2 tmap ir1 ir2
-        | IntColumn ir1, StringColumn ir2, (:? (int->string->'c) as tmap) -> Seq.map2 tmap ir1 ir2
-        | IntColumn ir1, DateColumn ir2, (:? (int->DateTime->'c) as tmap) -> Seq.map2 tmap ir1 ir2
-        | RealColumn ir1, IntColumn ir2, (:? (float->int->'c) as tmap) -> Seq.map2 tmap ir1 ir2
-        | RealColumn ir1, RealColumn ir2, (:? (float->float->'c) as tmap) -> Seq.map2 tmap ir1 ir2
-        | RealColumn ir1, StringColumn ir2, (:? (float->string->'c) as tmap) -> Seq.map2 tmap ir1 ir2
-        | RealColumn ir1, DateColumn ir2, (:? (float->DateTime->'c) as tmap) -> Seq.map2 tmap ir1 ir2
-        | StringColumn ir1, IntColumn ir2, (:? (string->int->'c) as tmap) -> Seq.map2 tmap ir1 ir2
-        | StringColumn ir1, RealColumn ir2, (:? (string->float->'c) as tmap) -> Seq.map2 tmap ir1 ir2
-        | StringColumn ir1, StringColumn ir2, (:? (string->string->'c) as tmap) -> Seq.map2 tmap ir1 ir2
-        | StringColumn ir1, DateColumn ir2, (:? (string->DateTime->'c) as tmap) -> Seq.map2 tmap ir1 ir2
-        | DateColumn ir1, IntColumn ir2, (:? (DateTime->int->'c) as tmap) -> Seq.map2 tmap ir1 ir2
-        | DateColumn ir1, RealColumn ir2, (:? (DateTime->float->'c) as tmap) -> Seq.map2 tmap ir1 ir2
-        | DateColumn ir1, StringColumn ir2, (:? (DateTime->string->'c) as tmap) -> Seq.map2 tmap ir1 ir2
-        | DateColumn ir1, DateColumn ir2, (:? (DateTime->DateTime->'c) as tmap) -> Seq.map2 tmap ir1 ir2
-        | BooleanColumn ir1, IntColumn ir2, (:? (Boolean->int->'c) as tmap) -> Seq.map2 tmap ir1 ir2
-        | BooleanColumn ir1, RealColumn ir2, (:? (Boolean->float->'c) as tmap) -> Seq.map2 tmap ir1 ir2
-        | BooleanColumn ir1, StringColumn ir2, (:? (Boolean->string->'c) as tmap) -> Seq.map2 tmap ir1 ir2
-        | BooleanColumn ir1, DateColumn ir2, (:? (Boolean->DateTime->'c) as tmap) -> Seq.map2 tmap ir1 ir2
-        | _ -> failwith("Incorrect type")
-
     static member Map<'a,'b,'c> (map:('a->'b)) (columns:seq<Column>) : 'c[] =
         if Seq.isEmpty columns then failwith "No columns to map"
         else
@@ -446,21 +416,18 @@ type Column =
                     deleg.DynamicInvoke(row) :?> 'c)
                 res
 
-    static member Mapi<'a,'b,'c> (map:(int->'a->'b)) (columns:seq<Column>) : 'c[] =
-        if Seq.isEmpty columns then Array.empty
+    static member Mapi<'a,'c> (map:(int->'a)) (columns:seq<Column>) : 'c[] =
+        if Seq.isEmpty columns then failwith "No columns to map"
         else
             let cs = Array.ofSeq columns
             if cs.Length = 1 then
-                match box map with
-                | (:? (int->'a->'c) as map1) -> 
-                    match cs.[0], box map1 with
-                    | IntColumn ir1, (:? (int->int->'c) as tmap) -> ir1.ToArray() |> Array.mapi tmap
-                    | RealColumn ir1, (:? (int->float->'c) as tmap) -> ir1.ToArray() |> Array.mapi tmap
-                    | StringColumn ir1, (:? (int->string->'c) as tmap) -> ir1.ToArray() |> Array.mapi tmap
-                    | DateColumn ir1, (:? (int->DateTime->'c) as tmap) -> ir1.ToArray() |> Array.mapi tmap
-                    | BooleanColumn ir1, (:? (int->Boolean->'c) as tmap) -> ir1.ToArray() |> Array.mapi tmap
-                    | _ -> failwith("Incorrect type")
-                | _ -> failwith("Incorrect map function")
+                match cs.[0], box map with
+                | IntColumn ir1, (:? (int->int->'c) as tmap) -> ir1.ToArray() |> Array.mapi tmap
+                | RealColumn ir1, (:? (int->float->'c) as tmap) -> ir1.ToArray() |> Array.mapi tmap
+                | StringColumn ir1, (:? (int->string->'c) as tmap) -> ir1.ToArray() |> Array.mapi tmap
+                | DateColumn ir1, (:? (int->DateTime->'c) as tmap) -> ir1.ToArray() |> Array.mapi tmap
+                | BooleanColumn ir1, (:? (int->Boolean->'c) as tmap) -> ir1.ToArray() |> Array.mapi tmap
+                | _ -> failwith("Incorrect argument type of map")
             else
                 let deleg = Funcs.toDelegate map
                 let colArrays = cs |> Array.map (fun c -> Column.ToArray<System.Array> c)
@@ -825,7 +792,7 @@ type Table(names:seq<string>, columns:seq<Column>) =
     static member Map<'a,'b,'c>(columnNames:seq<string>) (map:('a->'b)) (table:Table) : 'c[] =
         if columnNames |> Seq.isEmpty then // map must be (unit->'b) and 'c = 'b; length of the result equals table row count            
             match box map with
-            | :? (unit->'c) as map0 -> let v = map0() in Array.init table.Count (fun _ -> v)
+            | :? (unit -> 'c) as map0 -> let v = map0() in Array.init table.Count (fun _ -> v)
             | _ -> failwith "Unexpected type of map"
         else
             columnNames
@@ -834,11 +801,17 @@ type Table(names:seq<string>, columns:seq<Column>) =
         
     static member private reflectedMap = typeof<Table>.GetMethod("Map")
 
-    static member Mapi<'a,'b,'c>(columnNames:seq<string>) (map:(int->'a->'b)) (table:Table) : 'c[] =
-        columnNames
-        |> Seq.map (fun c -> Table.Column c table)
-        |> Column.Mapi<'a,'b,'c> map 
+    static member Mapi<'a,'c>(columnNames:seq<string>) (map:(int->'a)) (table:Table) : 'c[] =
+        if columnNames |> Seq.isEmpty then // map must be (unit->'b) and 'c = 'b; length of the result equals table row count            
+            match box map with
+            | :? (int -> 'c) as map0 -> Array.init table.Count map0
+            | _ -> failwith "Unexpected type of map"
+        else
+            columnNames
+            |> Seq.map (fun c -> Table.Column c table)
+            |> Column.Mapi<'a,'c> map 
 
+    static member private reflectedMapi = typeof<Table>.GetMethod("Mapi")
 
     static member MapToColumn(columnNames:seq<string>) (newColumnName:string) (map:('a->'b)) (table:Table) : Table =
         let names = columnNames |> Seq.toArray
@@ -852,9 +825,16 @@ type Table(names:seq<string>, columns:seq<Column>) =
         if columnNames |> Seq.contains newColumnName then table |> Table.Remove [newColumnName] else table
         |> Table.Add newColumnName data
 
-    static member MapiToColumn<'a,'b,'c>(columnNames:seq<string>) (newColumnName:string) (map:(int->'a->'b)) (table:Table) : Table =
-        let data = Table.Mapi<'a,'b,'c> columnNames map table
-        if Seq.contains newColumnName columnNames then table |> Table.Remove [newColumnName] else table
+    static member MapiToColumn(columnNames:seq<string>) (newColumnName:string) (map:(int->'a)) (table:Table) : Table =
+        let names = columnNames |> Seq.toArray
+        let data =
+            match names.Length with
+            | 0 -> Table.Mapi<'a,'a> columnNames map table :> System.Array
+            | n -> 
+                let res = Funcs.getNthResultType (n+1) map
+                let mapTable = Table.reflectedMapi.MakeGenericMethod( typeof<'a>, res )
+                mapTable.Invoke(null, [|box columnNames; box map; box table|]) :?> System.Array 
+        if columnNames |> Seq.contains newColumnName then table |> Table.Remove [newColumnName] else table
         |> Table.Add newColumnName data
 
     static member TryPdf(columnName:string) (pointCount:int) (table:Table) : (float[] * float[]) option =
