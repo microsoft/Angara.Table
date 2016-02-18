@@ -52,8 +52,9 @@
   <ItemGroup>
     <Content Include="app.config" />
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Csv.fsi" />
-    <Compile Include="Csv.fs" />
+    <Compile Include="DelimitedFile.fsi" />
+    <Compile Include="DelimitedFile.fs" />
+    <Compile Include="DelimitedFile.Implementation.fs" />
     <Compile Include="Funcs.fs" />
     <Compile Include="Table.fsi" />
     <Compile Include="Table.fs" />

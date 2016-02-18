@@ -4,34 +4,6 @@ open System
 open System.Collections.Generic
 open System.Text
 open System.IO
-
-type Delimiter = 
-    | Comma = 0
-    | Tab = 1
-    | Semicolon = 2
-    | Space = 3
-
-[<NoEquality; NoComparison>]
-type WriteSettings = 
-    {
-        Delimiter : Delimiter
-        AllowNullStrings : bool
-        SaveHeader: bool
-    }
-    static member public CommaDelimited : WriteSettings = { Delimiter = Delimiter.Comma; AllowNullStrings = false; SaveHeader = true }
-
-    
-[<NoEquality; NoComparison>]
-type ReadSettings = 
-    {
-        Delimiter : Delimiter
-        InferNullStrings : bool
-        HasHeader: bool
-        ColumnsCount : int option
-        ColumnTypes : (int * string -> Type option) option 
-    }
-    static member public CommaDelimited : ReadSettings = { Delimiter = Delimiter.Comma; HasHeader = true; InferNullStrings = false; ColumnsCount = None; ColumnTypes = None }
-
 /// Type of column elements.
 type internal ColumnType = 
     | Integer 
@@ -233,6 +205,9 @@ module internal Helpers =
 
     let internal chars = ['A'..'Z']
 
+    /// Produces a non-empty string to be used as a name of a column with the given index.
+    /// The produced names are similar to Excel column names; e.g.
+    /// index 28 gives the name "AC".
     let internal indexToName (index: int) =
         if index < 0 then invalidArg "index" "index is negative"
         let k = chars.Length // radix
@@ -246,8 +221,13 @@ module internal Helpers =
 open Helpers
 open System.Globalization
 
+/// Implements writer and reader for a text representation of a list of named arrays of certain types.
+/// The implementation mostly follows RFC 4180, but:
+/// 1) First line always considered as a header.
+/// 2) In addition to comma separator, it supports tab, semicolon and space.
 [<AbstractClass; Sealed>]
 type internal DelimitedFile =
+    /// Writes a sequence of named arrays to a stream in a delimited text format (e.g. CSV).
     static member Write (settings:WriteSettings) (stream: Stream) (table:(string * Array) seq) : unit =
         let table = table |> Seq.toArray
         if table.Length > 0 then
@@ -292,6 +272,7 @@ type internal DelimitedFile =
                 sb.Clear() |> ignore
             output.Flush()
 
+    /// Reads a table from a delimited text format.
     static member Read (settings: ReadSettings) (stream: Stream) : (ColumnSchema * Array) []  =
         let delimiter = settings.Delimiter |> Helpers.delimiterToChar
         let reader = new StreamReader(stream)
