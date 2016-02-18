@@ -423,7 +423,7 @@ type Column =
         | _ -> failwith("Incorrect type")
 
     static member Map<'a,'b,'c> (map:('a->'b)) (columns:seq<Column>) : 'c[] =
-        if Seq.isEmpty columns then Array.empty
+        if Seq.isEmpty columns then failwith "No columns to map"
         else
             let cs = Array.ofSeq columns
             if cs.Length = 1 then
@@ -435,7 +435,7 @@ type Column =
                     | StringColumn ir1, (:? (string->'c) as tmap) -> ir1.ToArray() |> Array.map tmap
                     | DateColumn ir1, (:? (DateTime->'c) as tmap) -> ir1.ToArray() |> Array.map tmap
                     | BooleanColumn ir1, (:? (Boolean->'c) as tmap) -> ir1.ToArray() |> Array.map tmap
-                    | _ -> failwith("Incorrect type")
+                    | _ -> failwith("Incorrect argument type of function map")
                 | _ -> failwith("Incorrect map function")
             else
                 let deleg = Funcs.toDelegate map
@@ -627,6 +627,8 @@ type Column =
 
 [<ReflectedDefinition>]
 type Table(names:seq<string>, columns:seq<Column>) =
+
+    
 
     let namesRO : IReadOnlyList<string> =
         RArray<string>(names) :> IReadOnlyList<string>
@@ -821,17 +823,32 @@ type Table(names:seq<string>, columns:seq<Column>) =
         |> Table.Join table
 
     static member Map<'a,'b,'c>(columnNames:seq<string>) (map:('a->'b)) (table:Table) : 'c[] =
-        columnNames
-        |> Seq.map (fun c -> Table.Column c table)
-        |> Column.Map<'a,'b,'c> map
+        if columnNames |> Seq.isEmpty then // map must be (unit->'b) and 'c = 'b; length of the result equals table row count            
+            match box map with
+            | :? (unit->'c) as map0 -> let v = map0() in Array.init table.Count (fun _ -> v)
+            | _ -> failwith "Unexpected type of map"
+        else
+            columnNames
+            |> Seq.map (fun c -> Table.Column c table)
+            |> Column.Map<'a,'b,'c> map
+        
+    static member private reflectedMap = typeof<Table>.GetMethod("Map")
 
     static member Mapi<'a,'b,'c>(columnNames:seq<string>) (map:(int->'a->'b)) (table:Table) : 'c[] =
         columnNames
         |> Seq.map (fun c -> Table.Column c table)
         |> Column.Mapi<'a,'b,'c> map 
 
-    static member MapToColumn<'a,'b,'c>(columnNames:seq<string>) (newColumnName:string) (map:('a->'b)) (table:Table) : Table =
-        let data = Table.Map<'a,'b,'c> columnNames map table
+
+    static member MapToColumn(columnNames:seq<string>) (newColumnName:string) (map:('a->'b)) (table:Table) : Table =
+        let names = columnNames |> Seq.toArray
+        let data =
+            match names.Length with
+            | 0 | 1 -> Table.Map<'a,'b,'b> columnNames map table :> System.Array
+            | n -> 
+                let res = Funcs.getNthResultType n map
+                let mapTable = Table.reflectedMap.MakeGenericMethod( typeof<'a>, typeof<'b>, res )
+                mapTable.Invoke(null, [|box columnNames; box map; box table|]) :?> System.Array 
         if columnNames |> Seq.contains newColumnName then table |> Table.Remove [newColumnName] else table
         |> Table.Add newColumnName data
 

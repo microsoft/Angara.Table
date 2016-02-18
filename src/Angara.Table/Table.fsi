@@ -414,7 +414,7 @@ type Table =
     ///     3 columns, map('a->'d->'e->'c), where 'a, 'd and 'e are the types of the columns, so 'b = 'd->'e->'c
     ///     n...
     /// 'c may be one of Int, Float, String or DateTime
-    static member MapToColumn<'a,'b,'c> : columnNames:seq<string> -> newColumnName:string -> map:('a->'b) -> table:Table -> Table
+    static member MapToColumn : columnNames:seq<string> -> newColumnName:string -> map:('a->'b) -> table:Table -> Table
 
     /// Returns a new table that has all columns of the given table but with a new column or a replacement of an existing column;
     /// data of the column is the result of applying the rowise-function to the certain columns of the given table.

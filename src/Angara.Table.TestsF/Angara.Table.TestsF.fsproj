@@ -95,7 +95,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Angara.Serialization.Json">
-      <HintPath>..\..\sln\Angara.Table\packages\Angara.Serialization.Json.0.1.0.0\lib\net461\Angara.Serialization.Json.dll</HintPath>
+      <HintPath>..\..\sln\Angara.Table\packages\Angara.Serialization.Json.0.1.1.0\lib\net461\Angara.Serialization.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="FsCheck">

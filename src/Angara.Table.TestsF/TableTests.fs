@@ -9,6 +9,37 @@ open System.IO
 
 
 [<Test; Category("CI")>]
+let TableF_MapToColumn_ManyArgs() =
+    let table:Table = 
+        Table.New "a" [1] |>
+        Table.Add "b" [2] |> 
+        Table.Add "c" [3] |> 
+        Table.Add "d" [4] |> 
+        Table.Add "e" [5] |> 
+        Table.Add "f" [6] |> 
+        Table.Add "g" [7] |>
+        Table.Add "h" [8] |>
+        Table.Add "i" [9]  
+    let table2 = table |> Table.MapToColumn ["a"; "b"; "c"; "d"; "e"; "f"; "g"; "h"; "i"] "$" (fun a b c d e f g h i -> true)
+    let col : bool[] = table2 |> Table.ToArray "$"
+    Assert.AreEqual([|true|], col, "Array of the column '$' produced by MapToColumn")
+
+[<Test; Category("CI")>]
+let TableF_MapToColumn_OneArg() =
+    let table:Table = Table.New "a" [1] 
+    let table2 = table |> Table.MapToColumn ["a"] "$" (fun a -> a > 0)
+    let col : bool[] = table2 |> Table.ToArray "$"
+    Assert.AreEqual([|true|], col, "Array of the column '$' produced by MapToColumn")
+
+
+[<Test; Category("CI")>]
+let TableF_MapToColumn_ZeroArg() =
+    let table:Table = Table.New "a" [1] 
+    let table2 = table |> Table.MapToColumn [] "$" (fun () -> true)
+    let col : bool[] = table2 |> Table.ToArray "$"
+    Assert.AreEqual([|true|], col, "Array of the column '$' produced by MapToColumn")
+
+[<Test; Category("CI")>]
 let TableF_EmptyTable() =
     let table0:Table = Table.Empty
     table0.Names |> should equal []
