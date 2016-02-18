@@ -914,24 +914,24 @@ type Table(names:seq<string>, columns:seq<Column>) =
         |> Table.TryCorrelation
         |> Util.unpackOrFail "At least two columns must be real or int"
 
-    static member Read (settings:Angara.Data.ReadSettings) (stream:IO.Stream) : Table =
+    static member Read (settings:Angara.Data.DelimitedFile.ReadSettings) (stream:IO.Stream) : Table =
         let cols = 
             stream 
-            |> Angara.Data.DelimitedFile.Read settings
+            |> Angara.Data.DelimitedFile.Implementation.Read settings
             |> Array.map(fun (schema, data) -> 
                 schema.Name,
                 match schema.Type with
-                | Angara.Data.ColumnType.Double -> Column.New (data :?> float[])
-                | Angara.Data.ColumnType.Integer -> Column.New (data :?> int[])
-                | Angara.Data.ColumnType.Boolean -> Column.New (data :?> bool[])
-                | Angara.Data.ColumnType.DateTime -> Column.New (data :?> DateTime[])
-                | Angara.Data.ColumnType.String -> Column.New (data :?> string[]))
+                | Angara.Data.DelimitedFile.ColumnType.Double -> Column.New (data :?> float[])
+                | Angara.Data.DelimitedFile.ColumnType.Integer -> Column.New (data :?> int[])
+                | Angara.Data.DelimitedFile.ColumnType.Boolean -> Column.New (data :?> bool[])
+                | Angara.Data.DelimitedFile.ColumnType.DateTime -> Column.New (data :?> DateTime[])
+                | Angara.Data.DelimitedFile.ColumnType.String -> Column.New (data :?> string[]))
         new Table(cols)
 
-    static member Write (settings:Angara.Data.WriteSettings) (stream:IO.Stream) (table:Table) : unit =
+    static member Write (settings:Angara.Data.DelimitedFile.WriteSettings) (stream:IO.Stream) (table:Table) : unit =
         table.Columns
         |> Seq.map(fun column ->
             Table.Name column table,
             Column.ToArray<System.Array> column)         
-        |> Angara.Data.DelimitedFile.Write settings stream            
+        |> Angara.Data.DelimitedFile.Implementation.Write settings stream            
         

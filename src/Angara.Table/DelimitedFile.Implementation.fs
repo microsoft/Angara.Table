@@ -1,4 +1,4 @@
-﻿namespace Angara.Data
+﻿namespace Angara.Data.DelimitedFile
 
 open System  
 open System.Collections.Generic
@@ -226,7 +226,7 @@ open System.Globalization
 /// 1) First line always considered as a header.
 /// 2) In addition to comma separator, it supports tab, semicolon and space.
 [<AbstractClass; Sealed>]
-type internal DelimitedFile =
+type internal Implementation =
     /// Writes a sequence of named arrays to a stream in a delimited text format (e.g. CSV).
     static member Write (settings:WriteSettings) (stream: Stream) (table:(string * Array) seq) : unit =
         let table = table |> Seq.toArray

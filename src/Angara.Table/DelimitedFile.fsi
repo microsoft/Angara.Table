@@ -1,4 +1,4 @@
-﻿namespace Angara.Data
+﻿namespace Angara.Data.DelimitedFile
 
 /// Determines a character that delimits columns of a table.
 type Delimiter = 
@@ -19,7 +19,7 @@ type WriteSettings =
       /// Otherwise, if false, the first line is a data line.
       SaveHeader: bool }
     /// Uses comma as delimiter, saves a header and disallows null strings.
-    static member CommaDelimited : WriteSettings
+    static member Default : WriteSettings
 
 [<NoEquality; NoComparison>]
 type ReadSettings = 
@@ -39,5 +39,4 @@ type ReadSettings =
       /// to read integer columns since automatic inference always uses Double type for numeric values.
       ColumnTypes : (int * string -> System.Type option) option }
     /// Expects comma as delimiter, has header, doesn't infer null strings and doesn't predefine column count or types.
-    static member CommaDelimited : ReadSettings
-
+    static member Default : ReadSettings

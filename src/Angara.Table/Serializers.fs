@@ -2,6 +2,7 @@
 
 open System
 open Angara.Serialization
+open Angara.Data.DelimitedFile
 
 module internal HelpersForReinstate = 
     type TableBlob(table : Table) = 
@@ -14,7 +15,7 @@ module internal HelpersForReinstate =
                 stream :> IO.Stream
             
             member this.WriteTo stream = 
-                table |> Table.Write { WriteSettings.CommaDelimited with AllowNullStrings = true } stream
+                table |> Table.Write { WriteSettings.Default with AllowNullStrings = true } stream
     
     let serializeContent (table : Table) (blobName : string) : InfoSet = 
         let content = Seq.zip table.Names table.Types |> List.ofSeq
@@ -188,8 +189,8 @@ type TableReinstateSerializer() =
                     let stream = (snd (map.["data"].ToBlob())).GetStream()
                     let cols = 
                         stream 
-                        |> DelimitedFile.Read
-                             { ReadSettings.CommaDelimited with 
+                        |> Implementation.Read
+                             { ReadSettings.Default with 
                                 InferNullStrings = true
                                 ColumnTypes = Some(fun (colInd,_) -> Some(colType colInd))
                                 ColumnsCount = Some columnTypes.Length } 

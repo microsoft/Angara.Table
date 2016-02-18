@@ -464,10 +464,10 @@ type Table =
     static member Correlation : table:Table -> (string[] * float[][])
 
     /// Reads table from a delimited text stream.
-    static member Read : settings:Angara.Data.ReadSettings -> stream:IO.Stream -> Table
+    static member Read : settings:Angara.Data.DelimitedFile.ReadSettings -> stream:IO.Stream -> Table
     
     /// <summary>Writes a table to a stream as a delimited text.</summary>
     /// <remarks>
     /// <p>Requires that all columns have same length.</p>
     /// </remarks>
-    static member Write : settings:Angara.Data.WriteSettings -> stream:IO.Stream -> table:Table -> unit
+    static member Write : settings:Angara.Data.DelimitedFile.WriteSettings -> stream:IO.Stream -> table:Table -> unit

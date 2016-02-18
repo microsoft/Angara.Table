@@ -6,8 +6,8 @@ open FsUnit
 open FsCheck
 open NUnit.Framework
 open Angara.Data
-open Angara.Data.Helpers
-open Angara.Data.TestsF.Common
+open Angara.Data.DelimitedFile
+open Angara.Data.DelimitedFile.Helpers
 
 let internal CompareTables (table1: (ColumnSchema * Array) array) (table2: (ColumnSchema * Array) array) = 
     table1.Length |> should equal table2.Length
@@ -36,7 +36,7 @@ let normalizeNL (s:string) =
     if s = null then s else s.Replace("\n", Environment.NewLine)
 
 
-[<Property; Category("CI")>]
+[<Angara.Data.TestsF.Common.Property; Category("CI")>]
 let ``Csv.SplitRow is equivalent to String.Split if no newlines and quotes`` (s:string) =
     let precondition (s:string) = s <> null && not(s.Contains("\"")) && not(s.Contains("\n")) && not(s.Contains("\r"))
     let property s = 
@@ -61,7 +61,7 @@ let TestParseAndEscape stringOfCsv (unescaped:string) (expectedEscaped:string op
     | None -> Assert.Fail()
     | Some items ->         
         items |> should equal [| normalizeNL unescaped; "a" |]
-        let escaped = Angara.Data.Helpers.escapeString unescaped "," true
+        let escaped = escapeString unescaped "," true
         match expectedEscaped with
         | Some expectedEscaped -> 
             Assert.AreEqual(normalizeNL expectedEscaped, normalizeNL escaped, "Escape")
@@ -80,9 +80,9 @@ let ``Parse and escape string``() =
      TestParseAndEscape "\"\"abc" "abc" (Some "abc")
      TestParseAndEscape "\"\"\"\"abc" "\"abc" (Some "\"\"\"abc\"")
 
-[<Property; Category("CI")>]
+[<Angara.Data.TestsF.Common.Property; Category("CI")>]
 let ``Escape then parse makes an original string`` (s:string) =
-    let escape = Angara.Data.Helpers.escapeString s "," true
+    let escape = escapeString s "," true
     let splitdata = splitRowStr ',' (escape + ",a")
     match splitdata with 
     | None -> false
@@ -92,7 +92,7 @@ let ``Escape then parse makes an original string`` (s:string) =
 
 [<Test; Category("CI")>]
 let ``Escape then parse makes an original string - case 1`` () =
-    let escape = Angara.Data.Helpers.escapeString ">8\n," "," true
+    let escape = escapeString ">8\n," "," true
     let splitdata = splitRowStr ',' escape
     match splitdata with 
     | None -> Assert.Fail()
@@ -102,7 +102,7 @@ let ``Escape then parse makes an original string - case 1`` () =
 
 [<Test; Category("CI")>]
 let ``Escape then parse makes an original string - case 2`` () =
-    let escape = Angara.Data.Helpers.escapeString "\r" "," true
+    let escape = escapeString "\r" "," true
     let splitdata = splitRowStr ',' escape
     match splitdata with 
     | None -> Assert.Fail()
@@ -112,7 +112,7 @@ let ``Escape then parse makes an original string - case 2`` () =
 
 [<Test; Category("CI")>]
 let ``Escape then parse makes an original string - case 6`` () =
-    let escape = Angara.Data.Helpers.escapeString "\n" "," true
+    let escape = escapeString "\n" "," true
     let splitdata = splitRowStr ',' escape
     match splitdata with 
     | None -> Assert.Fail()
@@ -122,7 +122,7 @@ let ``Escape then parse makes an original string - case 6`` () =
 
 [<Test; Category("CI")>]
 let ``Escape then parse makes an original string - case 7`` () =
-    let escape = Angara.Data.Helpers.escapeString "\r\n" "," true
+    let escape = escapeString "\r\n" "," true
     let splitdata = splitRowStr ',' escape
     match splitdata with 
     | None -> Assert.Fail()
@@ -132,7 +132,7 @@ let ``Escape then parse makes an original string - case 7`` () =
 
 [<Test; Category("CI")>]
 let ``Escape then parse makes an original string - case 3`` () =
-    let escape = Angara.Data.Helpers.escapeString "\n\r" "," true
+    let escape = escapeString "\n\r" "," true
     let splitdata = splitRowStr ',' escape
     match splitdata with 
     | None -> Assert.Fail()
@@ -143,7 +143,7 @@ let ``Escape then parse makes an original string - case 3`` () =
 
 [<Test; Category("CI")>]
 let ``Escape then parse makes an original string - case 5`` () =
-    let escape = Angara.Data.Helpers.escapeString Environment.NewLine "," true
+    let escape = escapeString Environment.NewLine "," true
     let splitdata = splitRowStr ',' escape
     match splitdata with 
     | None -> Assert.Fail()
@@ -154,7 +154,7 @@ let ``Escape then parse makes an original string - case 5`` () =
 
 [<Test; Category("CI")>]
 let ``Escape then parse makes an original string - case 4`` () =
-    let escape = Angara.Data.Helpers.escapeString null "," true
+    let escape = escapeString null "," true
     let splitdata = splitRowStr ',' (escape + ",a")
     match splitdata with 
     | None -> Assert.Fail()
@@ -200,7 +200,7 @@ let ``Comma delimiter test with multi-line quote ``() =
 [<Test; Category("CI")>]
 let ``Simple schema reading test`` () = 
     let reader = File.OpenRead(@"tests\Simple schema reading test.csv")
-    DelimitedFile.Read ReadSettings.CommaDelimited reader |> CompareTables  
+    Implementation.Read ReadSettings.Default reader |> CompareTables  
         [|{Name = "1.0"; Type = ColumnType.String},upcast[||]
          ;{Name = "2.0"; Type = ColumnType.String},upcast[||]
          ;{Name = "3.0"; Type = ColumnType.String},upcast[||]|]
@@ -208,18 +208,18 @@ let ``Simple schema reading test`` () =
 [<Test; Category("CI")>]
 let ``Reading empty file`` () = 
     use ms = new MemoryStream()
-    DelimitedFile.Read ReadSettings.CommaDelimited ms |> CompareTables [||]
+    Implementation.Read ReadSettings.Default ms |> CompareTables [||]
 
 [<Test; Category("CI")>]
 let ``Reading header-only file`` () = 
     use ms = asStream("x")
-    DelimitedFile.Read ReadSettings.CommaDelimited ms |> CompareTables [|{Name = "x"; Type = ColumnType.String}, upcast Array.empty<string>|]
+    Implementation.Read ReadSettings.Default ms |> CompareTables [|{Name = "x"; Type = ColumnType.String}, upcast Array.empty<string>|]
 
     
 [<Test; Category("CI")>]
 let ``One line of data test`` () = 
     let reader = File.OpenRead(@"tests\One line of data test.csv")
-    DelimitedFile.Read ReadSettings.CommaDelimited reader|> CompareTables 
+    Implementation.Read ReadSettings.Default reader|> CompareTables 
         [|{Name = "Col1"; Type = ColumnType.Double},upcast[|1.0|]
          ;{Name = "Col2"; Type = ColumnType.Double},upcast[|2.0|]
          ;{Name = "Col3"; Type = ColumnType.Double},upcast[|3.0|]|]
@@ -230,7 +230,7 @@ let ``All types of data test`` () =
     let bools :bool[] = [|true;false|]
     let dates = [|new DateTime(1995, 4, 10); new DateTime(1995, 4, 11)|]
     let strings = [|"Hello! It's me";"GoodBye!"|]
-    DelimitedFile.Read ReadSettings.CommaDelimited reader|> CompareTables  
+    Implementation.Read ReadSettings.Default reader|> CompareTables  
         [|{Name = "Double Column"; Type = ColumnType.Double},upcast doubles
          ;{Name = "Bool Column"; Type = ColumnType.Boolean}, upcast bools
          ;{Name = "DateTime Column"; Type = ColumnType.DateTime},upcast dates
@@ -239,14 +239,14 @@ let ``All types of data test`` () =
 [<Test; Category("CI")>]
 let ``Strings test 1`` () = 
     let reader = File.OpenRead(@"tests\Strings test 1.csv")
-    DelimitedFile.Read ReadSettings.CommaDelimited reader|> CompareTables  
+    Implementation.Read ReadSettings.Default reader|> CompareTables  
         [|{Name = "Quotes"; Type = ColumnType.String}, upcast [|"Hello, world";"Hi"|]
          ;{Name = "Authors"; Type = ColumnType.String}, upcast [|"Any \"good\" programmer";"\"someone quoted\""|]|]
 
 [<Test; Category("CI")>]
 let ``import correct file``() =
     let reader = File.OpenRead(@"tests\wheat.csv")
-    let resultingdata = DelimitedFile.Read ReadSettings.CommaDelimited reader
+    let resultingdata = Implementation.Read ReadSettings.Default reader
 
     resultingdata.Length |> should equal 3
 
@@ -266,7 +266,7 @@ let ``import correct file``() =
 [<Test; Category("CI")>]
 let ``import file with different column types``() =
     let reader = File.OpenRead(@"tests\typedColumns.csv")
-    let resultingdata = DelimitedFile.Read {ReadSettings.CommaDelimited with Delimiter = Angara.Data.Delimiter.Semicolon} reader
+    let resultingdata = Implementation.Read {ReadSettings.Default with Delimiter = Delimiter.Semicolon} reader
 
     resultingdata.Length |> should equal 4
 
@@ -287,7 +287,7 @@ let ``import file with different column types``() =
     Assert.AreEqual(dates.[0], System.DateTime(2014,10,15))
 
 
-[<Property; Category("CI")>]
+[<Angara.Data.TestsF.Common.Property; Category("CI")>]
 let ``Column index converted to name and back gives an original index`` (index: int) =
     index >= 0 ==> lazy(
         let name = Helpers.indexToName index    
@@ -309,7 +309,7 @@ let ``Column index to name`` () =
 [<Test; Category("CI")>]
 let ``Read a table from a file with header by default``() =
     let reader = File.OpenRead(@"tests\wheat.csv")
-    let table = Table.Read ReadSettings.CommaDelimited reader
+    let table = Table.Read ReadSettings.Default reader
 
     table.Columns.Count |> should equal 3
 
@@ -328,7 +328,7 @@ let ``Read a table from a file with header by default``() =
 [<Test; Category("CI")>]
 let ``Read a table from a file without header``() =
     let reader = File.OpenRead(@"tests\wheat-noheader.csv")
-    let table = Table.Read { ReadSettings.CommaDelimited with HasHeader = false } reader
+    let table = Table.Read { ReadSettings.Default with HasHeader = false } reader
 
     table.Columns.Count |> should equal 3
 
@@ -347,13 +347,13 @@ let ``Read a table from a file without header``() =
 [<Test; Category("CI")>]
 let ``Read a table from an empty file with a header``() =
     let reader = File.OpenRead(@"tests\empty.csv")
-    let table = Table.Read { ReadSettings.CommaDelimited with HasHeader = true } reader
+    let table = Table.Read { ReadSettings.Default with HasHeader = true } reader
     table.Columns.Count |> should equal 0
 
 [<Test; Category("CI")>]
 let ``Read a table from an empty file without a header``() =
     let reader = File.OpenRead(@"tests\empty.csv")
-    let table = Table.Read { ReadSettings.CommaDelimited with HasHeader = false } reader
+    let table = Table.Read { ReadSettings.Default with HasHeader = false } reader
     table.Columns.Count |> should equal 0
     
 [<Test; Category("CI")>]
@@ -363,7 +363,7 @@ let ``Write without header really doesn't writes the header``() =
         |> Table.Add "lon" [11.0;21.0;31.0]
     use ms = new MemoryStream()
 
-    t |> Table.Write {WriteSettings.CommaDelimited with SaveHeader = false} ms
+    t |> Table.Write {WriteSettings.Default with SaveHeader = false} ms
     ms.Position <- 0L
 
     let reader = new StreamReader(ms)
@@ -372,7 +372,7 @@ let ``Write without header really doesn't writes the header``() =
 
     ms.Position <- 0L
 
-    let t2 = Table.Read { ReadSettings.CommaDelimited with HasHeader = false } ms
+    let t2 = Table.Read { ReadSettings.Default with HasHeader = false } ms
     Assert.AreEqual(t.Columns.Count, t2.Columns.Count, "columns count")
     Assert.AreEqual(Table.ToArray<float[]> "lat" t, Table.ToArray<float[]> "A" t2, "lat -> A")
     Assert.AreEqual(Table.ToArray<float[]> "lon" t, Table.ToArray<float[]> "B" t2, "lon -> B")

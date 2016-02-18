@@ -27,7 +27,7 @@ namespace Angara.Data.TestsC
         public static string[] SplitRowStr(char delimiter, string row) {
             using (var s = AsStream(row)) {
                 var r = new StreamReader(s);
-                var items = Helpers.splitRow(delimiter, r);
+                var items = DelimitedFile.Helpers.splitRow(delimiter, r);
                 if (Microsoft.FSharp.Core.FSharpOption<string[]>.get_IsSome(items))
                     return items.Value;
                 else

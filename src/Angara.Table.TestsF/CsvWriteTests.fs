@@ -16,9 +16,9 @@ let ``When reading the written table we get a table that equals original table``
 
     let property (table:Table) = 
         use ms = new MemoryStream()
-        table |> Table.Write { WriteSettings.CommaDelimited with AllowNullStrings = true } ms
+        table |> Table.Write { DelimitedFile.WriteSettings.Default with AllowNullStrings = true } ms
         ms.Position <- 0L
-        let table2 = Table.Read { ReadSettings.CommaDelimited with InferNullStrings = true } ms
+        let table2 = Table.Read { DelimitedFile.ReadSettings.Default with InferNullStrings = true } ms
         areEqualTablesForCsv table table2
 
     precondition table ==> lazy(property table)
@@ -31,9 +31,9 @@ let ``When reading the written table we get a table that equals original table -
 
     System.Diagnostics.Trace.WriteLine(table)
     use ms = new MemoryStream()
-    table |> Table.Write WriteSettings.CommaDelimited ms 
+    table |> Table.Write DelimitedFile.WriteSettings.Default ms 
     ms.Position <- 0L
-    let table2 = Table.Read ReadSettings.CommaDelimited ms
+    let table2 = Table.Read DelimitedFile.ReadSettings.Default ms
     System.Diagnostics.Trace.WriteLine(table2)
     areEqualTablesForCsv table table2 |> Assert.IsTrue
 
@@ -45,9 +45,9 @@ let ``When reading the written table we get a table that equals original table -
 
     System.Diagnostics.Trace.WriteLine(table)
     use ms = new MemoryStream()
-    table |> Table.Write WriteSettings.CommaDelimited ms 
+    table |> Table.Write DelimitedFile.WriteSettings.Default ms 
     ms.Position <- 0L
-    let table2 = Table.Read ReadSettings.CommaDelimited ms
+    let table2 = Table.Read DelimitedFile.ReadSettings.Default ms
     System.Diagnostics.Trace.WriteLine(table2)
     areEqualTablesForCsv table table2 |> Assert.IsTrue
 
@@ -57,9 +57,9 @@ let ``When reading the written table we get a table that equals original table -
         Table.New (new System.String([| '\009' |])) [ 1.0 + 2.0/3.0; 1.0 ] 
     System.Diagnostics.Trace.WriteLine(table)
     use ms = new MemoryStream()
-    table |> Table.Write WriteSettings.CommaDelimited ms 
+    table |> Table.Write DelimitedFile.WriteSettings.Default ms 
     ms.Position <- 0L
-    let table2 = Table.Read ReadSettings.CommaDelimited ms
+    let table2 = Table.Read DelimitedFile.ReadSettings.Default ms
     System.Diagnostics.Trace.WriteLine(table2)
     areEqualTablesForCsv table table2 |> Assert.IsTrue
 
@@ -70,27 +70,27 @@ let ``When reading the written table we get a table that equals original table -
         Table.Add "" [ true; true; false; true; false ]
 
     use ms = new MemoryStream()
-    table |> Table.Write WriteSettings.CommaDelimited ms 
+    table |> Table.Write DelimitedFile.WriteSettings.Default ms 
     ms.Position <- 0L
-    let table2 = Table.Read ReadSettings.CommaDelimited ms
+    let table2 = Table.Read DelimitedFile.ReadSettings.Default ms
     areEqualTablesForCsv table table2 |> Assert.IsTrue
 
 [<Test; Category("CI")>]
 let ``When reading the written table we get a table that equals original table - case 1`` () =
     let table = Table.New "Q" Array.empty<string>
     use ms = new MemoryStream()
-    table |> Table.Write WriteSettings.CommaDelimited ms 
+    table |> Table.Write DelimitedFile.WriteSettings.Default ms 
     ms.Position <- 0L
-    let table2 = Table.Read ReadSettings.CommaDelimited ms
+    let table2 = Table.Read DelimitedFile.ReadSettings.Default ms
     areEqualTablesForCsv table table2 |> Assert.IsTrue
 
 [<Test; Category("CI")>]
 let ``When reading the written table we get a table that equals original table - case 2`` () =
     let table = Table.New "Q" Array.empty<float>
     use ms = new MemoryStream()
-    table |> Table.Write WriteSettings.CommaDelimited ms 
+    table |> Table.Write DelimitedFile.WriteSettings.Default ms 
     ms.Position <- 0L
-    let table2 = Table.Read ReadSettings.CommaDelimited ms
+    let table2 = Table.Read DelimitedFile.ReadSettings.Default ms
     Assert.AreEqual(1, table2.Columns.Count, "columns count")
     Assert.AreEqual(0, table2.Count, "rows count")
     Assert.AreEqual("Q", table2.Names.[0], "name")
@@ -99,7 +99,7 @@ let ``When reading the written table we get a table that equals original table -
 let ``When reading the written table we get a table that equals original table - empty column name`` () =
     use ms = new MemoryStream()
     let table = Table.New "" [|-2.0|]
-    table |> Table.Write WriteSettings.CommaDelimited ms 
+    table |> Table.Write DelimitedFile.WriteSettings.Default ms 
     ms.Position <- 0L
-    let table2 = Table.Read ReadSettings.CommaDelimited ms
+    let table2 = Table.Read DelimitedFile.ReadSettings.Default ms
     Assert.IsTrue(areEqualTablesForCsv table table2)
