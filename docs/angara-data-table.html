@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Table - Angara.Table</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="Microsoft Research">
+
+    <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet">
+
+    <link type="text/css" rel="stylesheet" href="./content/style.css" />
+    <script type="text/javascript" src="./content/tips.js"></script>
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="container">
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li><a href="http://fsharp.org">fsharp.org</a></li>
+          <li><a href="http://tpetricek.github.io/FSharp.Formatting/"><img height="16" width="16" src="https://matthid.github.io/Yaaf.AdvancedBuilding/content/img/FSharp.Formatting.png" /> F# Formatting</a></li>
+        </ul>
+        <h3 class="muted"><a href="./index.html">Angara.Table</a></h3>
+      </div>
+      <hr />
+      <div class="row">
+        <div class="span9" id="main">
+          
+
+
+
+<h1>Table</h1>
+<p>
+  <span>Namespace: Angara.Data</span><br />
+</p>
+<div class="xmldoc">
+<p>A readonly collection of named columns.</p>
+
+</div>
+  <h3>Constructors</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Constructor</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '54', 54)" onmouseover="showTip(event, '54', 54)">
+            new(nameColumns)
+          </code>
+          <div class="tip" id="54">
+            <strong>Signature:</strong> (nameColumns:seq&lt;string * Column&gt;) -&gt; Table<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Construct a table from a sequence of tuples of column names and columns
+All columns must have same number of rows.</p>
+
+
+              <p>CompiledName: <code>.ctor</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '55', 55)" onmouseover="showTip(event, '55', 55)">
+            new(names, columns)
+          </code>
+          <div class="tip" id="55">
+            <strong>Signature:</strong> (names:seq&lt;string&gt; * columns:seq&lt;Column&gt;) -&gt; Table<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Construct a table from a sequence of column names and a sequence of columns
+Sequences must have the same length or an exception will be thrown
+All columns must have same number of rows.</p>
+
+
+              <p>CompiledName: <code>.ctor</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '56', 56)" onmouseover="showTip(event, '56', 56)">
+            new()
+          </code>
+          <div class="tip" id="56">
+            <strong>Signature:</strong> unit -&gt; Table<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Default, empty constructor</p>
+
+
+              <p>CompiledName: <code>.ctor</code></p>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <h3>Instance members</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Instance member</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '57', 57)" onmouseover="showTip(event, '57', 57)">
+            Columns
+          </code>
+          <div class="tip" id="57">
+            <strong>Signature:</strong> IReadOnlyList&lt;Column&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Return readonly list of columns</p>
+
+
+              <p>CompiledName: <code>get_Columns</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '58', 58)" onmouseover="showTip(event, '58', 58)">
+            Count
+          </code>
+          <div class="tip" id="58">
+            <strong>Signature:</strong> int<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Return rows count</p>
+
+
+              <p>CompiledName: <code>get_Count</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '59', 59)" onmouseover="showTip(event, '59', 59)">
+            Names
+          </code>
+          <div class="tip" id="59">
+            <strong>Signature:</strong> IReadOnlyList&lt;string&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Return readonly list of column names</p>
+
+
+              <p>CompiledName: <code>get_Names</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '60', 60)" onmouseover="showTip(event, '60', 60)">
+            Types
+          </code>
+          <div class="tip" id="60">
+            <strong>Signature:</strong> IReadOnlyList&lt;Type&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Return readonly list of column types</p>
+
+
+              <p>CompiledName: <code>get_Types</code></p>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <h3>Static members</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Static member</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '61', 61)" onmouseover="showTip(event, '61', 61)">
+            Add(name data table)
+          </code>
+          <div class="tip" id="61">
+            <strong>Signature:</strong> name:string -&gt; data:&#39;a -&gt; table:Table -&gt; Table<br />
+                          <strong>Type parameters:</strong> 'a          </div>
+        </td>
+        <td class="xmldoc">
+          <p>Return a new table with an additional column
+'a may be one of:
+Column, IRArray<'b>, 'b[], seq<'b>, Lazy<'b[]>
+where 'b may be one of:
+int, float, string, DateTime, bool
+Length of the data must be equal to the Table.Count, if there is at least one column in the table.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '62', 62)" onmouseover="showTip(event, '62', 62)">
+            Column(columnName table)
+          </code>
+          <div class="tip" id="62">
+            <strong>Signature:</strong> columnName:string -&gt; table:Table -&gt; Column<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Try to find a column in a table by name</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '63', 63)" onmouseover="showTip(event, '63', 63)">
+            ColumnIndex(columnName table)
+          </code>
+          <div class="tip" id="63">
+            <strong>Signature:</strong> columnName:string -&gt; table:Table -&gt; int<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Try to find the index of a column in a table by name</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '64', 64)" onmouseover="showTip(event, '64', 64)">
+            Correlation(table)
+          </code>
+          <div class="tip" id="64">
+            <strong>Signature:</strong> table:Table -&gt; string [] * float [] []<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>If at least two of the columns are real or int then Column Names * Correlations
+else throw an exception</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '65', 65)" onmouseover="showTip(event, '65', 65)">
+            Empty
+          </code>
+          <div class="tip" id="65">
+            <strong>Signature:</strong> Table<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Create a new, empty table</p>
+
+
+              <p>CompiledName: <code>get_Empty</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '66', 66)" onmouseover="showTip(event, '66', 66)">
+            Filter(columnNames predicate table)
+          </code>
+          <div class="tip" id="66">
+            <strong>Signature:</strong> columnNames:seq&lt;string&gt; -&gt; (predicate:(&#39;a -&gt; bool)) -&gt; table:Table -&gt; Table<br />
+                          <strong>Type parameters:</strong> 'a          </div>
+        </td>
+        <td class="xmldoc">
+          <p>Return a new table containing all rows from a table where a predicate is true, where the predicate takes a set of columns
+The generic predicate function is only partially defined
+If there are:
+1 column, predicate should be predicate:('a-&gt;bool), where 'a is the type of the column
+2 columns, predicate:('b-&gt;'c-&gt;bool), where 'b and 'c are the types of the columns, so 'a = 'b-&gt;'c
+3 columns, predicate:('b-&gt;'c-&gt;'d-&gt;bool), where 'b, 'c and 'd are the types of the columns, so 'a = 'b-&gt;'c-&gt;'d
+n...</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '67', 67)" onmouseover="showTip(event, '67', 67)">
+            Filteri(columnNames predicate table)
+          </code>
+          <div class="tip" id="67">
+            <strong>Signature:</strong> columnNames:seq&lt;string&gt; -&gt; (predicate:(int -&gt; &#39;a -&gt; bool)) -&gt; table:Table -&gt; Table<br />
+                          <strong>Type parameters:</strong> 'a          </div>
+        </td>
+        <td class="xmldoc">
+          <p>Return a new table containing all rows from a table where a predicate is true, where the predicate takes a set of columns and row index
+The generic predicate function is only partially defined
+If there are:
+1 column, predicate should be predicate:(int-&gt;'a-&gt;bool), where 'a is the type of the column
+2 columns, predicate:(int-&gt;'b-&gt;'c-&gt;bool), where 'b and 'c are the types of the columns, so 'a = 'b-&gt;'c
+3 columns, predicate:(int-&gt;'b-&gt;'c-&gt;'d-&gt;bool), where 'b, 'c and 'd are the types of the columns, so 'a = 'b-&gt;'c-&gt;'d
+n...</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '68', 68)" onmouseover="showTip(event, '68', 68)">
+            FromArrays(arg1)
+          </code>
+          <div class="tip" id="68">
+            <strong>Signature:</strong> (seq&lt;string * Array&gt;) -&gt; Table<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Creates a new table from named arrays.
+Lengths of the arrays must be equal.
+Type of array elements must be one of:
+int, float, string, DateTime, bool</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '69', 69)" onmouseover="showTip(event, '69', 69)">
+            GetEnumerator(columnName table)
+          </code>
+          <div class="tip" id="69">
+            <strong>Signature:</strong> columnName:string -&gt; table:Table -&gt; IEnumerator<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Return the column content's enumerator</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '70', 70)" onmouseover="showTip(event, '70', 70)">
+            GetEnumeratorT(columnName table)
+          </code>
+          <div class="tip" id="70">
+            <strong>Signature:</strong> columnName:string -&gt; table:Table -&gt; IEnumerator&lt;&#39;a&gt;<br />
+                          <strong>Type parameters:</strong> 'a          </div>
+        </td>
+        <td class="xmldoc">
+          <p>Return the column content's enumerator</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '71', 71)" onmouseover="showTip(event, '71', 71)">
+            Item(columnName index table)
+          </code>
+          <div class="tip" id="71">
+            <strong>Signature:</strong> columnName:string -&gt; index:int -&gt; table:Table -&gt; &#39;a<br />
+                          <strong>Type parameters:</strong> 'a          </div>
+        </td>
+        <td class="xmldoc">
+          <p>Return an item from the column contents, if in range and the correct type</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '72', 72)" onmouseover="showTip(event, '72', 72)">
+            Join(table1 table2)
+          </code>
+          <div class="tip" id="72">
+            <strong>Signature:</strong> table1:Table -&gt; table2:Table -&gt; Table<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Builds a new table that contains columns of both given tables. Duplicate column names are allowed.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '73', 73)" onmouseover="showTip(event, '73', 73)">
+            JoinTransform(...)
+          </code>
+          <div class="tip" id="73">
+            <strong>Signature:</strong> columnNames:seq&lt;string&gt; -&gt; (transform:(&#39;a -&gt; &#39;b)) -&gt; table:Table -&gt; Table<br />
+                          <strong>Type parameters:</strong> 'a, 'b          </div>
+        </td>
+        <td class="xmldoc">
+          <p>Builds a new table that contains columns of the given table appended with columns of a table produced by the
+given function applied to the arrays of given table columns.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '74', 74)" onmouseover="showTip(event, '74', 74)">
+            Map(columnNames map table)
+          </code>
+          <div class="tip" id="74">
+            <strong>Signature:</strong> columnNames:seq&lt;string&gt; -&gt; (map:(&#39;a -&gt; &#39;b)) -&gt; table:Table -&gt; &#39;c []<br />
+                          <strong>Type parameters:</strong> 'a, 'b, 'c          </div>
+        </td>
+        <td class="xmldoc">
+          <p>Builds a new array whose elements are the results of applying the given function 'map'
+to each of the rows of the given table columns.</p>
+<p>The generic map function is only partially defined.
+If there are:</p>
+<ul>
+<li>1 column, map should be <code>map:('a-&gt;'c)</code>, where <code>'a</code> is the type of the column, so <code>'b = 'c</code></li>
+<li>2 columns, map('a-&gt;'d-&gt;'c), where 'a and 'd are the types of the columns, so 'b = 'd-&gt;'c</li>
+<li>3 columns, map('a-&gt;'d-&gt;'e-&gt;'c), where 'a, 'd and 'e are the types of the columns, so 'b = 'd-&gt;'e-&gt;'c</li>
+<li>n...</li>
+</ul>
+<p>If one input column is shorter than the other then the remaining elements of the longer column are ignored.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '75', 75)" onmouseover="showTip(event, '75', 75)">
+            Mapi(columnNames map table)
+          </code>
+          <div class="tip" id="75">
+            <strong>Signature:</strong> columnNames:seq&lt;string&gt; -&gt; (map:(int -&gt; &#39;a)) -&gt; table:Table -&gt; &#39;c []<br />
+                          <strong>Type parameters:</strong> 'a, 'c          </div>
+        </td>
+        <td class="xmldoc">
+          <p>Builds a new array whose elements are the results of applying the given function 'map'
+to each of the rows of the given table columns.
+The integer index passed to the function indicates the index of row being transformed.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '76', 76)" onmouseover="showTip(event, '76', 76)">
+            MapiToColumn(...)
+          </code>
+          <div class="tip" id="76">
+            <strong>Signature:</strong> columnNames:seq&lt;string&gt; -&gt; newColumnName:string -&gt; (map:(int -&gt; &#39;a)) -&gt; table:Table -&gt; Table<br />
+                          <strong>Type parameters:</strong> 'a          </div>
+        </td>
+        <td class="xmldoc">
+          <p>Builds a new table that contains all columns of the given table and a new column or a replacement of an original table column;
+elements of the column are the results of applying the given function to each of the rows of the given table columns.
+The integer index passed to the function indicates the index of row being transformed.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '77', 77)" onmouseover="showTip(event, '77', 77)">
+            MapToColumn(...)
+          </code>
+          <div class="tip" id="77">
+            <strong>Signature:</strong> columnNames:seq&lt;string&gt; -&gt; newColumnName:string -&gt; (map:(&#39;a -&gt; &#39;b)) -&gt; table:Table -&gt; Table<br />
+                          <strong>Type parameters:</strong> 'a, 'b          </div>
+        </td>
+        <td class="xmldoc">
+          <p>Builds a new table that contains all columns of the given table and a new column or a replacement of an original table column;
+elements of the column are the results of applying the given function to each of the rows of the given table columns.</p>
+<p>The generic map function is only partially defined.
+If there are:</p>
+<ul>
+<li>1 column, map should be map:('a-&gt;'c), where 'a is the type of the column, so 'b = 'c</li>
+<li>2 columns, map('a-&gt;'d-&gt;'c), where 'a and 'd are the types of the columns, so 'b = 'd-&gt;'c</li>
+<li>3 columns, map('a-&gt;'d-&gt;'e-&gt;'c), where 'a, 'd and 'e are the types of the columns, so 'b = 'd-&gt;'e-&gt;'c</li>
+<li>n...</li>
+</ul>
+<p>Ultimate result type of the map function must be either Int, Float, String, Bool or DateTime.
+</remarks></p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '78', 78)" onmouseover="showTip(event, '78', 78)">
+            Name(column table)
+          </code>
+          <div class="tip" id="78">
+            <strong>Signature:</strong> column:Column -&gt; table:Table -&gt; string<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Gets name of a column.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '79', 79)" onmouseover="showTip(event, '79', 79)">
+            New(columnName columnData)
+          </code>
+          <div class="tip" id="79">
+            <strong>Signature:</strong> columnName:string -&gt; columnData:&#39;a -&gt; Table<br />
+                          <strong>Type parameters:</strong> 'a          </div>
+        </td>
+        <td class="xmldoc">
+          <p>Creates an new table with a single column
+'a may be one of:
+Column, IRArray<'b>, 'b[], seq<'b>, Lazy<'b[]>
+where 'b may be one of:
+int, float, string, DateTime, bool</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '80', 80)" onmouseover="showTip(event, '80', 80)">
+            Pdf(columnName pointCount table)
+          </code>
+          <div class="tip" id="80">
+            <strong>Signature:</strong> columnName:string -&gt; pointCount:int -&gt; table:Table -&gt; float [] * float []<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Return a PDF of the column contents if the column contents are numeric</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '81', 81)" onmouseover="showTip(event, '81', 81)">
+            Read(settings stream)
+          </code>
+          <div class="tip" id="81">
+            <strong>Signature:</strong> settings:ReadSettings -&gt; stream:Stream -&gt; Table<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Reads table from a delimited text stream.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '82', 82)" onmouseover="showTip(event, '82', 82)">
+            Remove(columnNames table)
+          </code>
+          <div class="tip" id="82">
+            <strong>Signature:</strong> columnNames:seq&lt;string&gt; -&gt; table:Table -&gt; Table<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Return a new table that has all columns of the given table except those that have the given names.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '83', 83)" onmouseover="showTip(event, '83', 83)">
+            Sub(columnName startIndex count table)
+          </code>
+          <div class="tip" id="83">
+            <strong>Signature:</strong> columnName:string -&gt; startIndex:int -&gt; count:int -&gt; table:Table -&gt; &#39;a<br />
+                          <strong>Type parameters:</strong> 'a          </div>
+        </td>
+        <td class="xmldoc">
+          <p>Return a copy of a range of the column contents, if the correct type
+'a may be one of:
+Column, IRArray<'b>, 'b[], Array
+where 'b may be one of:
+int, float, string, DateTime, bool</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '84', 84)" onmouseover="showTip(event, '84', 84)">
+            Summary(columnName table)
+          </code>
+          <div class="tip" id="84">
+            <strong>Signature:</strong> columnName:string -&gt; table:Table -&gt; ColumnSummary<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Return some simple statistical properties of a column</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '85', 85)" onmouseover="showTip(event, '85', 85)">
+            ToArray(columnName table)
+          </code>
+          <div class="tip" id="85">
+            <strong>Signature:</strong> columnName:string -&gt; table:Table -&gt; &#39;a<br />
+                          <strong>Type parameters:</strong> 'a          </div>
+        </td>
+        <td class="xmldoc">
+          <p>Return a copy of the column contents, if the correct type
+'a may be one of:
+Column, IRArray<'b>, 'b[], Array
+where 'b may be one of:
+int, float, string, DateTime, bool</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '86', 86)" onmouseover="showTip(event, '86', 86)">
+            ToRealArray(columnName table)
+          </code>
+          <div class="tip" id="86">
+            <strong>Signature:</strong> columnName:string -&gt; table:Table -&gt; IRArray&lt;float&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Return a float view of a column if the column content's type is numeric</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '87', 87)" onmouseover="showTip(event, '87', 87)">
+            Transform(columnNames transform table)
+          </code>
+          <div class="tip" id="87">
+            <strong>Signature:</strong> columnNames:seq&lt;string&gt; -&gt; (transform:(&#39;a -&gt; &#39;b)) -&gt; table:Table -&gt; &#39;c<br />
+                          <strong>Type parameters:</strong> 'a, 'b, 'c          </div>
+        </td>
+        <td class="xmldoc">
+          <p>Applies the given function to the arrays of given table columns.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '88', 88)" onmouseover="showTip(event, '88', 88)">
+            TryColumn(columnName table)
+          </code>
+          <div class="tip" id="88">
+            <strong>Signature:</strong> columnName:string -&gt; table:Table -&gt; Column option<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Try to find a column in a table by name</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '89', 89)" onmouseover="showTip(event, '89', 89)">
+            TryColumnIndex(columnName table)
+          </code>
+          <div class="tip" id="89">
+            <strong>Signature:</strong> columnName:string -&gt; table:Table -&gt; int option<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Try to find the index of a column in a table by name</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '90', 90)" onmouseover="showTip(event, '90', 90)">
+            TryCorrelation(table)
+          </code>
+          <div class="tip" id="90">
+            <strong>Signature:</strong> table:Table -&gt; (string [] * float [] []) option<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>If at least two of the columns are real or int then Some(Column Names * Correlations)
+else None</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '91', 91)" onmouseover="showTip(event, '91', 91)">
+            TryItem(columnName index table)
+          </code>
+          <div class="tip" id="91">
+            <strong>Signature:</strong> columnName:string -&gt; index:int -&gt; table:Table -&gt; &#39;a option<br />
+                          <strong>Type parameters:</strong> 'a          </div>
+        </td>
+        <td class="xmldoc">
+          <p>Return an item from the column contents, if in range and the correct type</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '92', 92)" onmouseover="showTip(event, '92', 92)">
+            TryName(column table)
+          </code>
+          <div class="tip" id="92">
+            <strong>Signature:</strong> column:Column -&gt; table:Table -&gt; string option<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Gets name of a column.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '93', 93)" onmouseover="showTip(event, '93', 93)">
+            TryPdf(columnName pointCount table)
+          </code>
+          <div class="tip" id="93">
+            <strong>Signature:</strong> columnName:string -&gt; pointCount:int -&gt; table:Table -&gt; (float [] * float []) option<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Return a PDF of the column contents if the column contents are numeric</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '94', 94)" onmouseover="showTip(event, '94', 94)">
+            TrySub(...)
+          </code>
+          <div class="tip" id="94">
+            <strong>Signature:</strong> columnName:string -&gt; startIndex:int -&gt; count:int -&gt; table:Table -&gt; &#39;a option<br />
+                          <strong>Type parameters:</strong> 'a          </div>
+        </td>
+        <td class="xmldoc">
+          <p>Return a copy of a range of the column contents, if the correct type
+'a may be one of:
+Column, IRArray<'b>, 'b[], Array
+where 'b may be one of:
+int, float, string, DateTime, bool</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '95', 95)" onmouseover="showTip(event, '95', 95)">
+            TrySummary(columnName table)
+          </code>
+          <div class="tip" id="95">
+            <strong>Signature:</strong> columnName:string -&gt; table:Table -&gt; ColumnSummary option<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Return some simple statistical properties of a column</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '96', 96)" onmouseover="showTip(event, '96', 96)">
+            TryToArray(columnName table)
+          </code>
+          <div class="tip" id="96">
+            <strong>Signature:</strong> columnName:string -&gt; table:Table -&gt; &#39;a option<br />
+                          <strong>Type parameters:</strong> 'a          </div>
+        </td>
+        <td class="xmldoc">
+          <p>Return a copy of the column contents, if the correct type
+'a may be one of:
+Column, IRArray<'b>, 'b[], Array
+where 'b may be one of:
+int, float, string, DateTime, bool</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '97', 97)" onmouseover="showTip(event, '97', 97)">
+            TryToRealArray(columnName table)
+          </code>
+          <div class="tip" id="97">
+            <strong>Signature:</strong> columnName:string -&gt; table:Table -&gt; IRArray&lt;float&gt; option<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Return a float view of a column if the column content's type is numeric</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '98', 98)" onmouseover="showTip(event, '98', 98)">
+            TryType(columnName table)
+          </code>
+          <div class="tip" id="98">
+            <strong>Signature:</strong> columnName:string -&gt; table:Table -&gt; Type option<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Return the column content's type</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '99', 99)" onmouseover="showTip(event, '99', 99)">
+            Type(columnName table)
+          </code>
+          <div class="tip" id="99">
+            <strong>Signature:</strong> columnName:string -&gt; table:Table -&gt; Type<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Return the column content's type</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '100', 100)" onmouseover="showTip(event, '100', 100)">
+            Write(settings stream table)
+          </code>
+          <div class="tip" id="100">
+            <strong>Signature:</strong> settings:WriteSettings -&gt; stream:Stream -&gt; table:Table -&gt; unit<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Writes a table to a stream as a delimited text.</p>
+
+
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+        </div>
+        <div class="span3">
+          <a href="./index.html">
+            <img src="./images/logo.png" style="width:140px;height:140px;margin:10px 0px 0px 35px;border-style:none;" />
+          </a>
+
+          <ul class="nav nav-list" id="menu">
+
+            <li class="nav-header">Angara.Table</li>
+
+            <li class="divider"></li>
+
+            <li><a href="https://www.nuget.org/packages?q=Angara">Get Angara.Table package via NuGet</a></li>
+            <li><a href="https://github.com/Microsoft/Angara.Table">Source Code on GitHub</a></li>
+            <li><a href="https://github.com/Microsoft/Angara.Table/blob/master/LICENSE">License (MIT)</a></li>
+            <li><a href="https://github.com/Microsoft/Angara.Table/blob/master/RELEASE_NOTES.md">Release Notes</a></li>
+            <li><a href="https://github.com/Microsoft/Angara.Table/blob/master/CONTRIBUTING.md">Contributing to Angara.Table</a></li>
+
+            <li class="nav-header">Documentation</li>
+
+            <li><a href="./index.html">Introduction</a></li>
+
+            <li class="divider"></li>
+
+            <li><a href="./feature1.html">Feature 1</a></li>
+            <li><a href="./feature2.html">Feature 2</a></li>
+
+            <li class="divider"></li>
+
+            <li><a href="./feature3.html">Feature 3</a></li>
+            <li><a href="./feature4.html">Feature 4</a></li>
+
+            <li class="nav-header">Tutorials</li>
+
+            <li><a href="./tutorial1.html">Tutorial 1</a></li>
+            <li><a href="./tutorial2.html">Tutorial 2</a></li>
+
+            <li class="nav-header">Reference</li>
+
+            <li><a href="./reference/index.html">API Reference</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <a href="https://github.com/Microsoft/Angara.Table"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
+  </body>
+  </html>

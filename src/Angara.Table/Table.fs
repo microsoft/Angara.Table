@@ -249,7 +249,6 @@ type Column =
                 | et when et = typeof<DateTime> -> DateColumn (RArray<DateTime>(data |> Util.coerce<'a,DateTime[]>))
                 | et when et = typeof<Boolean> -> BooleanColumn (RArray<Boolean>(data |> Util.coerce<'a,Boolean[]>))
                 | _ -> failwith("Unexpected type")
-
         | _ -> failwith("Unexpected type")
 
 
@@ -342,7 +341,7 @@ type Column =
 
     static member ToArray<'a>(column:Column) : 'a =
         Column.TryToArray<'a> column
-        |> Util.unpackOrFail "Unexpected type"
+        |> Util.unpackOrFail (sprintf "Unexpected type %s" (typeof<'a>.Name))
 
     static member Count(column:Column) : int =
         match column with
@@ -471,39 +470,49 @@ type Column =
     static member Select (mask:seq<bool>) (column:Column) : Column =
         match column with
         | IntColumn ir ->
-            let sr:seq<int> =
-                ir
-                |> Seq.zip mask
-                |> Seq.choose (fun (b,v) -> if b then Some v else None)
-            IntColumn(RArray<int>(sr))
+            let sr =
+                lazy(
+                    ir
+                    |> Seq.zip mask
+                    |> Seq.choose (fun (b,v) -> if b then Some v else None)
+                    |> Seq.toArray)
+            IntColumn(LazyRArray<int>(sr))
 
         | RealColumn ir ->
-            let sr:seq<float> =
-                ir
-                |> Seq.zip mask
-                |> Seq.choose (fun (b,v) -> if b then Some v else None)
-            RealColumn(RArray<float>(sr))
+            let sr =
+                lazy(
+                    ir
+                    |> Seq.zip mask
+                    |> Seq.choose (fun (b,v) -> if b then Some v else None)
+                    |> Seq.toArray)
+            RealColumn(LazyRArray<float>(sr))
 
         | StringColumn ir ->
-            let sr:seq<string> =
-                ir
-                |> Seq.zip mask
-                |> Seq.choose (fun (b,v) -> if b then Some v else None)
-            StringColumn(RArray<string>(sr))
+            let sr =
+                lazy(
+                    ir
+                    |> Seq.zip mask
+                    |> Seq.choose (fun (b,v) -> if b then Some v else None)
+                    |> Seq.toArray)
+            StringColumn(LazyRArray<string>(sr))
 
         | DateColumn ir ->
-            let sr:seq<DateTime> =
-                ir
-                |> Seq.zip mask
-                |> Seq.choose (fun (b,v) -> if b then Some v else None)
-            DateColumn(RArray<DateTime>(sr))
+            let sr =
+                lazy(
+                    ir
+                    |> Seq.zip mask
+                    |> Seq.choose (fun (b,v) -> if b then Some v else None)
+                    |> Seq.toArray)
+            DateColumn(LazyRArray<DateTime>(sr))
             
         | BooleanColumn ir ->
-            let sr:seq<Boolean> =
-                ir
-                |> Seq.zip mask
-                |> Seq.choose (fun (b,v) -> if b then Some v else None)
-            BooleanColumn(RArray<Boolean>(sr))
+            let sr =
+                lazy(
+                    ir
+                    |> Seq.zip mask
+                    |> Seq.choose (fun (b,v) -> if b then Some v else None)
+                    |> Seq.toArray)
+            BooleanColumn(LazyRArray<Boolean>(sr))
 
     static member Summary(i:IRArray<int>) : RealColumnSummary =
         i

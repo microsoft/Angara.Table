@@ -4,7 +4,7 @@ open System
 open System.Collections
 open System.Collections.Generic
 
-/// IRArray - The data in a column to be accessed in read only fashion.
+/// The data in a column to be accessed in read only fashion.
 /// IReadOnlyList gives you a count of the total number of elements,
 /// general and typed iterators,
 /// and direct access to each item.
@@ -21,7 +21,7 @@ type IRArray<'a> =
     /// Copy the array to a new array
     abstract member ToArray : unit -> 'a[]
 
-/// IRArrayAdapter - Efficiently pretend one IRArray<'a> is another IRArray<'b> 
+/// Efficiently pretend one IRArray<'a> is another IRArray<'b> 
 /// by casting each element only when accessed, using cast function
 [<ReflectedDefinition>]
 type IRArrayAdapter<'a, 'b> =
@@ -30,7 +30,7 @@ type IRArrayAdapter<'a, 'b> =
     /// Create a new IRArrayAdapter from an IRArray and cast function
     new : ass:IRArray<'a> * cast:('a->'b) -> IRArrayAdapter<'a, 'b>
 
-/// RArray - An implementation of IRArray backed by an array.
+/// An implementation of IRArray backed by an array.
 [<ReflectedDefinition>]
 type RArray<'a> =
     interface IRArray<'a>
@@ -44,7 +44,7 @@ type RArray<'a> =
     /// This performs Seq.toArray so does make a copy and so is less efficient.
     new : ass:seq<'a> -> RArray<'a>
 
-/// LazyRArray - A read only wrapper around a typed lazy array.
+/// A read only wrapper around a typed lazy array.
 [<ReflectedDefinition>]
 type LazyRArray<'a> =
     interface IRArray<'a>
@@ -54,7 +54,7 @@ type LazyRArray<'a> =
 
 
 
-/// RealColumnSummary - Basic statistics for columns containing numeric data
+/// Basic statistics for columns containing numeric data
 [<ReflectedDefinition>]
 type RealColumnSummary = {
     Min: float
@@ -76,7 +76,7 @@ type RealColumnSummary = {
     Count: int
 }
 
-/// ComparableColumnSummary - Simple statistics for columns containing non-numeric data
+/// Simple statistics for columns containing non-numeric data
 [<ReflectedDefinition>]
 type ComparableColumnSummary<'a when 'a : comparison> = {
     /// A minimum value of the column.
@@ -90,7 +90,7 @@ type ComparableColumnSummary<'a when 'a : comparison> = {
     Count: int
 }
 
-/// ComparableColumnSummary - Simple statistics for columns containing non-numeric data
+/// Simple statistics for columns containing boolean values.
 [<ReflectedDefinition>]
 type BooleanColumnSummary = {
     /// Number of rows with value "true"
@@ -113,7 +113,7 @@ type ColumnSummary =
 
 
 
-/// Column - An abstract definition of a column, use its static members to make operations over it.
+///  An abstract definition of a column, use its static members to make operations over it.
 [<ReflectedDefinition>]
 [<NoComparison>]
 [<Sealed>]
@@ -175,14 +175,14 @@ type Column =
     
     /// <summary>Builds a new array whose elements are the results of applying the given function 'map'
     /// to each of the rows of the given columns.</summary>
-    /// <remarks><p>The generic map function is only partially defined.
+    /// <remarks><para>The generic map function is only partially defined.
     /// If there are:
     ///     1 column, map should be map:('a->'c), where 'a is the type of the column, so 'b = 'c
     ///     2 columns, map('a->'d->'c), where 'a and 'd are the types of the columns, so 'b = 'd->'c
     ///     3 columns, map('a->'d->'e->'c), where 'a, 'd and 'e are the types of the columns, so 'b = 'd->'e->'c
     ///     n...
     /// If one input column is shorter than the other then the remaining elements of the longer column are ignored.
-    /// </p></remarks>
+    /// </para></remarks>
     static member Map<'a,'b,'c> : map:('a->'b) -> columns:seq<Column> -> 'c[]
 
     /// <summary>Builds a new array whose elements are the results of applying the given function 'map'
@@ -237,7 +237,7 @@ type Column =
 
 
 [<ReflectedDefinition>]
-/// Table - A readonly collection of named columns.
+/// A readonly collection of named columns.
 type Table =
 
     /// Default, empty constructor
@@ -373,16 +373,18 @@ type Table =
     ///     n...
     static member Filteri<'a> : columnNames:seq<string> -> predicate:(int->'a->bool) -> table:Table -> Table
 
-    /// <summary>Builds a new array whose elements are the results of applying the given function 'map'
-    /// to each of the rows of the given table columns.</summary>
-    /// <remarks><p>The generic map function is only partially defined.
+    /// Builds a new array whose elements are the results of applying the given function 'map'
+    /// to each of the rows of the given table columns.
+    /// 
+    /// The generic map function is only partially defined.
     /// If there are:
-    ///     1 column, map should be map:('a->'c), where 'a is the type of the column, so 'b = 'c
-    ///     2 columns, map('a->'d->'c), where 'a and 'd are the types of the columns, so 'b = 'd->'c
-    ///     3 columns, map('a->'d->'e->'c), where 'a, 'd and 'e are the types of the columns, so 'b = 'd->'e->'c
-    ///     n...
+    ///
+    /// - 1 column, map should be `map:('a->'c)`, where `'a` is the type of the column, so `'b = 'c`
+    /// - 2 columns, map('a->'d->'c), where 'a and 'd are the types of the columns, so 'b = 'd->'c
+    /// - 3 columns, map('a->'d->'e->'c), where 'a, 'd and 'e are the types of the columns, so 'b = 'd->'e->'c
+    /// - n...
+    ///
     /// If one input column is shorter than the other then the remaining elements of the longer column are ignored.
-    /// </p></remarks>
     static member Map<'a,'b,'c> : columnNames:seq<string> -> map:('a->'b) -> table:Table -> 'c[]
 
     /// <summary>Builds a new array whose elements are the results of applying the given function 'map'
@@ -397,16 +399,18 @@ type Table =
     /// </p></remarks>
     static member Mapi<'a,'c> : columnNames:seq<string> -> map:(int->'a) -> table:Table -> 'c[]
 
-    /// <summary>Builds a new table that contains all columns of the given table and a new column or a replacement of an original table column;
-    /// elements of the column are the results of applying the given function to each of the rows of the given table columns.</summary>
-    /// <remarks><p>The generic map function is only partially defined.
+    /// Builds a new table that contains all columns of the given table and a new column or a replacement of an original table column;
+    /// elements of the column are the results of applying the given function to each of the rows of the given table columns.
+    ///
+    /// The generic map function is only partially defined.
     /// If there are:
-    ///     1 column, map should be map:('a->'c), where 'a is the type of the column, so 'b = 'c
-    ///     2 columns, map('a->'d->'c), where 'a and 'd are the types of the columns, so 'b = 'd->'c
-    ///     3 columns, map('a->'d->'e->'c), where 'a, 'd and 'e are the types of the columns, so 'b = 'd->'e->'c
-    ///     n...
-    /// </p>
-    /// <p>Ultimate result type of the map function must be either Int, Float, String, Bool or DateTime.</p>
+    /// 
+    /// - 1 column, map should be map:('a->'c), where 'a is the type of the column, so 'b = 'c
+    /// - 2 columns, map('a->'d->'c), where 'a and 'd are the types of the columns, so 'b = 'd->'c
+    /// - 3 columns, map('a->'d->'e->'c), where 'a, 'd and 'e are the types of the columns, so 'b = 'd->'e->'c
+    /// - n...
+    /// 
+    /// Ultimate result type of the map function must be either Int, Float, String, Bool or DateTime.
     /// </remarks>
     static member MapToColumn : columnNames:seq<string> -> newColumnName:string -> map:('a->'b) -> table:Table -> Table
 
@@ -450,7 +454,7 @@ type Table =
     ///     2 columns, transform('a->'d->'c) where 'a, 'd are arrays corresponding to the columns types, so 'b = 'd->'c
     ///     3 columns, transform('a->'d->'e->'c) where 'a, 'd, 'e are arrays corresponding to the columns types, so 'b = 'd->'e->'c
     ///     n...</p>
-    /// <p>The transform function argument types may be one of: Column, T[], IRArray&lt;T&gt; or Array.</p>
+    /// <p>The transform function argument types may be one of: Column, T[], IRArray&lt;T> or Array.</p>
     /// </remarks>
     static member Transform<'a,'b,'c> : columnNames:seq<string> -> transform:('a->'b) -> table:Table -> 'c
 
@@ -466,7 +470,7 @@ type Table =
     ///     2 columns, transform('a->'d->Table) where 'a, 'd are arrays corresponding to the columns types, so 'b = 'd->Table
     ///     3 columns, transform('a->'d->'e->Table) where 'a, 'd, 'e are arrays corresponding to the columns types, so 'b = 'd->'e->Table
     ///     n...</p>
-    /// <p>The transform function argument types may be one of: Column, T[], IRArray&lt;T&gt; or Array.</p>
+    /// <p>The transform function argument types may be one of: Column, T[], IRArray&lt;T> or Array.</p>
     /// </remarks>
     static member JoinTransform<'a,'b> : columnNames:seq<string> -> transform:('a->'b) -> table:Table -> Table
 

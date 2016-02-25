@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>ReadSettings - Angara.Table</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="Microsoft Research">
+
+    <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet">
+
+    <link type="text/css" rel="stylesheet" href="./content/style.css" />
+    <script type="text/javascript" src="./content/tips.js"></script>
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="container">
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li><a href="http://fsharp.org">fsharp.org</a></li>
+          <li><a href="http://tpetricek.github.io/FSharp.Formatting/"><img height="16" width="16" src="https://matthid.github.io/Yaaf.AdvancedBuilding/content/img/FSharp.Formatting.png" /> F# Formatting</a></li>
+        </ul>
+        <h3 class="muted"><a href="./index.html">Angara.Table</a></h3>
+      </div>
+      <hr />
+      <div class="row">
+        <div class="span9" id="main">
+          
+
+
+
+<h1>ReadSettings</h1>
+<p>
+  <span>Namespace: Angara.Data.DelimitedFile</span><br />
+</p>
+<div class="xmldoc">
+</div>
+  <h3>Record Fields</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Record Field</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '105', 105)" onmouseover="showTip(event, '105', 105)">
+            ColumnsCount
+          </code>
+          <div class="tip" id="105">
+            <strong>Signature:</strong> int option<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>An optional value that allows to provide an expected number of columns. If number of columns differs, the reading fails.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '106', 106)" onmouseover="showTip(event, '106', 106)">
+            ColumnTypes
+          </code>
+          <div class="tip" id="106">
+            <strong>Signature:</strong> (int * string -&gt; Type option) option<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>An optional value that allows a user to specify element types for some of columns. This allows
+to read integer columns since automatic inference always uses Double type for numeric values.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '107', 107)" onmouseover="showTip(event, '107', 107)">
+            Delimiter
+          </code>
+          <div class="tip" id="107">
+            <strong>Signature:</strong> Delimiter<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Determines which character delimits columns.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '108', 108)" onmouseover="showTip(event, '108', 108)">
+            HasHeader
+          </code>
+          <div class="tip" id="108">
+            <strong>Signature:</strong> bool<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>If true, the first line is considered as a header of the table.
+This header will contain names corresponding to the fields in the file
+and should contain the same number of fields as the records in
+the rest of the file. Otherwise, if false, the first line is a data line and columns are named as A, B, C... using radix 26.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '109', 109)" onmouseover="showTip(event, '109', 109)">
+            InferNullStrings
+          </code>
+          <div class="tip" id="109">
+            <strong>Signature:</strong> bool<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>If true, double quotes ("") are considered as empty string and an empty string is considered as null;
+otherwise, if false, both cases are considered as an empty string.</p>
+
+
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <h3>Static members</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Static member</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '110', 110)" onmouseover="showTip(event, '110', 110)">
+            Default
+          </code>
+          <div class="tip" id="110">
+            <strong>Signature:</strong> ReadSettings<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Expects comma as delimiter, has header, doesn't infer null strings and doesn't predefine column count or types.</p>
+
+
+              <p>CompiledName: <code>get_Default</code></p>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+        </div>
+        <div class="span3">
+          <a href="./index.html">
+            <img src="./images/logo.png" style="width:140px;height:140px;margin:10px 0px 0px 35px;border-style:none;" />
+          </a>
+
+          <ul class="nav nav-list" id="menu">
+
+            <li class="nav-header">Angara.Table</li>
+
+            <li class="divider"></li>
+
+            <li><a href="https://www.nuget.org/packages?q=Angara">Get Angara.Table package via NuGet</a></li>
+            <li><a href="https://github.com/Microsoft/Angara.Table">Source Code on GitHub</a></li>
+            <li><a href="https://github.com/Microsoft/Angara.Table/blob/master/LICENSE">License (MIT)</a></li>
+            <li><a href="https://github.com/Microsoft/Angara.Table/blob/master/RELEASE_NOTES.md">Release Notes</a></li>
+            <li><a href="https://github.com/Microsoft/Angara.Table/blob/master/CONTRIBUTING.md">Contributing to Angara.Table</a></li>
+
+            <li class="nav-header">Documentation</li>
+
+            <li><a href="./index.html">Introduction</a></li>
+
+            <li class="divider"></li>
+
+            <li><a href="./feature1.html">Feature 1</a></li>
+            <li><a href="./feature2.html">Feature 2</a></li>
+
+            <li class="divider"></li>
+
+            <li><a href="./feature3.html">Feature 3</a></li>
+            <li><a href="./feature4.html">Feature 4</a></li>
+
+            <li class="nav-header">Tutorials</li>
+
+            <li><a href="./tutorial1.html">Tutorial 1</a></li>
+            <li><a href="./tutorial2.html">Tutorial 2</a></li>
+
+            <li class="nav-header">Reference</li>
+
+            <li><a href="./reference/index.html">API Reference</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <a href="https://github.com/Microsoft/Angara.Table"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
+  </body>
+  </html>

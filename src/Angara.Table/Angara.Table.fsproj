@@ -58,18 +58,21 @@
     <Compile Include="Funcs.fs" />
     <Compile Include="Table.fsi" />
     <Compile Include="Table.fs" />
-    <Compile Include="Serializers.fs" />
+    <Compile Include="Serializers.fs" />    
     <Content Include="packages.config" />
     <None Include="Angara.Table.nuspec" />
     <Content Include="License.txt" />
+    <None Include="Scripts\load-references-debug.fsx" />
+    <None Include="Scripts\load-project-debug.fsx" />
+    <None Include="Scripts\Angara.Table.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Angara.Serialization">
-      <HintPath>..\..\sln\Angara.Table\packages\Angara.Serialization.0.1.1.0\lib\net461\Angara.Serialization.dll</HintPath>
+      <HintPath>..\..\ext\nuget\Angara.Serialization.0.1.2.0\lib\net461\Angara.Serialization.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Angara.Statistics">
-      <HintPath>..\..\sln\Angara.Table\packages\Angara.Statistics.0.1.1.0\lib\net461\Angara.Statistics.dll</HintPath>
+      <HintPath>..\..\ext\nuget\Angara.Statistics.0.1.1.0\lib\net461\Angara.Statistics.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />

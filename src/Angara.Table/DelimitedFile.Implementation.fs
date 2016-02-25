@@ -291,7 +291,7 @@ type internal Implementation =
             match settings.ColumnsCount with
             | Some n ->
                 if headerSchema.Length = 0 && n = 1 then 
-                    [| { Name = ""; Type = None; IsUserDefined = false } |] // cannot be distinguished from text itself
+                    [| { InferredColumnSchema.Name = ""; InferredColumnSchema.Type = None; InferredColumnSchema.IsUserDefined = false } |] // cannot be distinguished from text itself
                 else 
                     if headerSchema.Length <> n then failwith "Number of columns is different than expected"
                     headerSchema
