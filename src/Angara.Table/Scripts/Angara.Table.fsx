@@ -21,7 +21,7 @@ let tableEmpty = Table.Empty
 (**
 To build a table from arrays (or other kinds of sequences) representing table columns, 
 use `Table.Empty` and `Table.Add` functions. 
-Note that all columns of a table must have same number of elements; otherwise, `Table.Add` fails.
+Normally, all columns of a table must have same number of elements; otherwise, `Table.Add` fails.
 
 The following example creates
 a table with two columns `"x"` and `"y"` with data given as arrays of floats:
@@ -32,11 +32,17 @@ let table =
     |> Table.Add "x" [| 1; 2; 3 |]
     |> Table.Add "y" [| 2; 4; 6 |]
 
+(** Table can be constructed from a bunch of `System.Array` objects with corresponding column names; use `Table.FromArrays` function: *)
+
+let table2 = Table.FromArrays [ "x", upcast [| 1; 2; 3 |]; "y", upcast [| 2; 4; 6 |]]
+
+(** To remove columns from a table, use `Table.Remove`. *)
+
 
 (**
 
-A table can be initialized from a delimited text file, such as CSV file. To do that, you can use 
-`Table.Read` function.
+To initialize a table from a delimited text file, such as CSV file, you can use 
+`Table.Read` function:
 
 *)
 
@@ -53,9 +59,10 @@ Also, for each column several first elements are printed.
 *)
 
 (**
+
 ## Properties of Tables
 
-To get a number of rows in a table, use `Table.Count` property; for example,
+To get a number of rows in a table, use `Table.Count` property; for instance,
 *)
 
 tableWheat.Count
@@ -64,11 +71,90 @@ tableWheat.Count
 (*** include-value: tableWheat.Count ***)
 
 (** 
-The properties `Table.Names` and `Table.Columns` return read-only lists of column names and the columns themselves.
-The following code computes and prints average for each of the column of `tableWheat`:
+The properties `Table.Names` and `Table.Types` return read-only lists of column names and columns element types.
+*)
+
+let infoWheat = Seq.mapi2 (sprintf "%d: '%s' has element type %O") tableWheat.Names table.Types
+
+(*** include-value: infoWheat ***)
+
+(**
+
+The following code returns a number of columns:
+*)
+
+tableWheat.Columns.Count 
+
+(*** include-value: tableWheat.Columns.Count ***)
+
+(** Also, there are helper functions which return index of a column by its name, `Table.ColumnIndex` and `Table.TryColumnIndex`; 
+and functions which return type of column elements by column name, `Table.Type` and `Table.TryType`: *)
+
+let idxAndType = tableWheat |> Table.ColumnIndex "wheat", tableWheat |> Table.Type "wheat"
+
+(*** include-value: idxAndType ***)
+
+(** 
+
+## Getting Arrays
+
+The following examples uses `Table.ToArray` to get an array of the column `wheat` and then compute an average value:
+
+*)
+
+let averageWheat = 
+    tableWheat 
+    |> Table.ToArray<float[]> "wheat"
+    |> Array.average
+
+(*** include-value: averageWheat ***)
+
+(**
+
+To get a subset of an array, use `Table.Sub`.
+
 *)
 
 
+(**
+
+## Transforming Tables
+
+### Row-wise Operations
+
+#### Mapping Operations
+
+`Table.Map`
+`Table.Mapi`
+`Table.MapToColumn`
+`Table.MapiToColumn`
+
+#### Filtering Operations
+
+`Table.Filter`
+`Table.Filteri`
+
+#### Grouping Operations
+
+### Table-wise Operations
+
+`Table.Join`
+`Table.Transform`
+`Table.JoinTransform`
+
+
+### Statistics Operations
+
+`Table.Summary`
+`Table.TrySummary`
+`Table.Correlation`
+`Table.TryCorrelation`
+`Table.Pdf`
+`Table.TryPdf`
+
+
+
+*)
 
 (**
 # Samples
