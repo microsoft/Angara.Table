@@ -15,7 +15,7 @@ module internal HelpersForReinstate =
                 stream :> IO.Stream
             
             member this.WriteTo stream = 
-                table |> Table.Write { WriteSettings.Default with AllowNullStrings = true } stream
+                table |> Table.WriteStream { WriteSettings.Default with AllowNullStrings = true } stream
     
     let serializeContent (table : Table) (blobName : string) : InfoSet = 
         let content = Seq.zip table.Names table.Types |> List.ofSeq
@@ -186,7 +186,7 @@ type TableReinstateSerializer() =
 
             let data:Lazy<Array[]> =
                 lazy(
-                    let stream = (snd (map.["data"].ToBlob())).GetStream()
+                    use stream = (snd (map.["data"].ToBlob())).GetStream()
                     let cols = 
                         stream 
                         |> Implementation.Read

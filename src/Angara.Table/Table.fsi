@@ -482,11 +482,14 @@ type Table =
     /// else throw an exception
     static member Correlation : table:Table -> (string[] * float[][])
 
+    /// Reads table from a delimited text file.
+    static member Read : settings:Angara.Data.DelimitedFile.ReadSettings -> path:string -> Table
+
     /// Reads table from a delimited text stream.
-    static member Read : settings:Angara.Data.DelimitedFile.ReadSettings -> stream:IO.Stream -> Table
+    static member ReadStream : settings:Angara.Data.DelimitedFile.ReadSettings -> stream:IO.Stream -> Table
     
-    /// <summary>Writes a table to a stream as a delimited text.</summary>
-    /// <remarks>
-    /// <p>Requires that all columns have same length.</p>
-    /// </remarks>
-    static member Write : settings:Angara.Data.DelimitedFile.WriteSettings -> stream:IO.Stream -> table:Table -> unit
+    /// Writes a table to a stream as a delimited text.
+    static member Write : settings:Angara.Data.DelimitedFile.WriteSettings -> path:string -> table:Table -> unit
+
+    /// Writes a table to a stream as a delimited text.
+    static member WriteStream : settings:Angara.Data.DelimitedFile.WriteSettings -> stream:IO.Stream -> table:Table -> unit

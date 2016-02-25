@@ -308,8 +308,7 @@ let ``Column index to name`` () =
 
 [<Test; Category("CI")>]
 let ``Read a table from a file with header by default``() =
-    let reader = File.OpenRead(@"tests\wheat.csv")
-    let table = Table.Read ReadSettings.Default reader
+    let table = Table.Read ReadSettings.Default @"tests\wheat.csv"
 
     table.Columns.Count |> should equal 3
 
@@ -327,8 +326,7 @@ let ``Read a table from a file with header by default``() =
 
 [<Test; Category("CI")>]
 let ``Read a table from a file without header``() =
-    let reader = File.OpenRead(@"tests\wheat-noheader.csv")
-    let table = Table.Read { ReadSettings.Default with HasHeader = false } reader
+    let table = Table.Read { ReadSettings.Default with HasHeader = false } @"tests\wheat-noheader.csv"
 
     table.Columns.Count |> should equal 3
 
@@ -346,14 +344,12 @@ let ``Read a table from a file without header``() =
 
 [<Test; Category("CI")>]
 let ``Read a table from an empty file with a header``() =
-    let reader = File.OpenRead(@"tests\empty.csv")
-    let table = Table.Read { ReadSettings.Default with HasHeader = true } reader
+    let table = Table.Read { ReadSettings.Default with HasHeader = true } @"tests\empty.csv"
     table.Columns.Count |> should equal 0
 
 [<Test; Category("CI")>]
 let ``Read a table from an empty file without a header``() =
-    let reader = File.OpenRead(@"tests\empty.csv")
-    let table = Table.Read { ReadSettings.Default with HasHeader = false } reader
+    let table = Table.Read { ReadSettings.Default with HasHeader = false } @"tests\empty.csv"
     table.Columns.Count |> should equal 0
     
 [<Test; Category("CI")>]
@@ -363,7 +359,7 @@ let ``Write without header really doesn't writes the header``() =
         |> Table.Add "lon" [11.0;21.0;31.0]
     use ms = new MemoryStream()
 
-    t |> Table.Write {WriteSettings.Default with SaveHeader = false} ms
+    t |> Table.WriteStream { WriteSettings.Default with SaveHeader = false } ms
     ms.Position <- 0L
 
     let reader = new StreamReader(ms)
@@ -372,7 +368,7 @@ let ``Write without header really doesn't writes the header``() =
 
     ms.Position <- 0L
 
-    let t2 = Table.Read { ReadSettings.Default with HasHeader = false } ms
+    let t2 = Table.ReadStream { ReadSettings.Default with HasHeader = false } ms
     Assert.AreEqual(t.Columns.Count, t2.Columns.Count, "columns count")
     Assert.AreEqual(Table.ToArray<float[]> "lat" t, Table.ToArray<float[]> "A" t2, "lat -> A")
     Assert.AreEqual(Table.ToArray<float[]> "lon" t, Table.ToArray<float[]> "B" t2, "lon -> B")

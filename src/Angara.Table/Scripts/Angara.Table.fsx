@@ -2,12 +2,10 @@
 #I __SOURCE_DIRECTORY__
 #load "load-project-debug.fsx"
 (**
-# Angara.Table (F#)
+# Angara.Data.Table (F#)
 
-A table is an immutable collection of named columns. Angara.Table exploits functional approach and allows using succinct code to perform complex operations on tables.
-
-To perform operations on tables, use the static members of the class [Table](angara-data-table.html).
-To perform operations on individual columns, use the static members of the class [Column](angara-data-column.html).
+A table is an immutable collection of named columns. 
+[Angara.Data.Table](angara-data-table.html) exploits functional approach and allows to use succinct code to perform complex operations on tables.
 
 *)
 
@@ -26,13 +24,13 @@ use `Table.Empty` and `Table.Add` functions.
 Note that all columns of a table must have same number of elements; otherwise, `Table.Add` fails.
 
 The following example creates
-a table with two columns `"x"` and `"y"` containing data given as lists of floats:
+a table with two columns `"x"` and `"y"` with data given as arrays of floats:
 *)
 
 let table =
     Table.Empty 
-    |> Table.Add "x" [ 1; 2; 3 ]
-    |> Table.Add "y" [ 2; 4; 6 ]
+    |> Table.Add "x" [| 1; 2; 3 |]
+    |> Table.Add "y" [| 2; 4; 6 |]
 
 
 (**
@@ -42,12 +40,8 @@ A table can be initialized from a delimited text file, such as CSV file. To do t
 
 *)
 
-open System.IO
+let tableWheat = Table.Read DelimitedFile.ReadSettings.Default @"data\wheat.csv"
 
-let tableWheat = 
-    new FileStream(@"data\wheat.csv", FileMode.Open)
-    |> Table.Read DelimitedFile.ReadSettings.Default 
-    
 (**
 Now, `tableWheat.ToString()` returns the following string:
 *)    
@@ -80,6 +74,9 @@ The following code computes and prints average for each of the column of `tableW
 # Samples
 
 ## Titanic survivor analysis
+
+The following example computes the survival rates for the different passenger classes.
+The original data is taken from https://www.kaggle.com/c/titanic.
 *)
 
 (** Having the table functions: *)
@@ -107,7 +104,7 @@ let OrderBy<'a,'b when 'b : comparison> (colName: string) (projection : 'a -> 'b
             | _ -> failwith "Unexpected column type")
     Table(cols)
 
-let FromRows (columnNames : string seq) (rows : System.Array seq) : Table =
+let OfRows (columnNames : string seq) (rows : System.Array seq) : Table =
     let rows = rows |> Seq.toArray
     let cols =
         columnNames 
@@ -124,22 +121,18 @@ let FromRows (columnNames : string seq) (rows : System.Array seq) : Table =
 
 (** then *)
 
-let stream = new FileStream(@"data\titanic.csv", FileMode.Open) 
-
-let survivors =     
+let survivors =         
     Table.Read { DelimitedFile.ReadSettings.Default with 
-                    ColumnTypes = Some(fun (_,name) -> match name with "Survived" | "Pclass"-> Some typeof<int> | _ -> None) } 
-               stream
+                     ColumnTypes = Some(fun (_,name) -> match name with "Survived" | "Pclass"-> Some typeof<int> | _ -> None) } 
+               @"data\titanic.csv"
     |> GroupBy "Pclass" id 
     |> Seq.map(fun (pclass:int, table) -> 
         let stat = table |> Table.ToArray<int[]> "Survived" |> Array.countBy id |> Array.sortBy fst
         [| pclass; snd stat.[0]; snd stat.[1] |] :> System.Array)
-    |> FromRows ["Pclass"; "Died"; "Survived"] 
+    |> OfRows ["Pclass"; "Died"; "Survived"] 
     |> Table.MapToColumn ["Died"; "Survived"] "Died (%)" (fun (died:int) (survived:int) -> 100.0*(float died)/(float (died + survived)))
     |> Table.MapToColumn ["Died (%)"] "Survived (%)" (fun (died:float) -> 100.0 - died)
     |> Table.Remove ["Died"; "Survived"]
     |> OrderBy<int,int> "Pclass" id
-
-stream.Dispose()
 
 (*** include-value: survivors ***)

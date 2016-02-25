@@ -58,13 +58,15 @@
     <Compile Include="Funcs.fs" />
     <Compile Include="Table.fsi" />
     <Compile Include="Table.fs" />
-    <Compile Include="Serializers.fs" />    
+    <Compile Include="Serializers.fs" />
     <Content Include="packages.config" />
     <None Include="Angara.Table.nuspec" />
     <Content Include="License.txt" />
     <None Include="Scripts\load-references-debug.fsx" />
     <None Include="Scripts\load-project-debug.fsx" />
     <None Include="Scripts\Angara.Table.fsx" />
+    <None Include="Scripts\load-references-release.fsx" />
+    <None Include="Scripts\load-project-release.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Angara.Serialization">

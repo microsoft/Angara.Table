@@ -18,7 +18,7 @@ type WriteSettings =
       /// If true, the first line will contain names corresponding to the columns of the table.
       /// Otherwise, if false, the first line is a data line.
       SaveHeader: bool }
-    /// Uses comma as delimiter, saves a header and disallows null strings.
+    /// Uses comma as delimiter, saves a header, and disallows null strings.
     static member Default : WriteSettings
 
 [<NoEquality; NoComparison>]
@@ -38,5 +38,5 @@ type ReadSettings =
       /// An optional value that allows a user to specify element types for some of columns. This allows
       /// to read integer columns since automatic inference always uses Double type for numeric values.
       ColumnTypes : (int * string -> System.Type option) option }
-    /// Expects comma as delimiter, has header, doesn't infer null strings and doesn't predefine column count or types.
+    /// Expects comma as delimiter, has header, doesn't infer null strings, and doesn't predefine column count or types.
     static member Default : ReadSettings

@@ -920,7 +920,7 @@ type Table(names:seq<string>, columns:seq<Column>) =
         |> Table.TryCorrelation
         |> Util.unpackOrFail "At least two columns must be real or int"
 
-    static member Read (settings:Angara.Data.DelimitedFile.ReadSettings) (stream:IO.Stream) : Table =
+    static member ReadStream (settings:Angara.Data.DelimitedFile.ReadSettings) (stream:IO.Stream) : Table =
         let cols = 
             stream 
             |> Angara.Data.DelimitedFile.Implementation.Read settings
@@ -934,10 +934,17 @@ type Table(names:seq<string>, columns:seq<Column>) =
                 | Angara.Data.DelimitedFile.ColumnType.String -> Column.New (data :?> string[]))
         new Table(cols)
 
-    static member Write (settings:Angara.Data.DelimitedFile.WriteSettings) (stream:IO.Stream) (table:Table) : unit =
+    static member WriteStream (settings:Angara.Data.DelimitedFile.WriteSettings) (stream:IO.Stream) (table:Table) : unit =
         table.Columns
         |> Seq.map(fun column ->
             Table.Name column table,
             Column.ToArray<System.Array> column)         
         |> Angara.Data.DelimitedFile.Implementation.Write settings stream            
-        
+
+    static member Read (settings:Angara.Data.DelimitedFile.ReadSettings) (path:string) : Table =
+        use stream = new System.IO.FileStream(path, System.IO.FileMode.Open, System.IO.FileAccess.Read)
+        Table.ReadStream settings stream
+
+    static member Write (settings:Angara.Data.DelimitedFile.WriteSettings) (path:string) (table:Table) : unit =
+        use stream = new System.IO.FileStream(path, System.IO.FileMode.Create, System.IO.FileAccess.Write)
+        Table.WriteStream settings stream table

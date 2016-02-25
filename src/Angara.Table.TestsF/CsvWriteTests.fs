@@ -9,9 +9,9 @@ open FsCheck
 let CheckReadWrite rs ws (table:Table) =
     System.Diagnostics.Trace.WriteLine(table)
     use ms = new MemoryStream()
-    table |> Table.Write ws ms 
+    table |> Table.WriteStream ws ms 
     ms.Position <- 0L
-    let table2 = Table.Read rs ms
+    let table2 = Table.ReadStream rs ms
     System.Diagnostics.Trace.WriteLine(table2)
     areEqualTablesForCsv table table2 |> Assert.IsTrue
 

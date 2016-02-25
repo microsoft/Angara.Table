@@ -563,9 +563,25 @@ int, float, string, DateTime, bool</p>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '81', 81)" onmouseover="showTip(event, '81', 81)">
-            Read(settings stream)
+            Read(settings path)
           </code>
           <div class="tip" id="81">
+            <strong>Signature:</strong> settings:ReadSettings -&gt; path:string -&gt; Table<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Reads table from a delimited text file.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '82', 82)" onmouseover="showTip(event, '82', 82)">
+            ReadStream(settings stream)
+          </code>
+          <div class="tip" id="82">
             <strong>Signature:</strong> settings:ReadSettings -&gt; stream:Stream -&gt; Table<br />
                       </div>
         </td>
@@ -578,10 +594,10 @@ int, float, string, DateTime, bool</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '82', 82)" onmouseover="showTip(event, '82', 82)">
+          <code onmouseout="hideTip(event, '83', 83)" onmouseover="showTip(event, '83', 83)">
             Remove(columnNames table)
           </code>
-          <div class="tip" id="82">
+          <div class="tip" id="83">
             <strong>Signature:</strong> columnNames:seq&lt;string&gt; -&gt; table:Table -&gt; Table<br />
                       </div>
         </td>
@@ -594,10 +610,10 @@ int, float, string, DateTime, bool</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '83', 83)" onmouseover="showTip(event, '83', 83)">
+          <code onmouseout="hideTip(event, '84', 84)" onmouseover="showTip(event, '84', 84)">
             Sub(columnName startIndex count table)
           </code>
-          <div class="tip" id="83">
+          <div class="tip" id="84">
             <strong>Signature:</strong> columnName:string -&gt; startIndex:int -&gt; count:int -&gt; table:Table -&gt; &#39;a<br />
                           <strong>Type parameters:</strong> 'a          </div>
         </td>
@@ -614,10 +630,10 @@ int, float, string, DateTime, bool</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '84', 84)" onmouseover="showTip(event, '84', 84)">
+          <code onmouseout="hideTip(event, '85', 85)" onmouseover="showTip(event, '85', 85)">
             Summary(columnName table)
           </code>
-          <div class="tip" id="84">
+          <div class="tip" id="85">
             <strong>Signature:</strong> columnName:string -&gt; table:Table -&gt; ColumnSummary<br />
                       </div>
         </td>
@@ -630,10 +646,10 @@ int, float, string, DateTime, bool</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '85', 85)" onmouseover="showTip(event, '85', 85)">
+          <code onmouseout="hideTip(event, '86', 86)" onmouseover="showTip(event, '86', 86)">
             ToArray(columnName table)
           </code>
-          <div class="tip" id="85">
+          <div class="tip" id="86">
             <strong>Signature:</strong> columnName:string -&gt; table:Table -&gt; &#39;a<br />
                           <strong>Type parameters:</strong> 'a          </div>
         </td>
@@ -650,10 +666,10 @@ int, float, string, DateTime, bool</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '86', 86)" onmouseover="showTip(event, '86', 86)">
+          <code onmouseout="hideTip(event, '87', 87)" onmouseover="showTip(event, '87', 87)">
             ToRealArray(columnName table)
           </code>
-          <div class="tip" id="86">
+          <div class="tip" id="87">
             <strong>Signature:</strong> columnName:string -&gt; table:Table -&gt; IRArray&lt;float&gt;<br />
                       </div>
         </td>
@@ -666,10 +682,10 @@ int, float, string, DateTime, bool</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '87', 87)" onmouseover="showTip(event, '87', 87)">
+          <code onmouseout="hideTip(event, '88', 88)" onmouseover="showTip(event, '88', 88)">
             Transform(columnNames transform table)
           </code>
-          <div class="tip" id="87">
+          <div class="tip" id="88">
             <strong>Signature:</strong> columnNames:seq&lt;string&gt; -&gt; (transform:(&#39;a -&gt; &#39;b)) -&gt; table:Table -&gt; &#39;c<br />
                           <strong>Type parameters:</strong> 'a, 'b, 'c          </div>
         </td>
@@ -682,10 +698,10 @@ int, float, string, DateTime, bool</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '88', 88)" onmouseover="showTip(event, '88', 88)">
+          <code onmouseout="hideTip(event, '89', 89)" onmouseover="showTip(event, '89', 89)">
             TryColumn(columnName table)
           </code>
-          <div class="tip" id="88">
+          <div class="tip" id="89">
             <strong>Signature:</strong> columnName:string -&gt; table:Table -&gt; Column option<br />
                       </div>
         </td>
@@ -698,10 +714,10 @@ int, float, string, DateTime, bool</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '89', 89)" onmouseover="showTip(event, '89', 89)">
+          <code onmouseout="hideTip(event, '90', 90)" onmouseover="showTip(event, '90', 90)">
             TryColumnIndex(columnName table)
           </code>
-          <div class="tip" id="89">
+          <div class="tip" id="90">
             <strong>Signature:</strong> columnName:string -&gt; table:Table -&gt; int option<br />
                       </div>
         </td>
@@ -714,10 +730,10 @@ int, float, string, DateTime, bool</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '90', 90)" onmouseover="showTip(event, '90', 90)">
+          <code onmouseout="hideTip(event, '91', 91)" onmouseover="showTip(event, '91', 91)">
             TryCorrelation(table)
           </code>
-          <div class="tip" id="90">
+          <div class="tip" id="91">
             <strong>Signature:</strong> table:Table -&gt; (string [] * float [] []) option<br />
                       </div>
         </td>
@@ -731,10 +747,10 @@ else None</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '91', 91)" onmouseover="showTip(event, '91', 91)">
+          <code onmouseout="hideTip(event, '92', 92)" onmouseover="showTip(event, '92', 92)">
             TryItem(columnName index table)
           </code>
-          <div class="tip" id="91">
+          <div class="tip" id="92">
             <strong>Signature:</strong> columnName:string -&gt; index:int -&gt; table:Table -&gt; &#39;a option<br />
                           <strong>Type parameters:</strong> 'a          </div>
         </td>
@@ -747,10 +763,10 @@ else None</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '92', 92)" onmouseover="showTip(event, '92', 92)">
+          <code onmouseout="hideTip(event, '93', 93)" onmouseover="showTip(event, '93', 93)">
             TryName(column table)
           </code>
-          <div class="tip" id="92">
+          <div class="tip" id="93">
             <strong>Signature:</strong> column:Column -&gt; table:Table -&gt; string option<br />
                       </div>
         </td>
@@ -763,10 +779,10 @@ else None</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '93', 93)" onmouseover="showTip(event, '93', 93)">
+          <code onmouseout="hideTip(event, '94', 94)" onmouseover="showTip(event, '94', 94)">
             TryPdf(columnName pointCount table)
           </code>
-          <div class="tip" id="93">
+          <div class="tip" id="94">
             <strong>Signature:</strong> columnName:string -&gt; pointCount:int -&gt; table:Table -&gt; (float [] * float []) option<br />
                       </div>
         </td>
@@ -779,10 +795,10 @@ else None</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '94', 94)" onmouseover="showTip(event, '94', 94)">
+          <code onmouseout="hideTip(event, '95', 95)" onmouseover="showTip(event, '95', 95)">
             TrySub(...)
           </code>
-          <div class="tip" id="94">
+          <div class="tip" id="95">
             <strong>Signature:</strong> columnName:string -&gt; startIndex:int -&gt; count:int -&gt; table:Table -&gt; &#39;a option<br />
                           <strong>Type parameters:</strong> 'a          </div>
         </td>
@@ -799,10 +815,10 @@ int, float, string, DateTime, bool</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '95', 95)" onmouseover="showTip(event, '95', 95)">
+          <code onmouseout="hideTip(event, '96', 96)" onmouseover="showTip(event, '96', 96)">
             TrySummary(columnName table)
           </code>
-          <div class="tip" id="95">
+          <div class="tip" id="96">
             <strong>Signature:</strong> columnName:string -&gt; table:Table -&gt; ColumnSummary option<br />
                       </div>
         </td>
@@ -815,10 +831,10 @@ int, float, string, DateTime, bool</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '96', 96)" onmouseover="showTip(event, '96', 96)">
+          <code onmouseout="hideTip(event, '97', 97)" onmouseover="showTip(event, '97', 97)">
             TryToArray(columnName table)
           </code>
-          <div class="tip" id="96">
+          <div class="tip" id="97">
             <strong>Signature:</strong> columnName:string -&gt; table:Table -&gt; &#39;a option<br />
                           <strong>Type parameters:</strong> 'a          </div>
         </td>
@@ -835,10 +851,10 @@ int, float, string, DateTime, bool</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '97', 97)" onmouseover="showTip(event, '97', 97)">
+          <code onmouseout="hideTip(event, '98', 98)" onmouseover="showTip(event, '98', 98)">
             TryToRealArray(columnName table)
           </code>
-          <div class="tip" id="97">
+          <div class="tip" id="98">
             <strong>Signature:</strong> columnName:string -&gt; table:Table -&gt; IRArray&lt;float&gt; option<br />
                       </div>
         </td>
@@ -851,10 +867,10 @@ int, float, string, DateTime, bool</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '98', 98)" onmouseover="showTip(event, '98', 98)">
+          <code onmouseout="hideTip(event, '99', 99)" onmouseover="showTip(event, '99', 99)">
             TryType(columnName table)
           </code>
-          <div class="tip" id="98">
+          <div class="tip" id="99">
             <strong>Signature:</strong> columnName:string -&gt; table:Table -&gt; Type option<br />
                       </div>
         </td>
@@ -867,10 +883,10 @@ int, float, string, DateTime, bool</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '99', 99)" onmouseover="showTip(event, '99', 99)">
+          <code onmouseout="hideTip(event, '100', 100)" onmouseover="showTip(event, '100', 100)">
             Type(columnName table)
           </code>
-          <div class="tip" id="99">
+          <div class="tip" id="100">
             <strong>Signature:</strong> columnName:string -&gt; table:Table -&gt; Type<br />
                       </div>
         </td>
@@ -883,10 +899,26 @@ int, float, string, DateTime, bool</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '100', 100)" onmouseover="showTip(event, '100', 100)">
-            Write(settings stream table)
+          <code onmouseout="hideTip(event, '101', 101)" onmouseover="showTip(event, '101', 101)">
+            Write(settings path table)
           </code>
-          <div class="tip" id="100">
+          <div class="tip" id="101">
+            <strong>Signature:</strong> settings:WriteSettings -&gt; path:string -&gt; table:Table -&gt; unit<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>Writes a table to a stream as a delimited text.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '102', 102)" onmouseover="showTip(event, '102', 102)">
+            WriteStream(settings stream table)
+          </code>
+          <div class="tip" id="102">
             <strong>Signature:</strong> settings:WriteSettings -&gt; stream:Stream -&gt; table:Table -&gt; unit<br />
                       </div>
         </td>
