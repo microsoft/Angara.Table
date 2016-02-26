@@ -318,7 +318,7 @@ type ColumnTestsF =
         let expected = Array.map map data
         let actual = Column.Map map [column]
 
-        Assert.AreEqual(expected, actual)
+        Assert.AreEqual(expected, actual |> Seq.toArray)
 
     [<Test; Category("CI")>]
     static member ColumnF_TestIntRealColumnMap2() =
@@ -331,7 +331,7 @@ type ColumnTestsF =
         let map (x:int) (y:double) : double = (double)x * y
         let expected = Array.map2 map data1 data2
         let actual = Column.Map map [column1; column2]
-        Assert.AreEqual(expected, actual)
+        Assert.AreEqual(expected, actual |> Seq.toArray)
 
 
     [<Test; Category("CI")>]
@@ -345,7 +345,7 @@ type ColumnTestsF =
         let map (x1:int) (x2:double) : double = double(x1)+x2
         let expected = Array.map2 map data1 data2
         let actual = Column.Map map [| column1; column2 |]
-        Assert.AreEqual(expected, actual)
+        Assert.AreEqual(expected, actual |> Seq.toArray)
 
     [<Test; Category("CI")>]
     static member ColumnF_TestColumnMapsDoublePass() =
@@ -358,7 +358,7 @@ type ColumnTestsF =
         let map (x1:double) (x2:double) :  double = x1+x2
         let expected = Array.map2 map data1 data2
         let actual = Column.Map map [| column1; column2 |]
-        Assert.AreEqual(expected, actual)
+        Assert.AreEqual(expected, actual |> Seq.toArray)
 
     [<Test; Category("CI")>]
     static member ColumnF_TestMultiMap1() =
@@ -372,7 +372,7 @@ type ColumnTestsF =
         let expected = Array.map map data1
         let actual = Column.Map map columns
 
-        Assert.AreEqual(expected, actual)
+        Assert.AreEqual(expected, actual |> Seq.toArray)
 
 
     [<Test; Category("CI")>]
@@ -385,7 +385,7 @@ type ColumnTestsF =
         let expected = Array.mapi map data1
         let actual = Column.Mapi map [| column1 |]
 
-        Assert.AreEqual(expected, actual)
+        Assert.AreEqual(expected, actual |> Seq.toArray)
 
     [<Test; Category("CI")>]
     static member ColumnF_TestMultiMap2() =
@@ -400,7 +400,7 @@ type ColumnTestsF =
 
         let expected = Array.map2 map data1 data2
         let actual = Column.Map map [| column1; column2 |]
-        Assert.AreEqual(expected, actual)
+        Assert.AreEqual(expected, actual |> Seq.toArray)
 
     [<Test; Category("CI")>]
     static member ColumnF_TestMultiMapi2() =
@@ -415,7 +415,7 @@ type ColumnTestsF =
 
         let expected = Array.mapi2 map data1 data2
         let actual = Column.Mapi map [| column1; column2 |]
-        Assert.AreEqual(expected, actual)
+        Assert.AreEqual(expected, actual |> Seq.toArray)
 
     [<Test; Category("CI")>]
     static member ColumnF_TestIntColumn() =

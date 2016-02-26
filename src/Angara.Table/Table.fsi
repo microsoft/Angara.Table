@@ -173,7 +173,7 @@ type Column =
     /// Return an item from the column contents, if in range and the correct type
     static member Item<'a> : index:int -> column:Column -> 'a
     
-    /// <summary>Builds a new array whose elements are the results of applying the given function 'map'
+    /// <summary>Builds a new sequence whose elements are the results of applying the given function 'map'
     /// to each of the rows of the given columns.</summary>
     /// <remarks><para>The generic map function is only partially defined.
     /// If there are:
@@ -183,9 +183,9 @@ type Column =
     ///     n...
     /// If one input column is shorter than the other then the remaining elements of the longer column are ignored.
     /// </para></remarks>
-    static member Map<'a,'b,'c> : map:('a->'b) -> columns:seq<Column> -> 'c[]
+    static member Map<'a,'b,'c> : map:('a->'b) -> columns:seq<Column> -> 'c seq
 
-    /// <summary>Builds a new array whose elements are the results of applying the given function 'map'
+    /// <summary>Builds a new sequence whose elements are the results of applying the given function 'map'
     /// to each of the rows of the given columns.
     /// The integer index passed to the function indicates the index of row being transformed.</summary>
     /// <remarks><p>The generic map function is only partially defined.
@@ -195,7 +195,7 @@ type Column =
     ///     2 columns, map:(int->'d->'e->'c), where 'd and 'e are the types of the columns, so 'a = 'd->'e->'c
     ///     n...
     /// </p></remarks>
-    static member Mapi<'a,'c> : map:(int->'a) -> columns:seq<Column> -> 'c[]
+    static member Mapi<'a,'c> : map:(int->'a) -> columns:seq<Column> -> 'c seq
 
     /// Return a PDF of the column contents if the column contents are numeric
     static member TryPdf : pointCount:int -> column:Column -> (float[] * float[]) option
@@ -373,7 +373,7 @@ type Table =
     ///     n...
     static member Filteri<'a> : columnNames:seq<string> -> predicate:(int->'a->bool) -> table:Table -> Table
 
-    /// Builds a new array whose elements are the results of applying the given function 'map'
+    /// Builds a new sequence whose elements are the results of applying the given function 'map'
     /// to each of the rows of the given table columns.
     /// 
     /// The generic map function is only partially defined.
@@ -383,11 +383,9 @@ type Table =
     /// - 2 columns, map('a->'d->'c), where 'a and 'd are the types of the columns, so 'b = 'd->'c
     /// - 3 columns, map('a->'d->'e->'c), where 'a, 'd and 'e are the types of the columns, so 'b = 'd->'e->'c
     /// - n...
-    ///
-    /// If one input column is shorter than the other then the remaining elements of the longer column are ignored.
-    static member Map<'a,'b,'c> : columnNames:seq<string> -> map:('a->'b) -> table:Table -> 'c[]
+    static member Map<'a,'b,'c> : columnNames:seq<string> -> map:('a->'b) -> table:Table -> 'c seq
 
-    /// <summary>Builds a new array whose elements are the results of applying the given function 'map'
+    /// <summary>Builds a new sequence whose elements are the results of applying the given function 'map'
     /// to each of the rows of the given table columns.
     /// The integer index passed to the function indicates the index of row being transformed.</summary>
     /// <remarks><p>The generic map function is only partially defined.
@@ -397,7 +395,7 @@ type Table =
     ///     2 columns, map:(int->'d->'e->'c), where 'd and 'e are the types of the columns, so 'a = 'd->'e->'c
     ///     n...
     /// </p></remarks>
-    static member Mapi<'a,'c> : columnNames:seq<string> -> map:(int->'a) -> table:Table -> 'c[]
+    static member Mapi<'a,'c> : columnNames:seq<string> -> map:(int->'a) -> table:Table -> 'c seq
 
     /// Builds a new table that contains all columns of the given table and a new column or a replacement of an original table column;
     /// elements of the column are the results of applying the given function to each of the rows of the given table columns.

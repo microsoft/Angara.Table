@@ -147,8 +147,30 @@ let locationsWheat =
 
 #### Mapping Operations
 
-`Table.Map`
-`Table.Mapi`
+The function `Table.Map` builds a sequence whose elements are the results of applying the given function to each of the rows of certain table columns.
+`Table.Mapi` also provides an integer index passed to the function which indicates the index of row being transformed.
+
+The signature is: `Map<'a,'b,'c> : columnNames:seq<string> -> map:('a->'b) -> table:Table -> 'c seq`
+
+The generic function `map:'a->'b` is only partially defined. If `columnNames` contains:
+
+* 0 columns, map should be `map:unit->'c`, so `'a = unit`, `'b = 'c`
+* 1 column, map should be `map:'a->'c`, where `'a` is the type of the column, so `'b = 'c`
+* 2 columns, `map:'a->'d->'c`, where `'a` and `'d` are the types of the columns, so `'b = 'd->'c`
+* 3 columns, `map:'a->'d->'e->'c`, where `'a`, `'d` and `'e` are the types of the columns, so `'b = 'd->'e->'c`
+* n...
+
+Using the `Table.Map` function, the example for `Rows2` function can be rewritten as follows:
+*)
+
+let locationsWheat2 : string seq = 
+    tableWheat 
+    |> Table.Map ["Lat"; "Lon"] (sprintf "%.2f, %.2f")
+
+(*** include-value: locationsWheat2 ***)
+
+
+(**
 `Table.MapToColumn`
 `Table.MapiToColumn`
 
@@ -185,15 +207,15 @@ let locationsWheat =
 ## Titanic survivor analysis
 
 The following example computes the survival rates for the different passenger classes.
-The original data is taken from https://www.kaggle.com/c/titanic.
+The original data is taken from [https://www.kaggle.com/c/titanic](https://www.kaggle.com/c/titanic).
 *)
 
 (** Having the table functions: *)
 
-let GroupBy (colName : string) (projection : 'a -> 'b) (table : Table) : ('b * Table)[] =
+let GroupBy (colName : string) (projection : 'a -> 'b) (table : Table) : ('b * Table) seq =
     Table.ToArray<'a[]> colName table 
     |> Array.groupBy projection 
-    |> Array.map(fun (key: 'b, _) ->
+    |> Seq.map(fun (key: 'b, _) ->
         key, table |> Table.Filter [colName] (fun (v:'a) -> projection v = key))
 
 let OrderBy<'a,'b when 'b : comparison> (colName: string) (projection : 'a -> 'b) (table : Table) : Table =

@@ -136,11 +136,11 @@
             Map(map columns)
           </code>
           <div class="tip" id="8">
-            <strong>Signature:</strong> (map:(&#39;a -&gt; &#39;b)) -&gt; columns:seq&lt;Column&gt; -&gt; &#39;c []<br />
+            <strong>Signature:</strong> (map:(&#39;a -&gt; &#39;b)) -&gt; columns:seq&lt;Column&gt; -&gt; seq&lt;&#39;c&gt;<br />
                           <strong>Type parameters:</strong> 'a, 'b, 'c          </div>
         </td>
         <td class="xmldoc">
-          <p>Builds a new array whose elements are the results of applying the given function 'map'
+          <p>Builds a new sequence whose elements are the results of applying the given function 'map'
 to each of the rows of the given columns.</p>
 
 
@@ -153,11 +153,11 @@ to each of the rows of the given columns.</p>
             Mapi(map columns)
           </code>
           <div class="tip" id="9">
-            <strong>Signature:</strong> (map:(int -&gt; &#39;a)) -&gt; columns:seq&lt;Column&gt; -&gt; &#39;c []<br />
+            <strong>Signature:</strong> (map:(int -&gt; &#39;a)) -&gt; columns:seq&lt;Column&gt; -&gt; seq&lt;&#39;c&gt;<br />
                           <strong>Type parameters:</strong> 'a, 'c          </div>
         </td>
         <td class="xmldoc">
-          <p>Builds a new array whose elements are the results of applying the given function 'map'
+          <p>Builds a new sequence whose elements are the results of applying the given function 'map'
 to each of the rows of the given columns.
 The integer index passed to the function indicates the index of row being transformed.</p>
 

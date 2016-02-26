@@ -425,11 +425,11 @@ given function applied to the arrays of given table columns.</p>
             Map(columnNames map table)
           </code>
           <div class="tip" id="74">
-            <strong>Signature:</strong> columnNames:seq&lt;string&gt; -&gt; (map:(&#39;a -&gt; &#39;b)) -&gt; table:Table -&gt; &#39;c []<br />
+            <strong>Signature:</strong> columnNames:seq&lt;string&gt; -&gt; (map:(&#39;a -&gt; &#39;b)) -&gt; table:Table -&gt; seq&lt;&#39;c&gt;<br />
                           <strong>Type parameters:</strong> 'a, 'b, 'c          </div>
         </td>
         <td class="xmldoc">
-          <p>Builds a new array whose elements are the results of applying the given function 'map'
+          <p>Builds a new sequence whose elements are the results of applying the given function 'map'
 to each of the rows of the given table columns.</p>
 <p>The generic map function is only partially defined.
 If there are:</p>
@@ -439,7 +439,6 @@ If there are:</p>
 <li>3 columns, map('a-&gt;'d-&gt;'e-&gt;'c), where 'a, 'd and 'e are the types of the columns, so 'b = 'd-&gt;'e-&gt;'c</li>
 <li>n...</li>
 </ul>
-<p>If one input column is shorter than the other then the remaining elements of the longer column are ignored.</p>
 
 
         </td>
@@ -451,11 +450,11 @@ If there are:</p>
             Mapi(columnNames map table)
           </code>
           <div class="tip" id="75">
-            <strong>Signature:</strong> columnNames:seq&lt;string&gt; -&gt; (map:(int -&gt; &#39;a)) -&gt; table:Table -&gt; &#39;c []<br />
+            <strong>Signature:</strong> columnNames:seq&lt;string&gt; -&gt; (map:(int -&gt; &#39;a)) -&gt; table:Table -&gt; seq&lt;&#39;c&gt;<br />
                           <strong>Type parameters:</strong> 'a, 'c          </div>
         </td>
         <td class="xmldoc">
-          <p>Builds a new array whose elements are the results of applying the given function 'map'
+          <p>Builds a new sequence whose elements are the results of applying the given function 'map'
 to each of the rows of the given table columns.
 The integer index passed to the function indicates the index of row being transformed.</p>
 
