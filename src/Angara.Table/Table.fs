@@ -831,7 +831,7 @@ type Table(names:seq<string>, columns:seq<Column>) =
                 let res = Funcs.getNthResultType n map
                 let mapTable = Table.reflectedMap.MakeGenericMethod( typeof<'a>, typeof<'b>, res )
                 mapTable.Invoke(null, [|box columnNames; box map; box table|]) :?> System.Array 
-        if columnNames |> Seq.contains newColumnName then table |> Table.Remove [newColumnName] else table
+        if table.Names |> Seq.contains newColumnName then table |> Table.Remove [newColumnName] else table
         |> Table.Add newColumnName data
 
     static member MapiToColumn(columnNames:seq<string>) (newColumnName:string) (map:(int->'a)) (table:Table) : Table =
@@ -843,7 +843,7 @@ type Table(names:seq<string>, columns:seq<Column>) =
                 let res = Funcs.getNthResultType (n+1) map
                 let mapTable = Table.reflectedMapi.MakeGenericMethod( typeof<'a>, res )
                 mapTable.Invoke(null, [|box columnNames; box map; box table|]) :?> System.Array 
-        if columnNames |> Seq.contains newColumnName then table |> Table.Remove [newColumnName] else table
+        if table.Names |> Seq.contains newColumnName then table |> Table.Remove [newColumnName] else table
         |> Table.Add newColumnName data
 
     static member TryPdf(columnName:string) (pointCount:int) (table:Table) : (float[] * float[]) option =

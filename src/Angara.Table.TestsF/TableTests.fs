@@ -9,6 +9,30 @@ open System.IO
 
 
 [<Test; Category("CI")>]
+let ``MapToColumn replaces existing column - one column to another existing column``() =
+    let t = Table.FromArrays ["a", upcast [|0;1|]; "b", upcast [|0;1|]]
+    let t2 = Table.MapToColumn ["b"] "a" (fun a -> a + 1) t
+    Assert.AreEqual(2, t2.Columns.Count, "number of columns")
+    Assert.AreEqual(["b"; "a"], t2.Names |> Seq.toList, "names of columns") // new 'a' added to the end
+    Assert.AreEqual([|1;2|], Table.ToArray<int[]> "a" t2, "array of t2.a")
+
+[<Test; Category("CI")>]
+let ``MapToColumn replaces existing column - one column to itself``() =
+    let t = Table.FromArrays ["a", upcast [|0;1|]; "b", upcast [|0;1|]]
+    let t2 = Table.MapToColumn ["a"] "a" (fun a -> a + 1) t
+    Assert.AreEqual(2, t2.Columns.Count, "number of columns")
+    Assert.AreEqual(["b"; "a"], t2.Names |> Seq.toList, "names of columns") // new 'a' added to the end
+    Assert.AreEqual([|1;2|], Table.ToArray<int[]> "a" t2, "array of t2.a")
+
+[<Test; Category("CI")>]
+let ``MapToColumn replaces existing column - 2 columns``() =
+    let t = Table.FromArrays ["a", upcast [|0;1|]; "b", upcast [|0;1|]]
+    let t2 = Table.MapToColumn ["a"; "b"] "a" (fun a b -> a + b + 1) t
+    Assert.AreEqual(2, t2.Columns.Count, "number of columns")
+    Assert.AreEqual(["b"; "a"], t2.Names |> Seq.toList, "names of columns") // new 'a' added to the end
+    Assert.AreEqual([|1;3|], Table.ToArray<int[]> "a" t2, "array of t2.a")
+
+[<Test; Category("CI")>]
 let TableF_MapiToColumn_ManyArgs() =
     let table:Table = 
         Table.New "a" [1] |>

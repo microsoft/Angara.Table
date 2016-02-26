@@ -36,6 +36,10 @@ let table =
 
 let table2 = Table.FromArrays [ "x", upcast [| 1; 2; 3 |]; "y", upcast [| 2; 4; 6 |]]
 
+(** Supported column element types are listed in `Column.ValidTypes`: *)
+
+(*** include-value: Column.ValidTypes ***)
+
 (** To remove columns from a table, use `Table.Remove`. *)
 
 
@@ -74,7 +78,7 @@ tableWheat.Count
 The properties `Table.Names` and `Table.Types` return read-only lists of column names and columns element types.
 *)
 
-let infoWheat = Seq.mapi2 (sprintf "%d: '%s' has element type %O") tableWheat.Names table.Types
+let infoWheat = Seq.mapi2 (sprintf "%d: '%s' has element type %O") tableWheat.Names tableWheat.Types
 
 (*** include-value: infoWheat ***)
 
@@ -87,18 +91,23 @@ tableWheat.Columns.Count
 
 (*** include-value: tableWheat.Columns.Count ***)
 
-(** Also, there are helper functions which return index of a column by its name, `Table.ColumnIndex` and `Table.TryColumnIndex`; 
-and functions which return type of column elements by column name, `Table.Type` and `Table.TryType`: *)
+(** Also, there are helper functions which take a column name and return its index (`Table.ColumnIndex` and `Table.TryColumnIndex`), 
+and element type (`Table.Type` and `Table.TryType`): *)
 
-let idxAndType = tableWheat |> Table.ColumnIndex "wheat", tableWheat |> Table.Type "wheat"
+let colIndex = tableWheat |> Table.ColumnIndex "wheat"
+let colType = tableWheat |> Table.Type "wheat"
 
-(*** include-value: idxAndType ***)
+(*** include-value: colIndex ***)
+(*** include-value: colType ***)
 
 (** 
 
 ## Getting Arrays
 
-The following examples uses `Table.ToArray` to get an array of the column `wheat` and then compute an average value:
+There are two different views on a table: column-wise and row-wise. In the first case, you can get an array of a column using
+`Table.ToArray` function.
+
+The following examples gets an array of the column `wheat` and then computes its average value:
 
 *)
 
@@ -109,12 +118,26 @@ let averageWheat =
 
 (*** include-value: averageWheat ***)
 
-(**
-
+(** 
 To get a subset of an array, use `Table.Sub`.
-
 *)
 
+(** 
+Also you might need rows of a table.
+The following sample prints locations of points of the `tableWheat`: *)
+
+let Rows2<'a,'b> (names:string*string) (t:Table) : ('a*'b) seq =
+    let a,b = names
+    let ca = t |> Table.ToArray<'a[]> a
+    let cb = t |> Table.ToArray<'b[]> b
+    seq{ for i in 0..ca.Length-1 -> ca.[i],cb.[i] }
+
+let locationsWheat = 
+    tableWheat 
+    |> Rows2 ("Lat", "Lon") 
+    |> Seq.map (fun (lat,lon) -> sprintf "%.2f, %.2f" lat lon)
+
+(*** include-value: locationsWheat ***)
 
 (**
 
@@ -216,9 +239,8 @@ let survivors =
         let stat = table |> Table.ToArray<int[]> "Survived" |> Array.countBy id |> Array.sortBy fst
         [| pclass; snd stat.[0]; snd stat.[1] |] :> System.Array)
     |> OfRows ["Pclass"; "Died"; "Survived"] 
-    |> Table.MapToColumn ["Died"; "Survived"] "Died (%)" (fun (died:int) (survived:int) -> 100.0*(float died)/(float (died + survived)))
-    |> Table.MapToColumn ["Died (%)"] "Survived (%)" (fun (died:float) -> 100.0 - died)
-    |> Table.Remove ["Died"; "Survived"]
+    |> Table.MapToColumn ["Died"; "Survived"] "Died" (fun (died:int) (survived:int) -> 100.0*(float died)/(float (died + survived)))
+    |> Table.MapToColumn ["Died"] "Survived" (fun (died:float) -> 100.0 - died)
     |> OrderBy<int,int> "Pclass" id
 
 (*** include-value: survivors ***)
