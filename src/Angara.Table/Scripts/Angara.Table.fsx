@@ -1,10 +1,72 @@
 ﻿(*** hide ***)
 #I __SOURCE_DIRECTORY__
 #load "load-project-debug.fsx"
+open Angara.Data
+open System
+open System.Collections.Generic
 (**
 # Angara.Data.Table (F#)
 
-A table is an immutable collection of named columns. 
+A **table** is a collection of named columns, where each **column** is one-dimensional array and lengths of all columns are equal.
+
+Having the index less than columns length fixed, 
+we define **row** as a one-dimensional array with length equal to number of the columns 
+whose elements are elements of the columns having the chosen index, with the order of columns respected.
+The chosen index is called a **row index**. Thus number of table rows equals to length of table columns.
+
+Columns **names** are arbitrary strings which can be duplicated within a table.
+*)
+
+(** In the library, a column is represented as a discriminitated union `Angara.Data.Column`: *)
+
+type Column =
+    | IntColumn     of IRArray<int>
+    | RealColumn    of IRArray<float>
+    | StringColumn  of IRArray<string>
+    | DateColumn    of IRArray<DateTime>
+    | BooleanColumn of IRArray<Boolean>
+
+(** 
+Such representation enables typed operations on a column though it limits the set of valid column types.
+
+A column instance is immutable due to use of the generic interface `IRArray<'a>` which represents a read-only array of elements
+of type `'a`.
+*)
+
+type IRArray<'a> =
+    inherit IReadOnlyList<'a>
+    /// Copy a subset of this array to a new array
+    abstract member Sub : startIndex:int * count:int -> 'a[]
+    /// Copy the underlying array to a new array
+    abstract member ToArray : unit -> 'a[]
+
+(**
+`IReadOnlyList<'a>` gives you a count of the total number of elements, general and typed iterators,
+and direct access to each item.
+In addition this interface allows for efficient copying of the entire data or a subset to a new array.
+*)
+
+(**
+`Angara.Data.Table` type is immutable and can be constructed from a sequence of name and column pairs.
+It exposes the `Names` and `Columns` as read-only lists of same length.
+The `RowsCount` property returns the total number of rows in the table.
+*)
+   
+type Table =
+    /// Construct a table from a sequence of tuples of column names and columns.
+    /// All columns must have same length.
+    /// Names are arbitrary strings that can be duplicated.
+    new : nameColumns:seq<string * Column> -> Table
+
+    /// Return readonly list of column names
+    member Names : IReadOnlyList<string> with get
+    /// Return readonly list of columns
+    member Columns : IReadOnlyList<Column> with get
+    /// Return rows count 
+    member RowsCount : int with get
+
+(**
+# Functional Operations on Tables
 [Angara.Data.Table](angara-data-table.html) exploits functional approach and allows to use succinct code to perform complex operations on tables.
 
 *)
