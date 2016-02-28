@@ -66,6 +66,16 @@ type Table =
     member RowsCount : int with get
 
 (**
+Example:
+*)
+
+let table = 
+    Table(
+        ["x",      RealColumn (RArray.ofArray [| for i in 0..99 -> float(i) / 10.0  |])
+         "sin(x)", RealColumn (RArray.ofArray [| for i in 0..99 -> sin (float(i) / 10.0) |]) ])
+
+
+(**
 # Functional Operations on Tables
 [Angara.Data.Table](angara-data-table.html) exploits functional approach and allows to use succinct code to perform complex operations on tables.
 
@@ -96,7 +106,7 @@ let table =
 
 (** Table can be constructed from a bunch of `System.Array` objects with corresponding column names; use `Table.FromArrays` function: *)
 
-let table2 = Table.FromArrays [ "x", upcast [| 1; 2; 3 |]; "y", upcast [| 2; 4; 6 |]]
+let table2 = Table.ofSeq [ "x", upcast [| 1; 2; 3 |]; "y", upcast [| 2; 4; 6 |]]
 
 (** Supported column element types are listed in `Column.ValidTypes`: *)
 
@@ -123,44 +133,6 @@ Now, `tableWheat.ToString()` returns the following string:
 It means that `tableWheat` has three columns with names `Lon`, `Lat`, `wheat`; number of rows is 691.
 Also, for each column several first elements are printed.
 *)
-
-(**
-
-## Properties of Tables
-
-To get a number of rows in a table, use `Table.Count` property; for instance,
-*)
-
-tableWheat.Count
-
-(** returns *)
-(*** include-value: tableWheat.Count ***)
-
-(** 
-The properties `Table.Names` and `Table.Types` return read-only lists of column names and columns element types.
-*)
-
-let infoWheat = Seq.mapi2 (sprintf "%d: '%s' has element type %O") tableWheat.Names tableWheat.Types
-
-(*** include-value: infoWheat ***)
-
-(**
-
-The following code returns a number of columns:
-*)
-
-tableWheat.Columns.Count 
-
-(*** include-value: tableWheat.Columns.Count ***)
-
-(** Also, there are helper functions which take a column name and return its index (`Table.ColumnIndex` and `Table.TryColumnIndex`), 
-and element type (`Table.Type` and `Table.TryType`): *)
-
-let colIndex = tableWheat |> Table.ColumnIndex "wheat"
-let colType = tableWheat |> Table.Type "wheat"
-
-(*** include-value: colIndex ***)
-(*** include-value: colType ***)
 
 (** 
 
