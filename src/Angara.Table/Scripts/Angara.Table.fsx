@@ -40,6 +40,10 @@ let table2 = Table.FromArrays [ "x", upcast [| 1; 2; 3 |]; "y", upcast [| 2; 4; 
 
 (*** include-value: Column.ValidTypes ***)
 
+
+(** Table.OfRows: columnNames:string seq -> rows:System.Array seq -> Table ` _to do_ *)
+
+
 (** To remove columns from a table, use `Table.Remove`. *)
 
 
@@ -119,10 +123,10 @@ let averageWheat =
 (*** include-value: averageWheat ***)
 
 (** 
-To get a subset of an array, use `Table.Sub`.
+To get a subset of an array, use `Table.Sub`. _Do we need it? It is possible to use Table.Filteri instead._
 *)
 
-(** 
+(** _Do we need it? One can use the Table.Map() instead._
 Also you might need rows of a table.
 The following sample prints locations of points of the `tableWheat`: *)
 
@@ -169,11 +173,34 @@ let locationsWheat2 : string seq =
 
 (*** include-value: locationsWheat2 ***)
 
+(**
+The function `Table.MapToColumn` builds a new table that contains all columns of the given table and
+a new column or a replacement of an original table column (if there is an existing column with same name as the target name in the original table); 
+elements of the column are the results of applying the given function to each of the rows of the given table columns. 
+`Table.MapiToColumn` also provides an integer index passed to the function which indicates the index of row being transformed.
+
+The signature is: `MapToColumn : columnNames:seq<string> -> newColumnName:string -> map:('a->'b) -> table:Table -> Table`
+
+The generic function `map:'a->'b` is only partially defined. If `columnNames` contains:
+
+* 0 columns, map should be `map:unit->'b`, so the new column type is `'b` and `'a = unit`
+* 1 column, map should be `map:'a->'b`, where `'a` is the type of the source column, and `'b` is the new column type
+* 2 columns, `map:'a->'d->'c`, where `'a` and `'d` are the types of the source columns, so `'b = 'd->'c`, and `'c` is the new column type
+* 3 columns, `map:'a->'d->'e->'c`, where `'a`, `'d` and `'e` are the types of the source columns, so `'b = 'd->'e->'c`, and `'c` is the new column type
+* n...
+
+Ultimate result type of the map function must be valid column type: either `int`, `float`, `string`, `bool` or `System.DateTime`.
+
+The following examples adds new table column named "log(wheat)" which contains logarithm of wheat for each row:
+*)
+
+let tableLogWheat = 
+    tableWheat 
+    |> Table.MapToColumn ["wheat"] "log(wheat)" log
+
+(*** include-value: tableLogWheat ***)
 
 (**
-`Table.MapToColumn`
-`Table.MapiToColumn`
-
 #### Filtering Operations
 
 `Table.Filter`
@@ -181,12 +208,17 @@ let locationsWheat2 : string seq =
 
 #### Grouping Operations
 
+`Table.GroupBy` _to do_
+
 ### Table-wise Operations
 
 `Table.Join`
 `Table.Transform`
 `Table.JoinTransform`
 
+### Ordering Operations
+
+`Table.OrderBy` _to do_
 
 ### Statistics Operations
 
