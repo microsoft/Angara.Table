@@ -220,7 +220,7 @@ if the column contents are numeric:
 *)
 
 (**
-### Creating and Initializing Tables
+### Constructing from Columns
 
 The `Table.Empty` property returns an empty table, i.e. a table that has no columns.
 *)
@@ -242,22 +242,40 @@ let table =
     |> Table.Add "x" [| 1; 2; 3 |]
     |> Table.Add "y" [| 2; 4; 6 |]
 
-(** Table can be constructed from a bunch of `System.Array` objects with corresponding column names; use `Table.FromArrays` function: *)
+(** Table can be constructed from a bunch of `System.Array` objects with corresponding column names; 
+use `Table.ofColumns` function: *)
 
-let table2 = Table.ofSeq [ "x", upcast [| 1; 2; 3 |]; "y", upcast [| 2; 4; 6 |]]
-
-(** Supported column element types are listed in `Column.ValidTypes`: *)
-
-(*** include-value: Column.ValidTypes ***)
-
-
-(** Table.OfRows: columnNames:string seq -> rows:System.Array seq -> Table ` _to do_ *)
-
+let table2 = Table.ofColumns [ "x", upcast [| 1; 2; 3 |]; "y", upcast [| 2; 4; 6 |]]
 
 (** To remove columns from a table, use `Table.Remove`. *)
 
 
 (**
+### Constructing from Rows 
+
+There are several ways how rows can be represented to construct a table. First is to use `Table.ofRecords` which builds a table
+from a sequence of record type instances, when one instance is one row and record field is a column: *)
+
+type Wheat = { lat: float; lon: float; wheat: float }
+let records : Wheat[] = [| (* ... *) |]
+
+let tableWheat = Table.ofRecords records // Table<Wheat> : Table; columns are lazy and use reflection
+
+(**
+Second way is to use `Table.ofTuples2`, `Table.ofTuples3` etc which builds a table from a sequence of tuples,
+when one tuple instance is one row and tuple elements are columns; columns names are given separately: *)
+  
+let tuples : (float*float*float)[] = [| (*...*) |]
+
+let tableWheat = Table.ofTuples3 ("lat", "lon", "wheat") tuples  
+  
+(** Third way is to use `Table.OfRows: columnNames:string seq -> rows:System.Array seq -> Table` which creates a table from 
+a sequence of `System.Array` instances and a sequence of column names. *)
+
+
+(**
+
+## Save and load
 
 To initialize a table from a delimited text file, such as CSV file, you can use 
 `Table.Read` function:
@@ -266,15 +284,9 @@ To initialize a table from a delimited text file, such as CSV file, you can use
 
 let tableWheat = Table.Load @"data\wheat.csv"
 
-(**
-Now, `tableWheat.ToString()` returns the following string:
-*)    
-(*** include-value: tableWheat ***)
+(** or typed: *)
 
-(**
-It means that `tableWheat` has three columns with names `Lon`, `Lat`, `wheat`; number of rows is 691.
-Also, for each column several first elements are printed.
-*)
+let tableWheat = Table.Load<Wheat> @"data\wheat.csv"
 
 (** 
 
@@ -439,22 +451,12 @@ let OrderBy<'a,'b when 'b : comparison> (colName: string) (projection : 'a -> 'b
             | _ -> failwith "Unexpected column type")
     Table(cols)
 
-let OfRows (columnNames : string seq) (rows : System.Array seq) : Table =
-    let rows = rows |> Seq.toArray
-    let cols =
-        columnNames 
-        |> Seq.mapi(fun iCol name ->
-            name,
-            match if rows.Length = 0 then typeof<float> else rows.[0].GetValue(iCol).GetType() with
-            | t when t = typeof<float> -> Column.New(lazy(Array.init rows.Length (fun i -> rows.[i].GetValue(iCol) :?> float)))
-            | t when t = typeof<int> -> Column.New(lazy(Array.init rows.Length (fun i -> rows.[i].GetValue(iCol) :?> int)))
-            | t when t = typeof<string> -> Column.New(lazy(Array.init rows.Length (fun i -> rows.[i].GetValue(iCol) :?> string)))
-            | t when t = typeof<System.DateTime> -> Column.New(lazy(Array.init rows.Length (fun i -> rows.[i].GetValue(iCol) :?> System.DateTime)))
-            | t when t = typeof<bool> -> Column.New(lazy(Array.init rows.Length (fun i -> rows.[i].GetValue(iCol) :?> bool)))
-            | _ -> failwith "Unexpected column type")
-    Table(cols)
+let OfTuples3<'a,'b,'c> (names: string*string*string) (rows : ('a*'b*'c) seq) : Table =
+    let na, nb, nc = names   
+    let ca, cb, cc = rows |> Seq.toArray |> Array.unzip3
+    Table([na; nb; nc], [Column.New ca; Column.New cb; Column.New cc])
 
-(** then *)
+(** then - untyped solution: *)
 
 let survivors =         
     Table.Load(@"data\titanic.csv",
@@ -462,11 +464,33 @@ let survivors =
                      ColumnTypes = Some(fun (_,name) -> match name with "Survived" | "Pclass"-> Some typeof<int> | _ -> None) })
     |> GroupBy "Pclass" id 
     |> Seq.map(fun (pclass:int, table) -> 
-        let stat = table |> Table.ToArray<int[]> "Survived" |> Array.countBy id |> Array.sortBy fst
-        [| pclass; snd stat.[0]; snd stat.[1] |] :> System.Array)
-    |> OfRows ["Pclass"; "Died"; "Survived"] 
+        let stat = table |> Table.ToArray<int[]> "Survived" |> Array.countBy id |> Array.sortBy fst |> Array.map snd
+        pclass, stat.[0], stat.[1])
+    |> OfTuples3 ("Pclass", "Died", "Survived") 
     |> Table.MapToColumn ["Died"; "Survived"] "Died" (fun (died:int) (survived:int) -> 100.0*(float died)/(float (died + survived)))
     |> Table.MapToColumn ["Died"] "Survived" (fun (died:float) -> 100.0 - died)
     |> OrderBy<int,int> "Pclass" id
+
+(*** include-value: survivors ***)
+
+(** Typed solution: *)
+
+type Passenger = { Pclass: int; Survived: int }
+type Survivors = { Pclass: int; Survived: float; Died: float }
+
+let survivors : Table<Survivors> =         
+    Table.Load<Passenger> @"data\titanic.csv"
+    |> GroupBy (fun (p:Passenger) -> p.Pclass) 
+    |> Seq.map(fun (pclass:int, table:Table<Passenger>) -> 
+        let stat = table?Survived |> Array.countBy id |> Array.sortBy fst |> Array.map snd
+        { Pclass = pclass; Survived = float(stat.[0]); Died = float(stat.[1]) })
+    |> OfRecords
+    |> Table.Map (fun (s:Survivors) -> 
+        { Pclass = pclass; 
+          Died = 100.0*s.Died/(s.Died + s.Survived)
+          Survived = 100.0*s.Survived/(s.Died + s.Survived))
+    |> OrderBy (fun (s:Survivors) -> s.Pclass)
+
+let pclass1 : Survivors = survivors.[0];
 
 (*** include-value: survivors ***)
