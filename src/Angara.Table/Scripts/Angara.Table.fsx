@@ -7,7 +7,7 @@ open System.Collections.Generic
 (**
 # Angara.Data.Table (F#)
 
-A **table** is a collection of named columns, where each **column** is one-dimensional array and lengths of all columns are equal.
+A **table** is a collection of named columns, where each **column** is one-dimensional array, and lengths of all columns are equal.
 
 Having the index less than columns length fixed, 
 we define **row** as a one-dimensional array with length equal to number of the columns 
@@ -27,7 +27,7 @@ type Column =
     | BooleanColumn of IRArray<Boolean>
 
 (** 
-Such representation enables typed operations on a column though it limits the set of valid column types.
+Such representation enables efficient and safe typed operations on a column though it limits the set of valid column types.
 
 A column instance is immutable due to use of the generic interface `IRArray<'a>` which represents a read-only array of elements
 of type `'a`.
@@ -41,7 +41,7 @@ type IRArray<'a> =
     abstract member ToArray : unit -> 'a[]
 
 (**
-`IReadOnlyList<'a>` gives you a count of the total number of elements, general and typed iterators,
+The inherited `IReadOnlyList<'a>` interface gives you a count of the total number of elements, general and typed iterators,
 and direct access to each item.
 In addition this interface allows for efficient copying of the entire data or a subset to a new array.
 *)
@@ -66,7 +66,9 @@ type Table =
     member RowsCount : int with get
 
 (**
-Example:
+### Examples
+
+Constructing a table from a sequence of names and columns:
 *)
 
 let table = 
@@ -74,15 +76,151 @@ let table =
         ["x",      RealColumn (RArray.ofArray [| for i in 0..99 -> float(i) / 10.0  |])
          "sin(x)", RealColumn (RArray.ofArray [| for i in 0..99 -> sin (float(i) / 10.0) |]) ])
 
+(** Getting a column array by name and processing it: *)
+
+let idx = table.Names |> Seq.findIndex (fun n -> n = "sin(x)")
+let av = 
+    match table.Columns.[idx] with
+    | RealColumn rarray -> rarray.ToArray() |> Array.average
+    | _ -> failwith "Unexpected type of column" 
 
 (**
-# Functional Operations on Tables
+
+## Operations on Columns
+
+To simplify the code operating with columns, [Angara.Data.Column](angara-data-column.html) exposes utility functions described below.
+
+### Elements Count and Item Accessors
+
+Function `Count : column:Column -> int` returns the count of the total number of column elements.
+
+Functions `Item<'a> : index:int -> column:Column -> 'a` and `TryItem<'a> : index:int -> column:Column -> 'a option`
+return an element at a specified intex in a column.
+The following example prints all column elements:
+*)
+
+let col = table.Columns.[idx]
+let n = Column.Count col
+for i in 0..n-1 do
+    col |> Column.Item i |> printfn "%.2f" 
+
+(**
+### Getting Data    
+
+Following functions return a sequence of the column array elements if column has correct element type; 
+in certain cases they should be considered as preferrable since (a) they don't create a copy of the column array 
+and (b) in case if the implementation of the `IRArray<'a>` interface used for the column computes elements
+on demand, the functions do not necessarily evaluate all column elements:
+
+- `ToSeq<'a> : column:Column -> 'a seq`
+- `TryToSeq<'a> : column:Column -> 'a seq option`
+
+The example computes an average of the column elements assuming that the column is `RealColumn`:
+*)
+
+let av = table.Columns.[idx] |> Column.ToSeq<float> |> Seq.average
+
+(**
+Following functions return copy of the column array if column has correct element type:  
+
+- `ToArray<'a> : column:Column -> 'a[]`
+- `TryToArray<'a> : column:Column -> 'a[] option`
+
+To get a copy of a range of the column array, use the functions 
+
+- `Sub<'a> : startIndex:int -> count:int -> column:Column -> 'a[]`
+- `TrySub<'a> : startIndex:int -> count:int -> column:Column -> 'a[] option`
+
+### Mapping
+
+The function `Map` builds a sequence whose elements are the results of applying the given function 
+to each of the rows of certain columns. 
+`Mapi` also provides an integer index passed to the function which indicates the index of row being transformed.
+As in `Seq.zip`, columns need not have the same length. 
+The signatures are:
+
+- `Map<'a,'b,'c> : map:('a->'b) -> columns:seq<Column> -> 'c seq`
+- `Mapi<'a,'c> : map:(int->'a) -> columns:seq<Column> -> 'c seq`
+*)
+
+(** 
+### Filtering
+The function `Select` combines a binary mask with a column to create a new column with the same type.
+As in `Seq.zip`, mask and column contents need not have the same length.
+
+`Select : mask:seq<bool> -> column:Column -> Column`
+
+The following example builds a table containing only those rows of an original table 
+for which value of one of the columns is positive:
+*)
+
+let mask = table.Columns.[idx] |> Column.Map (fun a -> a > 0.0)
+let columns = table.Columns |> Seq.map (Column.Select mask)
+let tablePos = Table(Seq.zip table.Names columns)
+
+(** 
+### Statistics 
+
+The following function returns some simple statistical properties of the column contents:
+
+`Summary : column:Column -> ColumnSummary` where
+*)
+type NumericColumnSummary = {
+    Min: float
+    /// Lower bound of 95-th percentile.
+    Lb95: float
+    /// Lower bound of 68-th percentile.
+    Lb68: float
+    Median: float
+    /// Upper bound of 68-th percentile.
+    Ub68: float
+    /// Upper bound of 95-th percentile.
+    Ub95: float
+    Max: float
+    Mean: float
+    Variance: float
+    /// Total number of elements in the column.
+    TotalCount: int
+    /// Number of elements in the column except for NaNs.
+    Count: int
+}
+type ComparableColumnSummary<'a when 'a : comparison> = {
+    /// A minimum value of the column.
+    Min: 'a
+    /// A maximum value of the column.
+    Max: 'a
+    /// Total number of elements in the column.
+    TotalCount: int
+    /// Number of elements in the column except for missing values,
+    /// which is null or empty string, if 'a is string.
+    Count: int
+}
+type BooleanColumnSummary = {
+    /// Number of rows with value "true"
+    TrueCount: int
+    /// Number of rows with value "false"
+    FalseCount: int
+}
+type ColumnSummary =
+    | NumericColumnSummary  of NumericColumnSummary
+    | StringColumnSummary   of ComparableColumnSummary<string>
+    | DateColumnSummary     of ComparableColumnSummary<DateTime>
+    | BooleanColumnSummary  of BooleanColumnSummary
+
+(**
+The following functions return a probability density function (PDF) of the column contents 
+if the column contents are numeric:
+
+- `Pdf : pointCount:int -> column:Column -> (float[] * float[])`
+- `TryPdf : pointCount:int -> column:Column -> (float[] * float[]) option`
+
+## Operations on Tables
 [Angara.Data.Table](angara-data-table.html) exploits functional approach and allows to use succinct code to perform complex operations on tables.
 
 *)
 
 (**
-## Creating and Initializing Tables
+### Creating and Initializing Tables
 
 The `Table.Empty` property returns an empty table, i.e. a table that has no columns.
 *)
@@ -126,7 +264,7 @@ To initialize a table from a delimited text file, such as CSV file, you can use
 
 *)
 
-let tableWheat = Table.Read DelimitedFile.ReadSettings.Default @"data\wheat.csv"
+let tableWheat = Table.Load @"data\wheat.csv"
 
 (**
 Now, `tableWheat.ToString()` returns the following string:
@@ -140,7 +278,7 @@ Also, for each column several first elements are printed.
 
 (** 
 
-## Getting Arrays
+### Getting Arrays
 
 There are two different views on a table: column-wise and row-wise. In the first case, you can get an array of a column using
 `Table.ToArray` function.
@@ -179,9 +317,9 @@ let locationsWheat =
 
 (**
 
-## Transforming Tables
+### Transforming Tables
 
-### Row-wise Operations
+#### Row-wise Operations
 
 #### Mapping Operations
 
@@ -319,9 +457,9 @@ let OfRows (columnNames : string seq) (rows : System.Array seq) : Table =
 (** then *)
 
 let survivors =         
-    Table.Read { DelimitedFile.ReadSettings.Default with 
-                     ColumnTypes = Some(fun (_,name) -> match name with "Survived" | "Pclass"-> Some typeof<int> | _ -> None) } 
-               @"data\titanic.csv"
+    Table.Load(@"data\titanic.csv",
+               { DelimitedFile.ReadSettings.Default with 
+                     ColumnTypes = Some(fun (_,name) -> match name with "Survived" | "Pclass"-> Some typeof<int> | _ -> None) })
     |> GroupBy "Pclass" id 
     |> Seq.map(fun (pclass:int, table) -> 
         let stat = table |> Table.ToArray<int[]> "Survived" |> Array.countBy id |> Array.sortBy fst
