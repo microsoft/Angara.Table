@@ -4,49 +4,29 @@
 open Angara.Data
 open System
 open System.Collections.Generic
+open System.Collections.Immutable
 (**
 # Angara.Data.Table (F#)
 
-A **table** is a collection of named columns, where each **column** is one-dimensional array, and lengths of all columns are equal.
-
-Having the index less than columns length fixed, 
-we define **row** as a one-dimensional array with length equal to number of the columns 
-whose elements are elements of the columns having the chosen index, with the order of columns respected.
-The chosen index is called a **row index**. Thus number of table rows equals to length of table columns.
-
-Columns **names** are arbitrary strings which can be duplicated within a table.
+A **table** is a collection of named columns. A **column** is one-dimensional array of one of the supported 
+types. Heights of all columns in a table are equal.
+Columns **names** are arbitrary strings. Duplicate names are allowed but may cause ambiguity in
+some API functions.
 *)
 
-(** In the library, a column is represented as a discriminitated union `Angara.Data.Column`: *)
+(** A column is represented as a discriminitated union `Angara.Data.Column`: 
+*)
 
 type Column =
-    | IntColumn     of IRArray<int>
-    | RealColumn    of IRArray<float>
-    | StringColumn  of IRArray<string>
-    | DateColumn    of IRArray<DateTime>
-    | BooleanColumn of IRArray<Boolean>
+    | IntColumn     of ImmutableArray<int>
+    | RealColumn    of ImmutableArray<float>
+    | StringColumn  of ImmutableArray<string>
+    | DateColumn    of ImmutableArray<DateTime>
+    | BooleanColumn of ImmutableArray<Boolean>
 
-(** 
-Such representation enables efficient and safe typed operations on a column though it limits the set of valid column types.
+(** The [System.Collections.Immutable.ImmutableArray<'a>](https://msdn.microsoft.com/en-us/library/dn638264(v=vs.111).aspx)
+structure represents an array that cannot be changed once it is created.
 
-A column instance is immutable due to use of the generic interface `IRArray<'a>` which represents a read-only array of elements
-of type `'a`.
-*)
-
-type IRArray<'a> =
-    inherit IReadOnlyList<'a>
-    /// Copy a subset of this array to a new array
-    abstract member Sub : startIndex:int * count:int -> 'a[]
-    /// Copy the underlying array to a new array
-    abstract member ToArray : unit -> 'a[]
-
-(**
-The inherited `IReadOnlyList<'a>` interface gives you a count of the total number of elements, general and typed iterators,
-and direct access to each item.
-In addition this interface allows for efficient copying of the entire data or a subset to a new array.
-*)
-
-(**
 `Angara.Data.Table` type is immutable and can be constructed from a sequence of name and column pairs.
 It exposes the `Names` and `Columns` as read-only lists of same length.
 The `RowsCount` property returns the total number of rows in the table.
@@ -54,8 +34,6 @@ The `RowsCount` property returns the total number of rows in the table.
    
 type Table =
     /// Construct a table from a sequence of tuples of column names and columns.
-    /// All columns must have same length.
-    /// Names are arbitrary strings that can be duplicated.
     new : nameColumns:seq<string * Column> -> Table
 
     /// Return readonly list of column names
@@ -73,15 +51,15 @@ Constructing a table from a sequence of names and columns:
 
 let table = 
     Table(
-        ["x",      RealColumn (RArray.ofArray [| for i in 0..99 -> float(i) / 10.0  |])
-         "sin(x)", RealColumn (RArray.ofArray [| for i in 0..99 -> sin (float(i) / 10.0) |]) ])
+        ["x",      RealColumn (ImmutableArray.Create [| for i in 0..99 -> float(i) / 10.0  |])
+         "sin(x)", RealColumn (ImmutableArray.Create [| for i in 0..99 -> sin (float(i) / 10.0) |]) ])
 
 (** Getting a column array by name and processing it: *)
 
 let idx = table.Names |> Seq.findIndex (fun n -> n = "sin(x)")
 let av = 
     match table.Columns.[idx] with
-    | RealColumn rarray -> rarray.ToArray() |> Array.average
+    | RealColumn a -> Seq.average a
     | _ -> failwith "Unexpected type of column" 
 
 (**
@@ -107,10 +85,8 @@ for i in 0..n-1 do
 (**
 ### Getting Data    
 
-Following functions return a sequence of the column array elements if column has correct element type; 
-in certain cases they should be considered as preferrable since (a) they don't create a copy of the column array 
-and (b) in case if the implementation of the `IRArray<'a>` interface used for the column computes elements
-on demand, the functions do not necessarily evaluate all column elements:
+Following functions return a sequence of the column elements if column has correct element type; 
+in certain cases they should be considered as preferrable since they don't create a copy of the column array:
 
 - `ToSeq<'a> : column:Column -> 'a seq`
 - `TryToSeq<'a> : column:Column -> 'a seq option`
@@ -121,7 +97,7 @@ The example computes an average of the column elements assuming that the column 
 let av = table.Columns.[idx] |> Column.ToSeq<float> |> Seq.average
 
 (**
-Following functions return copy of the column array if column has correct element type:  
+Following functions return a copy of the column array if column has correct element type:  
 
 - `ToArray<'a> : column:Column -> 'a[]`
 - `TryToArray<'a> : column:Column -> 'a[] option`
@@ -217,7 +193,38 @@ if the column contents are numeric:
 ## Operations on Tables
 [Angara.Data.Table](angara-data-table.html) exploits functional approach and allows to use succinct code to perform complex operations on tables.
 
+All functions described below identify a column by its name. Thus duplicate names cause ambiguity which is implicitly resolved
+by using the first column having the given name. Still you can explicitly resolve the ambiguity using following approaches:
+
+1. If only one of the columns is needed, then you can build a new table that 
+has all columns except those which are not needed. 
+2. If several columns with same name are needed, build a new table that has same columns but with different names, so that
+duplicate columns are renamed.
+
+Both approaches do not cause any column data copying or processing.
+
+For example, if `table` has several columns named `wheat` and you need only one with index `wheatIdx`,
+create a table that contains only one needed column `wheat`:
 *)
+
+let table2 =
+    Table( 
+        Seq.zip table.Names table.Column
+        |> Seq.mapi (fun i x -> i, x)
+        |> Seq.choose (fun (i,(n,c)) -> 
+            match n with
+            | "wheat" when i = wheatIdx -> None
+            | _ -> Some(n,c)))
+        
+(** Next example renames columns named `wheat` by appending their index to the name: *)
+
+let table3 =
+    Table( 
+        Seq.zip table.Names table.Column
+        |> Seq.mapi (fun i (n,c) -> 
+            match n with
+            | "wheat" -> sprintf "wheat (%d)" i, c
+            | _ -> n, c))
 
 (**
 ### Constructing from Columns
@@ -275,10 +282,13 @@ a sequence of `System.Array` instances and a sequence of column names. *)
 
 (**
 
-## Save and load
+### Save and load
 
-To initialize a table from a delimited text file, such as CSV file, you can use 
-`Table.Read` function:
+The `Table` exposes functions to load and save a table in the delimited text format
+in accordance with [RFC 4180](https://tools.ietf.org/html/rfc4180) but with extended set of delimiters: comma, tab, semicolon and space.
+
+To load a table from a delimited text file, such as CSV file, you can use 
+`Table.Load` function:
 
 *)
 
@@ -288,52 +298,83 @@ let tableWheat = Table.Load @"data\wheat.csv"
 
 let tableWheat = Table.Load<Wheat> @"data\wheat.csv"
 
-(** 
+(**
+The `Table.Save` function saves a table to a file or stream: *)
 
-### Getting Arrays
+Table.Save (tableWheat, "wheat.csv")
 
-There are two different views on a table: column-wise and row-wise. In the first case, you can get an array of a column using
-`Table.ToArray` function.
+(**Also there are overloaded functions `Load` and `Save` that allow to provide custom settings: *)
 
-The following examples gets an array of the column `wheat` and then computes its average value:
+type SaveSettings = 
+    { /// Determines which character will delimit columns.
+      Delimiter : Delimiter
+      /// If true, writes null strings as an empty string and an empty string as double quotes (""), 
+      /// so that these cases could be distinguished; otherwise, if false, throws an exception if null is 
+      /// in a string data array.
+      AllowNullStrings : bool 
+      /// If true, the first line will contain names corresponding to the columns of the table.
+      /// Otherwise, if false, the first line is a data line.
+      SaveHeader: bool }
+    /// Uses comma as delimiter, saves a header, and disallows null strings.
+    static member Default : WriteSettings
+
+type LoadSettings = 
+    { /// Determines which character delimits columns.
+      Delimiter : Delimiter
+      /// If true, double quotes ("") are considered as empty string and an empty string is considered as null; 
+      /// otherwise, if false, both cases are considered as an empty string.
+      InferNullStrings : bool
+      /// If true, the first line is considered as a header of the table.
+      /// This header will contain names corresponding to the fields in the file
+      /// and should contain the same number of fields as the records in
+      /// the rest of the file. Otherwise, if false, the first line is a data line and columns are named as 
+      /// A, B, C, ..., Z, AA, AB... .
+      HasHeader: bool
+      /// An optional value that allows to provide an expected number of columns. If number of columns differs, the reading fails.
+      ColumnsCount : int option
+      /// An optional value that allows a user to specify element types for some of columns. In particular this allows
+      /// reading integer columns since automatic inference always uses Double type for numeric values.
+      ColumnTypes : (int * string -> System.Type option) option }
+    /// Expects comma as delimiter, has header, doesn't infer null strings, and doesn't predefine column count or types.
+    static member Default : ReadSettings
+
+(**
+### Getting Data
+
+There are two different views on a table: column-wise and row-wise. In the first case, you can get column elements using
+`Table.ToArray` or `Table.ToSeq` functions. The former builds and returns a copy of a column array to 
+guarantee immutability of the table; the latter doesn't create a copy and enumerates column elements.
+
+The following examples computes an average of the column `wheat`:
 
 *)
 
 let averageWheat = 
     tableWheat 
-    |> Table.ToArray<float[]> "wheat"
-    |> Array.average
+    |> Table.ToSeq<float> "wheat"
+    |> Seq.average
 
 (*** include-value: averageWheat ***)
 
-(** 
-To get a subset of an array, use `Table.Sub`. _Do we need it? It is possible to use Table.Filteri instead._
-*)
+(** To get row-wise access to a table, use `Table.Map` or `Table.Mapi`.
+The following sample gets a sequence of tuples containing latitides and longitudes of each table row: *)
 
-(** _Do we need it? One can use the Table.Map() instead._
-Also you might need rows of a table.
-The following sample prints locations of points of the `tableWheat`: *)
-
-let Rows2<'a,'b> (names:string*string) (t:Table) : ('a*'b) seq =
-    let a,b = names
-    let ca = t |> Table.ToArray<'a[]> a
-    let cb = t |> Table.ToArray<'b[]> b
-    seq{ for i in 0..ca.Length-1 -> ca.[i],cb.[i] }
-
-let locationsWheat = 
+let locationsWheat : (float*float) seq = 
     tableWheat 
-    |> Rows2 ("Lat", "Lon") 
-    |> Seq.map (fun (lat,lon) -> sprintf "%.2f, %.2f" lat lon)
+    |> Table.Map ["Lat"; "Lon"] (fun lat lon -> lat,lon)
 
 (*** include-value: locationsWheat ***)
 
 (**
+Typed `Table<'a>` exposes indexing property `Rows` which returns a row as a typed instance: *)
 
-### Transforming Tables
+for i = 0..tableWheat.RowsCount-1 do
+    let row = tableWheat.Rows.[i] 
+    printf "%f, %f" row.Lat row.Lon
 
-#### Row-wise Operations
+(**
 
-#### Mapping Operations
+### Mapping Rows
 
 The function `Table.Map` builds a sequence whose elements are the results of applying the given function to each of the rows of certain table columns.
 `Table.Mapi` also provides an integer index passed to the function which indicates the index of row being transformed.
@@ -348,12 +389,12 @@ The generic function `map:'a->'b` is only partially defined. If `columnNames` co
 * 3 columns, `map:'a->'d->'e->'c`, where `'a`, `'d` and `'e` are the types of the columns, so `'b = 'd->'e->'c`
 * n...
 
-Using the `Table.Map` function, the example for `Rows2` function can be rewritten as follows:
+The following example prints locations for each row of the table:
 *)
 
 let locationsWheat2 : string seq = 
     tableWheat 
-    |> Table.Map ["Lat"; "Lon"] (sprintf "%.2f, %.2f")
+    |> Table.Map ["Lat"; "Lon"] (sprintf "%.2f, %.2f")    
 
 (*** include-value: locationsWheat2 ***)
 
@@ -385,26 +426,38 @@ let tableLogWheat =
 (*** include-value: tableLogWheat ***)
 
 (**
-#### Filtering Operations
+### Filtering Rows
+
+The filtering functions return a new table containing all rows from a table where a predicate is true, 
+where the predicate takes a set of columns.
 
 `Table.Filter`
 `Table.Filteri`
 
-#### Grouping Operations
+*)
 
-`Table.GroupBy` _to do_
+(** 
+To get a subset of table rows, use the function `Table.Filteri':
+*)
 
-### Table-wise Operations
+let tableWheat_10rows = tableWheat |> Table.Filteri [] (fun i -> i < 10)
+
+(**
+### Transforming and Joining Tables
 
 `Table.Join`
 `Table.Transform`
 `Table.JoinTransform`
 
-### Ordering Operations
+### Grouping Rows
+
+`Table.GroupBy` _to do_
+
+### Ordering Rows 
 
 `Table.OrderBy` _to do_
 
-### Statistics Operations
+### Statistics
 
 `Table.Summary`
 `Table.TrySummary`
@@ -412,8 +465,6 @@ let tableLogWheat =
 `Table.TryCorrelation`
 `Table.Pdf`
 `Table.TryPdf`
-
-
 
 *)
 
