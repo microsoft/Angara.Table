@@ -8,7 +8,7 @@ open System.Collections.Immutable
 (**
 # Angara.Data.Table (F#)
 
-A **table** is a collection of named columns. A **column** is one-dimensional array of one of the supported 
+A **table** is an immutable collection of named columns. A **column** is one-dimensional immutable array of one of the supported 
 types. Heights of all columns in a table are equal.
 Columns **names** are arbitrary strings. Duplicate names are allowed but may cause ambiguity in
 some API functions.
@@ -18,14 +18,16 @@ some API functions.
 *)
 
 type Column =
-    | IntColumn     of ImmutableArray<int>
-    | RealColumn    of ImmutableArray<float>
-    | StringColumn  of ImmutableArray<string>
-    | DateColumn    of ImmutableArray<DateTime>
-    | BooleanColumn of ImmutableArray<Boolean>
+    | IntColumn     of Lazy<ImmutableArray<int>>
+    | RealColumn    of Lazy<ImmutableArray<float>>
+    | StringColumn  of Lazy<ImmutableArray<string>>
+    | DateColumn    of Lazy<ImmutableArray<DateTime>>
+    | BooleanColumn of Lazy<ImmutableArray<Boolean>>
 
 (** The [System.Collections.Immutable.ImmutableArray<'a>](https://msdn.microsoft.com/en-us/library/dn638264(v=vs.111).aspx)
-structure represents an array that cannot be changed once it is created.
+structure represents an array that cannot be changed once it is created. Use of 
+[System.Lazy<'a>](https://msdn.microsoft.com/en-us/library/dd233247.aspx) enables possibility of evaluation of
+column array on demand.
 
 `Angara.Data.Table` type is immutable and can be constructed from a sequence of name and column pairs.
 It exposes the `Names` and `Columns` as read-only lists of same length.
@@ -33,175 +35,56 @@ The `RowsCount` property returns the total number of rows in the table.
 *)
    
 type Table =
-    /// Construct a table from a sequence of tuples of column names and columns.
-    new : nameColumns:seq<string * Column> -> Table
-
-    /// Return readonly list of column names
-    member Names : IReadOnlyList<string> with get
-    /// Return readonly list of columns
-    member Columns : IReadOnlyList<Column> with get
-    /// Return rows count 
+    new : nameColumns : (string*Column) list * rowsCount:int -> Table
+    new : nameColumns : (string*Column) list -> Table
+    
+    member ColumnsCount : int with get
     member RowsCount : int with get
 
-(**
-### Examples
+    member Columns : (string*Column) list with get
 
-Constructing a table from a sequence of names and columns:
+type Table<'r> inherit Table =
+    new : 'r list -> Table<'r>
+    member Rows : 'r list
+
+(**
+The example builds a table from a list of names and columns:
 *)
 
 let table = 
     Table(
-        ["x",      RealColumn (ImmutableArray.Create [| for i in 0..99 -> float(i) / 10.0  |])
-         "sin(x)", RealColumn (ImmutableArray.Create [| for i in 0..99 -> sin (float(i) / 10.0) |]) ])
+        ["x",      RealColumn (lazy(ImmutableArray.Create [| for i in 0..99 -> float(i) / 10.0  |]))
+         "sin(x)", RealColumn (lazy(ImmutableArray.Create [| for i in 0..99 -> sin (float(i) / 10.0) |])) ])
 
-(** Getting a column array by name and processing it: *)
 
-let idx = table.Names |> Seq.findIndex (fun n -> n = "sin(x)")
+(**
+[Angara.Data.Table](angara-data-table.html) exposes a number of functions that should simplify the code
+operating with tables though payoff for some of them is that the type checking is performed in runtime.
+*)
+
+(**
+### Get Column by Name
+
+The `Table.Column` function returns a column by its name; or fails, if it is not found.
+The `Table.TryColumn` function returns `Some` of a column; or `None`, if the column is not found. 
+
+The example finds a column by name and computes its average: *)
+
 let av = 
-    match table.Columns.[idx] with
-    | RealColumn a -> Seq.average a
+    match table |> Table.Column "wheat" with
+    | RealColumn a -> Seq.average a.Value
     | _ -> failwith "Unexpected type of column" 
 
 (**
-
-## Operations on Columns
-
-To simplify the code operating with columns, [Angara.Data.Column](angara-data-column.html) exposes utility functions described below.
-
-### Elements Count and Item Accessors
-
-Function `Count : column:Column -> int` returns the count of the total number of column elements.
-
-Functions `Item<'a> : index:int -> column:Column -> 'a` and `TryItem<'a> : index:int -> column:Column -> 'a option`
-return an element at a specified intex in a column.
-The following example prints all column elements:
-*)
-
-let col = table.Columns.[idx]
-let n = Column.Count col
-for i in 0..n-1 do
-    col |> Column.Item i |> printfn "%.2f" 
-
-(**
-### Getting Data    
-
-Following functions return a sequence of the column elements if column has correct element type; 
-in certain cases they should be considered as preferrable since they don't create a copy of the column array:
-
-- `ToSeq<'a> : column:Column -> 'a seq`
-- `TryToSeq<'a> : column:Column -> 'a seq option`
-
-The example computes an average of the column elements assuming that the column is `RealColumn`:
-*)
-
-let av = table.Columns.[idx] |> Column.ToSeq<float> |> Seq.average
-
-(**
-Following functions return a copy of the column array if column has correct element type:  
-
-- `ToArray<'a> : column:Column -> 'a[]`
-- `TryToArray<'a> : column:Column -> 'a[] option`
-
-To get a copy of a range of the column array, use the functions 
-
-- `Sub<'a> : startIndex:int -> count:int -> column:Column -> 'a[]`
-- `TrySub<'a> : startIndex:int -> count:int -> column:Column -> 'a[] option`
-
-### Mapping
-
-The function `Map` builds a sequence whose elements are the results of applying the given function 
-to each of the rows of certain columns. 
-`Mapi` also provides an integer index passed to the function which indicates the index of row being transformed.
-As in `Seq.zip`, columns need not have the same length. 
-The signatures are:
-
-- `Map<'a,'b,'c> : map:('a->'b) -> columns:seq<Column> -> 'c seq`
-- `Mapi<'a,'c> : map:(int->'a) -> columns:seq<Column> -> 'c seq`
-*)
-
-(** 
-### Filtering
-The function `Select` combines a binary mask with a column to create a new column with the same type.
-As in `Seq.zip`, mask and column contents need not have the same length.
-
-`Select : mask:seq<bool> -> column:Column -> Column`
-
-The following example builds a table containing only those rows of an original table 
-for which value of one of the columns is positive:
-*)
-
-let mask = table.Columns.[idx] |> Column.Map (fun a -> a > 0.0)
-let columns = table.Columns |> Seq.map (Column.Select mask)
-let tablePos = Table(Seq.zip table.Names columns)
-
-(** 
-### Statistics 
-
-The following function returns some simple statistical properties of the column contents:
-
-`Summary : column:Column -> ColumnSummary` where
-*)
-type NumericColumnSummary = {
-    Min: float
-    /// Lower bound of 95-th percentile.
-    Lb95: float
-    /// Lower bound of 68-th percentile.
-    Lb68: float
-    Median: float
-    /// Upper bound of 68-th percentile.
-    Ub68: float
-    /// Upper bound of 95-th percentile.
-    Ub95: float
-    Max: float
-    Mean: float
-    Variance: float
-    /// Total number of elements in the column.
-    TotalCount: int
-    /// Number of elements in the column except for NaNs.
-    Count: int
-}
-type ComparableColumnSummary<'a when 'a : comparison> = {
-    /// A minimum value of the column.
-    Min: 'a
-    /// A maximum value of the column.
-    Max: 'a
-    /// Total number of elements in the column.
-    TotalCount: int
-    /// Number of elements in the column except for missing values,
-    /// which is null or empty string, if 'a is string.
-    Count: int
-}
-type BooleanColumnSummary = {
-    /// Number of rows with value "true"
-    TrueCount: int
-    /// Number of rows with value "false"
-    FalseCount: int
-}
-type ColumnSummary =
-    | NumericColumnSummary  of NumericColumnSummary
-    | StringColumnSummary   of ComparableColumnSummary<string>
-    | DateColumnSummary     of ComparableColumnSummary<DateTime>
-    | BooleanColumnSummary  of BooleanColumnSummary
-
-(**
-The following functions return a probability density function (PDF) of the column contents 
-if the column contents are numeric:
-
-- `Pdf : pointCount:int -> column:Column -> (float[] * float[])`
-- `TryPdf : pointCount:int -> column:Column -> (float[] * float[]) option`
-
-## Operations on Tables
-[Angara.Data.Table](angara-data-table.html) exploits functional approach and allows to use succinct code to perform complex operations on tables.
-
 All functions described below identify a column by its name. Thus duplicate names cause ambiguity which is implicitly resolved
 by using the first column having the given name. Still you can explicitly resolve the ambiguity using following approaches:
 
 1. If only one of the columns is needed, then you can build a new table that 
 has all columns except those which are not needed. 
-2. If several columns with same name are needed, build a new table that has same columns but with different names, so that
-duplicate columns are renamed.
+2. If several columns with same name are needed, build a new table that has same columns but give unique names 
+to the columns with duplicate names.
 
-Both approaches do not cause any column data copying or processing.
+Both approaches do not cause any column data evaluation or copying.
 
 For example, if `table` has several columns named `wheat` and you need only one with index `wheatIdx`,
 create a table that contains only one needed column `wheat`:
@@ -209,18 +92,18 @@ create a table that contains only one needed column `wheat`:
 
 let table2 =
     Table( 
-        Seq.zip table.Names table.Column
+        table.Columns
         |> Seq.mapi (fun i x -> i, x)
         |> Seq.choose (fun (i,(n,c)) -> 
             match n with
-            | "wheat" when i = wheatIdx -> None
+            | "wheat" when i <> wheatIdx -> None
             | _ -> Some(n,c)))
-        
+
 (** Next example renames columns named `wheat` by appending their index to the name: *)
 
 let table3 =
     Table( 
-        Seq.zip table.Names table.Column
+        table.Columns
         |> Seq.mapi (fun i (n,c) -> 
             match n with
             | "wheat" -> sprintf "wheat (%d)" i, c
@@ -249,11 +132,6 @@ let table =
     |> Table.Add "x" [| 1; 2; 3 |]
     |> Table.Add "y" [| 2; 4; 6 |]
 
-(** Table can be constructed from a bunch of `System.Array` objects with corresponding column names; 
-use `Table.ofColumns` function: *)
-
-let table2 = Table.ofColumns [ "x", upcast [| 1; 2; 3 |]; "y", upcast [| 2; 4; 6 |]]
-
 (** To remove columns from a table, use `Table.Remove`. *)
 
 
@@ -266,7 +144,7 @@ from a sequence of record type instances, when one instance is one row and recor
 type Wheat = { lat: float; lon: float; wheat: float }
 let records : Wheat[] = [| (* ... *) |]
 
-let tableWheat = Table.ofRecords records // Table<Wheat> : Table; columns are lazy and use reflection
+let tableWheat = Table.ofRecords records
 
 (**
 Second way is to use `Table.ofTuples2`, `Table.ofTuples3` etc which builds a table from a sequence of tuples,
