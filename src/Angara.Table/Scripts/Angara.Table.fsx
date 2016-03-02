@@ -10,8 +10,8 @@ open System.Collections.Immutable
 
 A **table** is an immutable collection of named columns. A **column** is one-dimensional immutable array of one of the supported 
 types. Heights of all columns in a table are equal.
-Columns **names** are arbitrary strings. Duplicate names are allowed but may cause ambiguity in
-some API functions.
+Columns **names** are arbitrary strings. A table column can be identified by both name and index.
+Duplicate names are allowed but may cause ambiguity in some API functions.
 *)
 
 (** A column is represented as a discriminitated union `Angara.Data.Column`: 
@@ -24,30 +24,34 @@ type Column =
     | DateColumn    of Lazy<ImmutableArray<DateTime>>
     | BooleanColumn of Lazy<ImmutableArray<Boolean>>
 
-(** The [System.Collections.Immutable.ImmutableArray<'a>](https://msdn.microsoft.com/en-us/library/dn638264(v=vs.111).aspx)
+(** The [ImmutableArray<'a>](https://msdn.microsoft.com/en-us/library/dn638264(v=vs.111).aspx)
 structure represents an array that cannot be changed once it is created. Use of 
-[System.Lazy<'a>](https://msdn.microsoft.com/en-us/library/dd233247.aspx) enables possibility of evaluation of
-column array on demand.
+[Lazy<'a>](https://msdn.microsoft.com/en-us/library/dd233247.aspx) enables evaluation of
+the column array on demand.
 
-`Angara.Data.Table` type is immutable and can be constructed from a sequence of name and column pairs.
-It exposes the `Names` and `Columns` as read-only lists of same length.
-The `RowsCount` property returns the total number of rows in the table.
+The type `Angara.Data.Table` represents an immutable table:
 *)
    
 type Table =
-    new : nameColumns : (string*Column) list * rowsCount:int -> Table
     new : nameColumns : (string*Column) list -> Table
+    new : nameColumns : (string*Column) list * rowsCount:int -> Table
     
-    member ColumnsCount : int with get
+    member ColumnsCount : int with get    
     member RowsCount : int with get
-
+    
+    member Column : index:int -> Column
+    member Column : name:string -> Column
+    
     member Columns : (string*Column) list with get
 
-type Table<'r> inherit Table =
-    new : 'r list -> Table<'r>
-    member Rows : 'r list
-
 (**
+`Table` can be constructed from a list of name and column pairs.
+Then the rows count is determined on the first access to the `RowsCount` property.
+If there is a column whose lazy array already has value, its length is taken; otherwise, the first column is evaluated.
+
+If evaluation of a column takes significant time and the number of rows is known on table construction, 
+you should use the second constructor to provide the `rowsCount` argument.
+
 The example builds a table from a list of names and columns:
 *)
 
@@ -56,24 +60,77 @@ let table =
         ["x",      RealColumn (lazy(ImmutableArray.Create [| for i in 0..99 -> float(i) / 10.0  |]))
          "sin(x)", RealColumn (lazy(ImmutableArray.Create [| for i in 0..99 -> sin (float(i) / 10.0) |])) ])
 
-
 (**
-[Angara.Data.Table](angara-data-table.html) exposes a number of functions that should simplify the code
-operating with tables though payoff for some of them is that the type checking is performed in runtime.
+The `Table.Columns` property allows listing columns names and types without forcing evaluation of lazy arrays; 
+for example, the following code prints the table schema:
+*)
+
+table.Columns
+|> List.iteri (fun colIdx (name, col) ->
+    printf "%d: %s of type %s" colIdx name
+        match col with
+        | RealColumn _    -> "float"
+        | IntColumn _     -> "int"
+        | StringColumn _  -> "string"
+        | DateColumn _    -> "DateTime"
+        | BooleanColumn _ -> "bool")
+
+(** 
+The methods `Table.Column` return a column by its index or name. If a column is not found,
+an exception is thrown; if there are two or more columns with the given name,
+the first column having the name is returned.
 *)
 
 (**
-### Get Column by Name
-
-The `Table.Column` function returns a column by its name; or fails, if it is not found.
-The `Table.TryColumn` function returns `Some` of a column; or `None`, if the column is not found. 
-
-The example finds a column by name and computes its average: *)
+The `Table` type exposes column-wise data access because it enables type safe code.
+The following example computes an average of a column `wheat`: *)
 
 let av = 
-    match table |> Table.Column "wheat" with
+    match table.Column "wheat" with
     | RealColumn a -> Seq.average a.Value
     | _ -> failwith "Unexpected type of column" 
+
+(**
+There are three ways to perform row-wise access:
+
+* If table schema is known and can be represented as a record, use the generic type `Table<'r>` which exposes property 
+`Rows : 'r list`.
+* Create type safe code by accessing columns elements at certain index:
+*)
+    let rowsLatLon : (float*float)[] = 
+        match table.Column "lat", table.Column "lon" with
+        | RealColumn lat, RealColumn lon -> [| i in 0..table.RowsCount-1 -> lat.Value.[i], lon.Value.[i] |]
+        | _ -> failwith "Unexpected type"    
+(**
+* Use helper function `Table.Map` which enables succinct code but with runtime type check: 
+*)
+    let rowsLatLon : (float*float)[] =
+        table
+        |> Table.Map ["lat";"lon"] (fun lat lon -> lat, lon)
+
+(**
+If table schema is known at compile time, the generic table type `Type<'r>` can be used.
+The type `'r` defines structure of a table and instance of `'r` represents a single table row.
+The type `'r` must be sealed and all its public read-only instance properties are considered as table columns with 
+corresponding names. The columns are ordered in an alphabetical order.
+
+The `Table<'r>` instance can be built from a list of instances of `'r`:
+*)
+
+type Table<'r> inherit Table =
+    new : 'r list -> Table<'r>
+    member Rows : 'r list
+    
+(**
+Arrays of columns are computed using reflection on demand. 
+*)
+
+(**
+## Table Operations
+
+[Angara.Data.Table](angara-data-table.html) exposes a number of functions that should simplify the code
+operating with tables though payoff for some of them is that the type checking is performed in runtime.
+*)
 
 (**
 All functions described below identify a column by its name. Thus duplicate names cause ambiguity which is implicitly resolved

@@ -635,6 +635,11 @@ type Table(names:seq<string>, columns:seq<Column>) =
             |> Array.unzip
         Table(names, columns)
 
+    member this.Column(index:int) = columnsRO.[index]
+
+    member this.Column(name:string) = columnsRO.[0] // todo
+        
+
     member this.Names
         with get() : IReadOnlyList<string> =
             namesRO

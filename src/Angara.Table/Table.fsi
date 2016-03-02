@@ -258,6 +258,9 @@ type Table =
     /// Return readonly list of columns
     member Columns : IReadOnlyList<Column> with get
 
+    member Column : int -> Column 
+    member Column : string -> Column 
+
     /// Return rows count 
     member Count : int with get
 
