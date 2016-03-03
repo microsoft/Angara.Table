@@ -38,7 +38,7 @@ module internal HelpersForReinstate =
 
 
 module internal HelpersForHtml =
-    let SerializeColumn (c: Column) =
+    let SerializeColumn (c: ColumnRows) =
         let colType = Column.Type c
         if colType = typeof<double> then InfoSet.DoubleArray(Column.ToArray<double[]> c)
         elif colType = typeof<DateTime> then InfoSet.DateTimeArray(Column.ToArray<DateTime[]> c)
@@ -96,7 +96,7 @@ module internal HelpersForHtml =
                 let sumType = map.["type"].ToStringValue()
 
                 match sumType with 
-                | "numeric" -> { RealColumnSummary.Min = map.["min"].ToDouble()
+                | "numeric" -> { NumericColumnSummary.Min = map.["min"].ToDouble()
                                  Lb95 = map.["lb95"].ToDouble()
                                  Lb68 = map.["lb68"].ToDouble()
                                  Median = map.["median"].ToDouble()
@@ -197,7 +197,7 @@ type TableReinstateSerializer() =
                         |> Array.map snd
                     cols)
 
-            let columns:seq<Column> = 
+            let columns:seq<ColumnRows> = 
                 columnTypes
                 |> Seq.mapi (fun i columnType ->
                     match columnType with

@@ -1,161 +1,14 @@
 ﻿namespace Angara.Data
 
 open System
-open System.Collections
 open System.Collections.Generic
+open System.Collections.Immutable
 open Angara.Statistics
 
-module Util =
-    let coerce<'a,'b> (o:'a) : 'b = o :> obj :?> 'b
+open Util
 
-    let coerceSome<'a,'b> (o:'a) : 'b option = o :> obj :?> 'b |> Option.Some
 
-    let internal unpackOrFail<'a> (message:string) (opt:'a option) : 'a =
-        match opt with
-        | Some o -> o
-        | None -> failwith message
-
-[<ReflectedDefinition>]
-type IRArray<'a> =
-    inherit IReadOnlyList<'a>
-
-    abstract member Sub : startIndex:int -> count:int -> 'a[]
-
-    abstract member ToArray : unit -> 'a[]
-
-type EnumeratorAdaptor<'a, 'b>(e:IEnumerator, cast:('a->'b)) =
-    interface IEnumerator with
-        member this.Current
-            with get() : obj =
-                cast(e.Current :?> 'a) :> obj
-
-        member this.MoveNext() : bool =
-            e.MoveNext()
-
-        member this.Reset() : unit =
-            e.Reset()
-
-type GenericEnumeratorAdaptor<'a, 'b>(e:IEnumerator<'a>, cast:('a->'b)) =
-    interface IEnumerator<'b> with
-        member this.Current
-            with get() : 'b =
-                cast(e.Current)
-
-    interface IEnumerator with
-        member this.Current
-            with get() : obj =
-                e.Current :> obj
-
-        member this.MoveNext() : bool =
-            e.MoveNext()
-
-        member this.Reset() : unit =
-            e.Reset()
-
-    interface IDisposable with
-        member this.Dispose() : unit =
-            e.Dispose()
-
-[<ReflectedDefinition>]
-type IRArrayAdapter<'a, 'b>(a:IRArray<'a>, cast:('a->'b)) =
-    interface IRArray<'b> with
-        member this.Sub(startIndex:int) (count:int) : 'b[] =
-            let bs = a.Sub startIndex count
-            Array.map cast bs
-
-        member this.ToArray() : 'b[] =
-            let bs = Seq.map cast a
-            Seq.toArray bs
-
-    interface IReadOnlyCollection<'b> with
-        member this.Count
-            with get() : int =
-                a.Count
-
-    interface IEnumerable<'b> with
-        member this.GetEnumerator() : IEnumerator<'b> =
-            let e = a.GetEnumerator()
-            new GenericEnumeratorAdaptor<'a, 'b>(e, cast) :> IEnumerator<'b>
-
-    interface IEnumerable with
-        member this.GetEnumerator() : IEnumerator =
-            let e = a.GetEnumerator()
-            EnumeratorAdaptor<'a, 'b>(e, cast) :> IEnumerator
-
-    interface IReadOnlyList<'b> with
-        member this.Item
-            with get(i) : 'b =
-                cast(a.[i])
-
-[<ReflectedDefinition>]
-type RArray<'a>(a: 'a[]) =
-    new(ass:seq<'a>) =
-        RArray<'a>(Seq.toArray ass)
-
-    interface IReadOnlyCollection<'a> with
-        member this.Count
-            with get() =
-                a.Length
-
-    interface IEnumerable<'a> with
-        member this.GetEnumerator() : IEnumerator<'a> =
-            (a :> IEnumerable<'a>).GetEnumerator()
-
-    interface IEnumerable with
-        member this.GetEnumerator() : IEnumerator =
-            a.GetEnumerator()
-
-    interface IReadOnlyList<'a> with
-        member this.Item
-            with get(i) =
-                a.[i]
-
-    interface IRArray<'a> with
-        member this.Sub(sourceIndex:int) (count:int) : 'a[] =
-            let trg = Array.zeroCreate count
-            Array.blit a sourceIndex trg 0 count
-            trg
-
-        member this.ToArray() : 'a[] =
-            let n = a.Length
-            let trg = Array.zeroCreate n
-            Array.blit a 0 trg 0 n
-            trg
-
-[<ReflectedDefinition>]
-type LazyRArray<'a>(a:Lazy<'a[]>) =
-    interface IReadOnlyCollection<'a> with
-        member this.Count
-            with get() =
-                a.Value.Length
-
-    interface IEnumerable<'a> with
-        member this.GetEnumerator() : IEnumerator<'a> =
-            (a.Value :> IEnumerable<'a>).GetEnumerator()
-
-    interface IEnumerable with
-        member this.GetEnumerator() : IEnumerator =
-            a.Value.GetEnumerator()
-
-    interface IReadOnlyList<'a> with
-        member this.Item
-            with get(i) =
-                a.Value.[i]
-
-    interface IRArray<'a> with
-        member this.Sub(sourceIndex:int) (count:int) : 'a[] =
-            let trg = Array.zeroCreate count
-            Array.blit a.Value sourceIndex trg 0 count
-            trg
-
-        member this.ToArray() : 'a[] =
-            let n = a.Value.Length
-            let trg = Array.zeroCreate n
-            Array.blit a.Value 0 trg 0 n
-            trg
-
-[<ReflectedDefinition>]
-type RealColumnSummary = { 
+type NumericColumnSummary = { 
     Min: float
     Lb95: float
     Lb68: float
@@ -169,7 +22,6 @@ type RealColumnSummary = {
     Count: int
 }
 
-[<ReflectedDefinition>]
 type ComparableColumnSummary<'a when 'a : comparison> = {
     Min: 'a
     Max: 'a
@@ -177,431 +29,97 @@ type ComparableColumnSummary<'a when 'a : comparison> = {
     Count: int
 }
 
-[<ReflectedDefinition>]
 type BooleanColumnSummary = {
     TrueCount: int
     FalseCount: int
 }
 
-[<ReflectedDefinition>]
 type ColumnSummary =
-    | NumericColumnSummary of RealColumnSummary
-    | StringColumnSummary of ComparableColumnSummary<string>
-    | DateColumnSummary of ComparableColumnSummary<DateTime>
-    | BooleanColumnSummary of BooleanColumnSummary
+    | NumericColumnSummary  of NumericColumnSummary
+    | StringColumnSummary   of ComparableColumnSummary<string>
+    | DateColumnSummary     of ComparableColumnSummary<DateTime>
+    | BooleanColumnSummary  of BooleanColumnSummary
+
+type Field =
+    | IntField      of int
+    | RealField     of float
+    | StringField   of string
+    | DateField     of DateTime
+    | BooleanField  of Boolean
+    member x.AsInt     = match x with IntField v     -> v | _ -> invalidCast "The field is not integer"
+    member x.AsReal    = match x with RealField v    -> v | _ -> invalidCast "The field is not real"
+    member x.AsString  = match x with StringField v  -> v | _ -> invalidCast "The field is not a string"
+    member x.AsDate    = match x with DateField v    -> v | _ -> invalidCast "The field is not a date"
+    member x.AsBoolean = match x with BooleanField v -> v | _ -> invalidCast "The field is not boolean"
 
 
-[<ReflectedDefinition>]
+[<NoComparison>]
+type ColumnRows =
+    | IntColumn     of Lazy<ImmutableArray<int>>
+    | RealColumn    of Lazy<ImmutableArray<float>>
+    | StringColumn  of Lazy<ImmutableArray<string>>
+    | DateColumn    of Lazy<ImmutableArray<DateTime>>
+    | BooleanColumn of Lazy<ImmutableArray<Boolean>>
+    member x.AsInt     = match x with IntColumn v     -> v.Value | _ -> invalidCast "The column is not integer"
+    member x.AsReal    = match x with RealColumn v    -> v.Value | _ -> invalidCast "The column is not real"
+    member x.AsString  = match x with StringColumn v  -> v.Value | _ -> invalidCast "The column is not a string"
+    member x.AsDate    = match x with DateColumn v    -> v.Value | _ -> invalidCast "The column is not a date"
+    member x.AsBoolean = match x with BooleanColumn v -> v.Value | _ -> invalidCast "The column is not boolean"
+    member x.Item rowIndex =
+        match x with
+        | IntColumn v     -> v.Value.[rowIndex] |> IntField
+        | RealColumn v    -> v.Value.[rowIndex] |> RealField
+        | StringColumn v  -> v.Value.[rowIndex] |> StringField
+        | DateColumn v    -> v.Value.[rowIndex] |> DateField
+        | BooleanColumn v -> v.Value.[rowIndex] |> BooleanField
+    override this.ToString() =
+        let notEvaluated = "Array is not evaluated yet"
+        match this with
+        | IntColumn v     -> if v.IsValueCreated then sprintf "Ints %A" v.Value else notEvaluated
+        | RealColumn v    -> if v.IsValueCreated then sprintf "Reals %A" v.Value else notEvaluated
+        | StringColumn v  -> if v.IsValueCreated then sprintf "Strings %A" v.Value else notEvaluated
+        | DateColumn v    -> if v.IsValueCreated then sprintf "Dates %A" v.Value else notEvaluated
+        | BooleanColumn v -> if v.IsValueCreated then sprintf "Booleans %A" v.Value else notEvaluated
+    
+
+
 [<NoComparison>]
 type Column =
-    private
-    | IntColumn of IRArray<int>
-    | RealColumn of IRArray<float>
-    | StringColumn of IRArray<string>
-    | DateColumn of IRArray<DateTime>
-    | BooleanColumn of IRArray<Boolean>
+    { Name : string
+      Rows : ColumnRows }
+
+    static member OfArray<'a> (name:string, rows:'a[]) : Column =
+        let lazyRows = Lazy.CreateFromValue(ImmutableArray.Create<'a>(rows))
+        let rows =
+            match typeof<'a> with
+            | t when t = typeof<int>      -> coerce lazyRows |> ColumnRows.IntColumn    
+            | t when t = typeof<float>    -> coerce lazyRows |> ColumnRows.RealColumn   
+            | t when t = typeof<string>   -> coerce lazyRows |> ColumnRows.StringColumn 
+            | t when t = typeof<DateTime> -> coerce lazyRows |> ColumnRows.DateColumn   
+            | t when t = typeof<bool>     -> coerce lazyRows |> ColumnRows.BooleanColumn  
+            | t -> raise (new NotSupportedException(sprintf "Type '%A' is not a valid column type" t))
+        { Name = name; Rows = rows }
+
+    static member OfArray<'a> (name:string, rows:ImmutableArray<'a>) : Column =
+        let lazyRows = Lazy.CreateFromValue(rows)
+        let rows =
+            match typeof<'a> with
+            | t when t = typeof<int>      -> coerce lazyRows |> ColumnRows.IntColumn    
+            | t when t = typeof<float>    -> coerce lazyRows |> ColumnRows.RealColumn   
+            | t when t = typeof<string>   -> coerce lazyRows |> ColumnRows.StringColumn 
+            | t when t = typeof<DateTime> -> coerce lazyRows |> ColumnRows.DateColumn   
+            | t when t = typeof<bool>     -> coerce lazyRows |> ColumnRows.BooleanColumn  
+            | t -> raise (new NotSupportedException(sprintf "Type '%A' is not a valid column type" t))
+        { Name = name; Rows = rows }
+
     override this.ToString() =
-        match this with
-        | IntColumn arr -> sprintf "%A" arr
-        | RealColumn arr -> sprintf "%A" arr
-        | StringColumn arr -> sprintf "%A" arr
-        | DateColumn arr -> sprintf "%A" arr
-        | BooleanColumn arr -> sprintf "%A" arr
+        sprintf "%s: %O" this.Name this.Rows
 
 
-    static member New<'a>(data:'a) : Column =
-        match typeof<'a> with
-        | t when t = typeof<Column> -> data |> Util.coerce<'a,Column>
-
-        | t when t = typeof<IRArray<int>> -> IntColumn (data |> Util.coerce<'a,IRArray<int>>)
-        | t when t = typeof<IRArray<float>> -> RealColumn (data |> Util.coerce<'a,IRArray<float>>)
-        | t when t = typeof<IRArray<string>> -> StringColumn (data |> Util.coerce<'a,IRArray<string>>)
-        | t when t = typeof<IRArray<DateTime>> -> DateColumn (data |> Util.coerce<'a,IRArray<DateTime>>)
-        | t when t = typeof<IRArray<Boolean>> -> BooleanColumn (data |> Util.coerce<'a,IRArray<Boolean>>)
-
-        | t when t = typeof<int[]> -> IntColumn (RArray<int>(data |> Util.coerce<'a,int[]>))
-        | t when t = typeof<float[]> -> RealColumn (RArray<float>(data |> Util.coerce<'a,float[]>))
-        | t when t = typeof<string[]> -> StringColumn (RArray<string>(data |> Util.coerce<'a,string[]>))
-        | t when t = typeof<DateTime[]> -> DateColumn (RArray<DateTime>(data |> Util.coerce<'a,DateTime[]>))
-        | t when t = typeof<Boolean[]> -> BooleanColumn (RArray<Boolean>(data |> Util.coerce<'a,Boolean[]>))
-
-        | t when typeof<seq<int>>.IsAssignableFrom(t) -> IntColumn (RArray<int>(data |> Util.coerce<'a,seq<int>>))
-        | t when typeof<seq<float>>.IsAssignableFrom(t) -> RealColumn (RArray<float>(data |> Util.coerce<'a,seq<float>>))
-        | t when typeof<seq<string>>.IsAssignableFrom(t) -> StringColumn (RArray<string>(data |> Util.coerce<'a,seq<string>>))
-        | t when typeof<seq<DateTime>>.IsAssignableFrom(t) -> DateColumn (RArray<DateTime>(data |> Util.coerce<'a,seq<DateTime>>))
-        | t when typeof<seq<Boolean>>.IsAssignableFrom(t) -> BooleanColumn (RArray<Boolean>(data |> Util.coerce<'a,seq<Boolean>>))
-
-        | t when t = typeof<Lazy<int[]>> -> IntColumn (LazyRArray<int>(data |> Util.coerce<'a,Lazy<int[]>>))
-        | t when t = typeof<Lazy<float[]>> -> RealColumn (LazyRArray<float>(data |> Util.coerce<'a,Lazy<float[]>>))
-        | t when t = typeof<Lazy<string[]>> -> StringColumn (LazyRArray<string>(data |> Util.coerce<'a,Lazy<string[]>>))
-        | t when t = typeof<Lazy<DateTime[]>> -> DateColumn (LazyRArray<DateTime>(data |> Util.coerce<'a,Lazy<DateTime[]>>))
-        | t when t = typeof<Lazy<Boolean[]>> -> BooleanColumn (LazyRArray<Boolean>(data |> Util.coerce<'a,Lazy<Boolean[]>>))
-        
-        | t when t = typeof<System.Array> ->
-            let array = data |> Util.coerce<'a,System.Array>
-            match array with
-            | null -> failwith("Array is null")
-            | _ ->
-                match array.GetType().GetElementType() with
-                | et when et = typeof<int> -> IntColumn (RArray<int>(data |> Util.coerce<'a,int[]>))
-                | et when et = typeof<float> -> RealColumn (RArray<float>(data |> Util.coerce<'a,float[]>))
-                | et when et = typeof<string> -> StringColumn (RArray<string>(data |> Util.coerce<'a,string[]>))
-                | et when et = typeof<DateTime> -> DateColumn (RArray<DateTime>(data |> Util.coerce<'a,DateTime[]>))
-                | et when et = typeof<Boolean> -> BooleanColumn (RArray<Boolean>(data |> Util.coerce<'a,Boolean[]>))
-                | _ -> failwith("Unexpected type")
-        | _ -> failwith("Unexpected type")
 
 
-    static member ValidTypes
-        with get() : Type[] =
-            [| typeof<int>; typeof<float>; typeof<string>; typeof<DateTime>; typeof<bool> |]
-
-    static member Type(column:Column) : Type =
-        match column with
-        | IntColumn _ -> typeof<int>
-        | RealColumn _ -> typeof<float>
-        | StringColumn _ -> typeof<string>
-        | DateColumn _ -> typeof<DateTime>
-        | BooleanColumn _ -> typeof<Boolean>
-
-    static member TrySub<'a> (startIndex:int) (count:int) (column:Column) : 'a option =
-        if startIndex >= 0 && count >= 0 && startIndex + count <= Column.Count column then
-            if typeof<'a> = typeof<Column> then
-                match column  with
-                | IntColumn ir -> IntColumn(RArray<int>(ir.Sub startIndex count)) |> Util.coerceSome
-                | RealColumn ir -> RealColumn(RArray<float>(ir.Sub startIndex count)) |> Util.coerceSome
-                | StringColumn ir -> StringColumn(RArray<string>(ir.Sub startIndex count)) |> Util.coerceSome
-                | DateColumn ir -> DateColumn(RArray<DateTime>(ir.Sub startIndex count)) |> Util.coerceSome
-                | BooleanColumn ir -> BooleanColumn(RArray<Boolean>(ir.Sub startIndex count)) |> Util.coerceSome
-
-            elif typedefof<'a> = typedefof<IRArray<_>> then
-                match column with
-                | IntColumn ir when typeof<'a> = typeof<IRArray<int>> -> RArray<int>(ir.Sub startIndex count) |> Util.coerceSome
-                | RealColumn ir when typeof<'a> = typeof<IRArray<float>> -> RArray<float>(ir.Sub startIndex count) |> Util.coerceSome
-                | StringColumn ir when typeof<'a> = typeof<IRArray<string>> -> RArray<string>(ir.Sub startIndex count) |> Util.coerceSome
-                | DateColumn ir when typeof<'a> = typeof<IRArray<DateTime>> -> RArray<DateTime>(ir.Sub startIndex count) |> Util.coerceSome
-                | BooleanColumn ir when typeof<'a> = typeof<IRArray<Boolean>> -> RArray<Boolean>(ir.Sub startIndex count) |> Util.coerceSome
-                | _ -> None
-
-            elif typeof<'a>.IsArray then
-                match column with
-                | IntColumn ir when typeof<'a> = typeof<int[]> -> ir.Sub startIndex count |> Util.coerceSome
-                | RealColumn ir when typeof<'a> = typeof<float[]> -> ir.Sub startIndex count |> Util.coerceSome
-                | StringColumn ir when typeof<'a> = typeof<string[]> -> ir.Sub startIndex count |> Util.coerceSome
-                | DateColumn ir when typeof<'a> = typeof<DateTime[]> -> ir.Sub startIndex count |> Util.coerceSome
-                | BooleanColumn ir when typeof<'a> = typeof<Boolean[]> -> ir.Sub startIndex count |> Util.coerceSome
-                | _ -> None
-
-            elif typeof<'a> = typeof<Array> then
-                match column with
-                | IntColumn ir -> ir.Sub startIndex count |> Util.coerceSome
-                | RealColumn ir -> ir.Sub startIndex count |> Util.coerceSome
-                | StringColumn ir -> ir.Sub startIndex count |> Util.coerceSome
-                | DateColumn ir -> ir.Sub startIndex count |> Util.coerceSome
-                | BooleanColumn ir -> ir.Sub startIndex count |> Util.coerceSome
-
-            else None
-        else None
-
-    static member Sub<'a> (startIndex:int) (count:int) (column:Column) : 'a =
-        Column.TrySub<'a> startIndex count column
-        |> Util.unpackOrFail "Unexpected type"
-
-    static member TryToArray<'a>(column:Column) : 'a option =
-        if typeof<'a> = typeof<Column> then
-            column |> Util.coerceSome
-
-        elif typedefof<'a> = typedefof<IRArray<_>> then
-            match column with
-            | IntColumn ir when typeof<'a> = typeof<IRArray<int>> -> ir |> Util.coerceSome
-            | RealColumn ir when typeof<'a> = typeof<IRArray<float>> -> ir |> Util.coerceSome
-            | StringColumn ir when typeof<'a> = typeof<IRArray<string>> -> ir |> Util.coerceSome
-            | DateColumn ir when typeof<'a> = typeof<IRArray<DateTime>> -> ir |> Util.coerceSome
-            | BooleanColumn ir when typeof<'a> = typeof<IRArray<Boolean>> -> ir |> Util.coerceSome
-            | _ -> None
-
-        elif typeof<'a>.IsArray then
-            match column with
-            | IntColumn ir when typeof<'a> = typeof<int[]> -> ir.ToArray() |> Util.coerceSome
-            | RealColumn ir when typeof<'a> = typeof<float[]> -> ir.ToArray() |> Util.coerceSome
-            | StringColumn ir when typeof<'a> = typeof<string[]> -> ir.ToArray() |> Util.coerceSome
-            | DateColumn ir when typeof<'a> = typeof<DateTime[]> -> ir.ToArray() |> Util.coerceSome
-            | BooleanColumn ir when typeof<'a> = typeof<Boolean[]> -> ir.ToArray() |> Util.coerceSome
-            | _ -> None
-
-        elif typeof<'a> = typeof<Array> then
-            match column with
-            | IntColumn ir -> ir.ToArray() |> Util.coerceSome
-            | RealColumn ir -> ir.ToArray() |> Util.coerceSome
-            | StringColumn ir -> ir.ToArray() |> Util.coerceSome
-            | DateColumn ir -> ir.ToArray() |> Util.coerceSome
-            | BooleanColumn ir -> ir.ToArray() |> Util.coerceSome
-
-        else None
-
-    static member ToArray<'a>(column:Column) : 'a =
-        Column.TryToArray<'a> column
-        |> Util.unpackOrFail (sprintf "Unexpected type %s" (typeof<'a>.Name))
-
-    static member Count(column:Column) : int =
-        match column with
-        | IntColumn ir -> ir.Count
-        | RealColumn ir -> ir.Count
-        | StringColumn ir -> ir.Count
-        | DateColumn ir -> ir.Count
-        | BooleanColumn ir -> ir.Count
-
-    static member GetEnumerator<'a>(column:Column) : IEnumerator<'a> =
-        match column, typeof<'a> with
-        | IntColumn ir, t when t = typeof<int> -> ir.GetEnumerator() :?> IEnumerator<'a>
-        | RealColumn ir, t when t = typeof<float> -> ir.GetEnumerator() :?> IEnumerator<'a>
-        | StringColumn ir, t when t = typeof<string> -> ir.GetEnumerator() :?> IEnumerator<'a>
-        | DateColumn ir, t when t = typeof<DateTime> -> ir.GetEnumerator() :?> IEnumerator<'a>
-        | BooleanColumn ir, t when t = typeof<Boolean> -> ir.GetEnumerator() :?> IEnumerator<'a>
-        | _ -> failwith("Unexpected type")
-
-    static member GetEnumerator(column:Column) : IEnumerator =
-        match column with
-        | IntColumn ir -> (ir :> IEnumerable).GetEnumerator()
-        | RealColumn ir -> (ir :> IEnumerable).GetEnumerator()
-        | StringColumn ir -> (ir :> IEnumerable).GetEnumerator()
-        | DateColumn ir -> (ir :> IEnumerable).GetEnumerator()
-        | BooleanColumn ir -> (ir :> IEnumerable).GetEnumerator()
-
-    static member TryItem<'a> (index:int) (column:Column) : 'a option =
-        if index >= 0 && index < Column.Count column then
-            if typeof<'a> = typeof<obj> then
-                match column with
-                | IntColumn ir -> ir.[index] |> Util.coerceSome
-                | RealColumn ir -> ir.[index] |> Util.coerceSome
-                | StringColumn ir -> ir.[index] |> Util.coerceSome
-                | DateColumn ir -> ir.[index] |> Util.coerceSome
-                | BooleanColumn ir -> ir.[index] |> Util.coerceSome
-            else
-                match column, typeof<'a> with
-                | IntColumn ir, t when t = typeof<int> -> ir.[index] |> Util.coerceSome
-                | RealColumn ir, t when t = typeof<float> -> ir.[index] |> Util.coerceSome
-                | StringColumn ir, t when t = typeof<string> -> ir.[index] |> Util.coerceSome
-                | DateColumn ir, t when t = typeof<DateTime> -> ir.[index] |> Util.coerceSome
-                | BooleanColumn ir, t when t = typeof<Boolean> -> ir.[index] |> Util.coerceSome
-                | _ -> None
-        else None
-
-    static member Item<'a> (index:int) (column:Column) : 'a =
-        Column.TryItem<'a> index column
-        |> Util.unpackOrFail "Unexpected type"
-
-    static member Map<'a,'b,'c> (map:('a->'b)) (columns:seq<Column>) : 'c seq =
-        if Seq.isEmpty columns then failwith "No columns to map"
-        else
-            let cs = Array.ofSeq columns
-            if cs.Length = 1 then
-                match box map with
-                | (:? ('a->'c) as map1) -> 
-                    match cs.[0], box map1 with
-                    | IntColumn ir1, (:? (int->'c) as tmap) -> ir1 |> Seq.map tmap
-                    | RealColumn ir1, (:? (float->'c) as tmap) -> ir1 |> Seq.map tmap
-                    | StringColumn ir1, (:? (string->'c) as tmap) -> ir1 |> Seq.map tmap
-                    | DateColumn ir1, (:? (DateTime->'c) as tmap) -> ir1 |> Seq.map tmap
-                    | BooleanColumn ir1, (:? (Boolean->'c) as tmap) -> ir1 |> Seq.map tmap
-                    | _ -> failwith("Incorrect argument type of function map")
-                | _ -> failwith("Incorrect map function")
-            else
-                let deleg = Funcs.toDelegate map
-                let colArrays = cs |> Array.map (fun c -> Column.ToArray<System.Array> c) // todo: use ToSeq here
-                let len = colArrays |> Array.map (fun arr -> arr.Length) |> Array.min
-                let res = Seq.init len (fun i ->    
-                    let row = colArrays |> Array.map (fun a -> a.GetValue(i))                  
-                    deleg.DynamicInvoke(row) :?> 'c)
-                res
-
-    static member Mapi<'a,'c> (map:(int->'a)) (columns:seq<Column>) : 'c seq =
-        if Seq.isEmpty columns then failwith "No columns to map"
-        else
-            let cs = Array.ofSeq columns
-            if cs.Length = 1 then
-                match cs.[0], box map with
-                | IntColumn ir1, (:? (int->int->'c) as tmap) -> ir1 |> Seq.mapi tmap
-                | RealColumn ir1, (:? (int->float->'c) as tmap) -> ir1 |> Seq.mapi tmap
-                | StringColumn ir1, (:? (int->string->'c) as tmap) -> ir1 |> Seq.mapi tmap
-                | DateColumn ir1, (:? (int->DateTime->'c) as tmap) -> ir1 |> Seq.mapi tmap
-                | BooleanColumn ir1, (:? (int->Boolean->'c) as tmap) -> ir1 |> Seq.mapi tmap
-                | _ -> failwith("Incorrect argument type of map")
-            else
-                let deleg = Funcs.toDelegate map
-                let colArrays = cs |> Array.map (fun c -> Column.ToArray<System.Array> c) // todo: use ToSeq here
-                let len = colArrays |> Array.map (fun arr -> arr.Length) |> Array.min
-                let res = Seq.init len (fun i ->                        
-                    let row = Array.append [|i:>obj|] (colArrays |> Array.map (fun a -> a.GetValue(i)))
-                    deleg.DynamicInvoke(row) :?> 'c)
-                res
-
-    static member TryPdf (pointCount:int) (column:Column) : (float[] * float[]) option =
-        if Column.Count column = 0 then None
-        else
-            let rs = column |> Column.TryToRealArray   
-            match rs with         
-            | Some rs -> try Some(rs.ToArray() |> kde pointCount) with _ -> None
-            | None -> None
 
 
-    static member Pdf (pointCount:int) (column:Column) : (float[] * float[]) =
-        if Column.Count column = 0 then failwith "Column is empty"
-        else
-            let rs = column |> Column.ToRealArray  
-            rs.ToArray() |> kde pointCount
-
-    static member IntToRealArray(ir:IRArray<int>) : IRArray<float> =
-        IRArrayAdapter(ir, float) :> IRArray<float>
-
-    static member TryToRealArray(column:Column) : IRArray<float> option =
-        match column with
-        | IntColumn ir -> Column.IntToRealArray(ir) |> Option.Some
-        | RealColumn ir -> ir |> Option.Some
-        | StringColumn _ -> None
-        | DateColumn _ -> None
-        | BooleanColumn _ -> None
-
-    static member ToRealArray(column:Column) : IRArray<float> =
-        column
-        |> Column.TryToRealArray
-        |> Util.unpackOrFail "Unexpected type"
-
-    static member Select (mask:seq<bool>) (column:Column) : Column =
-        match column with
-        | IntColumn ir ->
-            let sr =
-                lazy(
-                    ir
-                    |> Seq.zip mask
-                    |> Seq.choose (fun (b,v) -> if b then Some v else None)
-                    |> Seq.toArray)
-            IntColumn(LazyRArray<int>(sr))
-
-        | RealColumn ir ->
-            let sr =
-                lazy(
-                    ir
-                    |> Seq.zip mask
-                    |> Seq.choose (fun (b,v) -> if b then Some v else None)
-                    |> Seq.toArray)
-            RealColumn(LazyRArray<float>(sr))
-
-        | StringColumn ir ->
-            let sr =
-                lazy(
-                    ir
-                    |> Seq.zip mask
-                    |> Seq.choose (fun (b,v) -> if b then Some v else None)
-                    |> Seq.toArray)
-            StringColumn(LazyRArray<string>(sr))
-
-        | DateColumn ir ->
-            let sr =
-                lazy(
-                    ir
-                    |> Seq.zip mask
-                    |> Seq.choose (fun (b,v) -> if b then Some v else None)
-                    |> Seq.toArray)
-            DateColumn(LazyRArray<DateTime>(sr))
-            
-        | BooleanColumn ir ->
-            let sr =
-                lazy(
-                    ir
-                    |> Seq.zip mask
-                    |> Seq.choose (fun (b,v) -> if b then Some v else None)
-                    |> Seq.toArray)
-            BooleanColumn(LazyRArray<Boolean>(sr))
-
-    static member Summary(i:IRArray<int>) : RealColumnSummary =
-        i
-        |> Column.IntToRealArray
-        |> Column.Summary
-
-    static member Summary(a:IRArray<float>) : RealColumnSummary =
-        let summary = summary a
-        let qsummary = qsummary a
-
-        let ccs:RealColumnSummary = {
-            Min = summary.min
-            Lb95 = qsummary.lb95
-            Lb68 = qsummary.lb68
-            Median = qsummary.median
-            Ub68 = qsummary.ub68
-            Ub95 = qsummary.ub95
-            Max = summary.max
-            Mean = summary.mean
-            Variance = summary.variance
-            TotalCount = a.Count
-            Count = summary.count
-        }
-
-        ccs
-
-    static member Summary(a:seq<string>) : ComparableColumnSummary<string> =
-        let min, max, total, count = 
-            a
-            |> Seq.fold (
-                fun (min, max, total, count) s ->
-                    match s with
-                    | ""
-                    | null -> (min, max, total + 1, count)
-                    | _ ->
-                        let min = if count = 0 || s < min then s else min
-                        let max = if count = 0 || s > max then s else max
-                        (min, max, total + 1, count + 1)
-                    )
-                ("", "", 0, 0)
-
-        let ccs:ComparableColumnSummary<string> = {
-            Min = min
-            Max = max
-            TotalCount = total
-            Count = count
-        }
-
-        ccs
-
-    static member Summary(a:seq<DateTime>) : ComparableColumnSummary<DateTime> =
-        let min, max, total = 
-            a
-            |> Seq.fold (
-                fun (min, max, total) s ->
-                    let min = if s < min then s else min
-                    let max = if s > max then s else max
-                    (min, max, total + 1)
-                )
-                (DateTime.MaxValue, DateTime.MinValue, 0)
-
-        let ccs:ComparableColumnSummary<DateTime> = {
-            Min = min
-            Max = max
-            TotalCount = total
-            Count = total
-        }
-
-        ccs
-
-    static member Summary(a:seq<Boolean>) : BooleanColumnSummary =
-        let nT, nF = 
-            a |> Seq.fold (fun (nT, nF) s -> if s then nT+1,nF else nT,nF+1) (0, 0)
-
-        let ccs:BooleanColumnSummary = {
-             TrueCount = nT
-             FalseCount = nF
-        }
-        ccs
-
-    static member Summary(column:Column) : ColumnSummary =
-        match column with
-        | IntColumn ir -> Column.Summary ir |> NumericColumnSummary
-        | RealColumn ir -> Column.Summary ir |> NumericColumnSummary
-        | StringColumn ir -> Column.Summary ir |> StringColumnSummary
-        | DateColumn ir -> Column.Summary ir |> DateColumnSummary
-        | BooleanColumn ir -> Column.Summary ir |> BooleanColumnSummary
-
-[<ReflectedDefinition>]
 type Table(names:seq<string>, columns:seq<Column>) =
 
     
