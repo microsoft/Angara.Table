@@ -25,8 +25,12 @@ type internal ColumnSchema =
         Type : ColumnType }
 
 module internal Helpers =
+    open System.Collections.Immutable
+
+    let toImmutableArray (sq: 'a seq) = ImmutableArray.CreateRange sq
+
     open System.Globalization
-    
+
     let internal DefaultCulture = CultureInfo.InvariantCulture;
 
     let internal IsDateTime s (formatProvider:IFormatProvider) : bool =
@@ -220,13 +224,14 @@ module internal Helpers =
 
 open Helpers
 open System.Globalization
+open System.Collections.Immutable
 
 /// Implements writer and reader for a text representation of a list of named arrays of certain types.
 /// The implementation mostly follows RFC 4180, but in addition to comma separator, it supports tab, semicolon and space.
 [<AbstractClass; Sealed>]
 type internal Implementation =
     /// Writes a sequence of named arrays to a stream in a delimited text format (e.g. CSV).
-    static member Write (settings:WriteSettings) (stream: Stream) (table:(string * Array) seq) : unit =
+    static member Write (settings:WriteSettings) (stream: Stream) (table:(string * System.Collections.IList) seq) : unit =
         let table = table |> Seq.toArray
         if table.Length > 0 then
             let output = new StreamWriter(stream, Text.Encoding.UTF8, 1024, true) // 1024 mentioned here: http://stackoverflow.com/questions/29412757/what-is-the-default-buffer-size-for-streamwriter
@@ -239,30 +244,33 @@ type internal Implementation =
 
             let columns = table |> Array.map snd
             for i in 0..columns.Length-2 do
-                if columns.[i].Length <> columns.[i + 1].Length then raise (ArgumentException "All arrays must have same length")
+                if columns.[i].Count <> columns.[i + 1].Count then raise (ArgumentException "All arrays must have same length")
 
             let types = 
-                columns 
-                |> Array.map(fun column -> 
-                    if column.Rank <> 1 then raise(ArgumentException "All arrays must be one-dimensional")
-                    column.GetType().GetElementType() |> typeToColumnType)
+                columns |> Array.map(function
+                    | :? ImmutableArray<float> -> ColumnType.Double
+                    | :? ImmutableArray<int> -> ColumnType.Integer
+                    | :? ImmutableArray<bool> -> ColumnType.Boolean
+                    | :? ImmutableArray<DateTime> -> ColumnType.DateTime
+                    | :? ImmutableArray<string> -> ColumnType.String
+                    | _ -> failwith "Unexpected column array type")
 
-            let lineCount = columns.[0].Length;
+            let rowsCount = columns.[0].Count;
             let sb = new StringBuilder(1024)
-            for i in 0..lineCount-1 do
+            for i in 0..rowsCount-1 do
                 for j in 0..types.Length-1 do
                     match types.[j] with
                     | ColumnType.Double ->
                         // "R" or "r" : Round-trip :  Result: A string that can round-trip to an identical number.
-                        sb.Append((columns.[j] :?> float[]).[i].ToString("R", DefaultCulture)) |> ignore
+                        sb.Append((columns.[j] :?> ImmutableArray<float>).[i].ToString("R", DefaultCulture)) |> ignore
                     | ColumnType.Integer ->
-                        sb.Append((columns.[j] :?> int[]).[i].ToString(DefaultCulture)) |> ignore
+                        sb.Append((columns.[j] :?> ImmutableArray<int>).[i].ToString(DefaultCulture)) |> ignore
                     | ColumnType.Boolean  ->
-                        sb.Append((columns.[j] :?> bool[]).[i].ToString(DefaultCulture)) |> ignore
+                        sb.Append((columns.[j] :?> ImmutableArray<bool>).[i].ToString(DefaultCulture)) |> ignore
                     | ColumnType.DateTime ->
-                        sb.Append((columns.[j] :?> DateTime[]).[i].ToString(DefaultCulture)) |> ignore
+                        sb.Append((columns.[j] :?> ImmutableArray<DateTime>).[i].ToString(DefaultCulture)) |> ignore
                     | ColumnType.String ->
-                        let item = (columns.[j] :?> string[]).[i]
+                        let item = (columns.[j] :?> ImmutableArray<string>).[i]
                         sb.Append(escapeString item delimiterStr settings.AllowNullStrings) |> ignore
 
                     if j < types.Length - 1 then (sb.Append(delimiter) |> ignore)
@@ -271,7 +279,7 @@ type internal Implementation =
             output.Flush()
 
     /// Reads a table from a delimited text format.
-    static member Read (settings: ReadSettings) (stream: Stream) : (ColumnSchema * Array) []  =
+    static member Read (settings: ReadSettings) (stream: Stream) : (ColumnSchema * System.Collections.IList) []  =
         let delimiter = settings.Delimiter |> Helpers.delimiterToChar
         let reader = new StreamReader(stream)
     
@@ -327,47 +335,49 @@ type internal Implementation =
                     yield 
                         match colType with
                         | ColumnType.String when settings.InferNullStrings -> 
-                            [| for i = 0 to rowsCount-1 do 
-                                yield rows.[i].[colIndex] |] :> Array
+                            seq{ for i = 0 to rowsCount-1 do 
+                                 yield rows.[i].[colIndex] 
+                            } |> toImmutableArray :> System.Collections.IList
                         | ColumnType.String -> // when not(settings.InferNullStrings)
-                            [| for i = 0 to rowsCount-1 do 
-                                yield match rows.[i].[colIndex] with null -> String.Empty | s -> s |] :> Array
+                            seq{ for i = 0 to rowsCount-1 do 
+                                 yield match rows.[i].[colIndex] with null -> String.Empty | s -> s 
+                            } |> toImmutableArray :> System.Collections.IList
                         | ColumnType.Double ->
-                            [| 
+                            seq{ 
                                 for i = 0 to rowsCount-1 do 
                                     let value = rows.[i].[colIndex]
                                     yield 
                                         match String.IsNullOrEmpty value with
                                         | false -> Double.Parse(value, NumberStyles.Float, DefaultCulture)
                                         | true -> Double.NaN
-                            |] :> Array
+                            } |> toImmutableArray :> System.Collections.IList
                         | ColumnType.Integer ->
-                            [| 
+                            seq{ 
                                 for i = 0 to rowsCount-1 do 
                                     let value = rows.[i].[colIndex]
                                     yield 
                                         match String.IsNullOrEmpty value with
                                         | false -> Int32.Parse(value, NumberStyles.Integer, DefaultCulture)
                                         | true -> raise (new FormatException(sprintf "Missing integer at row %d, column %d" (i + 2) (colIndex + 1)))
-                            |] :> Array
+                            } |> toImmutableArray :> System.Collections.IList
                         | ColumnType.Boolean ->
-                            [| 
+                            seq{ 
                                 for i = 0 to rowsCount-1 do 
                                     let value = rows.[i].[colIndex]
                                     yield 
                                         match String.IsNullOrEmpty value with
                                         | false -> Boolean.Parse value
                                         | true -> raise (new FormatException(sprintf "Missing boolean at row %d, column %d" (i + 2) (colIndex + 1)))
-                            |] :> Array
+                            } |> toImmutableArray :> System.Collections.IList
                         | ColumnType.DateTime ->
-                            [| 
+                            seq{ 
                                 for i = 0 to rowsCount-1 do 
                                     let value = rows.[i].[colIndex]
                                     yield 
                                         match String.IsNullOrEmpty value with
                                         | false -> DateTime.Parse (value, DefaultCulture)
                                         | true -> raise (new FormatException(sprintf "Missing date time at row %d, column %d" (i + 2) (colIndex + 1)))
-                            |] :> Array                       
+                            } |> toImmutableArray :> System.Collections.IList                   
             |]
 
         Array.map2 (fun a b -> a,b) finalSchema columns 

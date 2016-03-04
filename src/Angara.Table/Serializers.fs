@@ -38,7 +38,7 @@ module internal HelpersForReinstate =
 
 
 module internal HelpersForHtml =
-    let SerializeColumn (c: ColumnRows) =
+    let SerializeColumn (c: ColumnValues) =
         let colType = Column.Type c
         if colType = typeof<double> then InfoSet.DoubleArray(Column.ToArray<double[]> c)
         elif colType = typeof<DateTime> then InfoSet.DateTimeArray(Column.ToArray<DateTime[]> c)
@@ -197,7 +197,7 @@ type TableReinstateSerializer() =
                         |> Array.map snd
                     cols)
 
-            let columns:seq<ColumnRows> = 
+            let columns:seq<ColumnValues> = 
                 columnTypes
                 |> Seq.mapi (fun i columnType ->
                     match columnType with
