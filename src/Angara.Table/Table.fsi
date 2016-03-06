@@ -85,7 +85,7 @@ type Table =
 
     /// Creates a new, empty table
     static member Empty : Table
-    static member Add<'a> : column:Column -> table:Table -> Table
+    static member Add : column:Column -> table:Table -> Table
     static member Remove : columnNames:seq<string> -> table:Table -> Table
 
     /// Return a new table containing all rows from a table where a predicate is true, where the predicate takes a set of columns
@@ -185,7 +185,7 @@ type Table =
     ///     n...</p>
     /// <p>The transform function argument types may be one of: Column, T[], IRArray&lt;T> or Array.</p>
     /// </remarks>
-    static member AppendTransform : columnNames:seq<string> -> transform:('a->'b) -> table:Table -> Table
+    static member AppendTransform : columnNames:seq<string> -> transform:(ImmutableArray<'a>->'b) -> table:Table -> Table
 
     /// Reads table from a delimited text file.
     static member Read : settings:Angara.Data.DelimitedFile.ReadSettings -> path:string -> Table

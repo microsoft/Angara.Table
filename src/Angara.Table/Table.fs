@@ -139,12 +139,19 @@ type Table private (columns : Column list, height : int) =
             | Some c -> c
             | None -> notFound (sprintf "Column '%s' not found" name)
 
-    member x.TryItem(index:int) : Column option = if index >= 0 && index < columns.Length then Some columns.[index] else None
-    member x.TryItem(name:string) : Column option = columns |> List.tryFind(fun c -> c.Name = name)
+    member x.TryItem
+        with get(index:int) : Column option = 
+            if index >= 0 && index < columns.Length then Some columns.[index] else None
+    member x.TryItem
+        with get(name:string) : Column option = 
+            columns |> List.tryFind(fun c -> c.Name = name)
 
     interface IEnumerable<Column> with
         member x.GetEnumerator() : IEnumerator<Column> = (columns |> Seq.ofList).GetEnumerator()
         member x.GetEnumerator() : System.Collections.IEnumerator = ((columns |> Seq.ofList) :> System.Collections.IEnumerable).GetEnumerator()
+
+    member x.ToRows<'r>() : 'r seq =
+        failwith ""
 
     override x.ToString() = String.Join("\n", columns |> Seq.map (fun c -> c.ToString()))
 
@@ -178,7 +185,7 @@ type Table private (columns : Column list, height : int) =
     static member Append (table1:Table) (table2:Table) : Table =
         if table1.RowsCount = table2.RowsCount then Table(table1.Columns @ table2.Columns, table1.RowsCount) else raiseDiffHeights()
 
-    static member AppendTransform(columnNames:seq<string>) (transform:'a->'b) (table:Table) : Table =
+    static member AppendTransform(columnNames:seq<string>) (transform:ImmutableArray<'a>->'b) (table:Table) : Table =
         Table.Transform columnNames transform table
         |> Table.Append table
 
