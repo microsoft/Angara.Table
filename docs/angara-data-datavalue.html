@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>BooleanColumnSummary - Angara.Table</title>
+    <title>DataValue - Angara.Table</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="Microsoft Research">
@@ -35,50 +35,173 @@
 
 
 
-<h1>BooleanColumnSummary</h1>
+<h1>DataValue</h1>
 <p>
   <span>Namespace: Angara.Data</span><br />
 </p>
 <div class="xmldoc">
-<p>Simple statistics for columns containing boolean values.</p>
+<p>Represents a single value of a table column.</p>
 
 </div>
-  <h3>Record Fields</h3>
+  <h3>Union Cases</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Record Field</td><td>Description</td></tr>
+      <tr><td>Union Case</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '1', 1)" onmouseover="showTip(event, '1', 1)">
-            FalseCount
+            BooleanValue(Boolean)
           </code>
           <div class="tip" id="1">
-            <strong>Signature:</strong> int<br />
+            <strong>Signature:</strong> Boolean<br />
                       </div>
         </td>
         <td class="xmldoc">
-          <p>Number of rows with value "false"</p>
-
-
+          
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '2', 2)" onmouseover="showTip(event, '2', 2)">
-            TrueCount
+            DateValue(DateTime)
           </code>
           <div class="tip" id="2">
+            <strong>Signature:</strong> DateTime<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3', 3)" onmouseover="showTip(event, '3', 3)">
+            IntValue(int)
+          </code>
+          <div class="tip" id="3">
             <strong>Signature:</strong> int<br />
                       </div>
         </td>
         <td class="xmldoc">
-          <p>Number of rows with value "true"</p>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '4', 4)" onmouseover="showTip(event, '4', 4)">
+            RealValue(float)
+          </code>
+          <div class="tip" id="4">
+            <strong>Signature:</strong> float<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '5', 5)" onmouseover="showTip(event, '5', 5)">
+            StringValue(string)
+          </code>
+          <div class="tip" id="5">
+            <strong>Signature:</strong> string<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <h3>Instance members</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Instance member</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '6', 6)" onmouseover="showTip(event, '6', 6)">
+            AsBoolean
+          </code>
+          <div class="tip" id="6">
+            <strong>Signature:</strong> Boolean<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          
+              <p>CompiledName: <code>get_AsBoolean</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '7', 7)" onmouseover="showTip(event, '7', 7)">
+            AsDate
+          </code>
+          <div class="tip" id="7">
+            <strong>Signature:</strong> DateTime<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          
+              <p>CompiledName: <code>get_AsDate</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '8', 8)" onmouseover="showTip(event, '8', 8)">
+            AsInt
+          </code>
+          <div class="tip" id="8">
+            <strong>Signature:</strong> int<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          <p>If this instance is IntValue, returns the integer value; otherwise, throws <code>InvalidCastException</code>.</p>
 
 
+              <p>CompiledName: <code>get_AsInt</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '9', 9)" onmouseover="showTip(event, '9', 9)">
+            AsReal
+          </code>
+          <div class="tip" id="9">
+            <strong>Signature:</strong> float<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          
+              <p>CompiledName: <code>get_AsReal</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '10', 10)" onmouseover="showTip(event, '10', 10)">
+            AsString
+          </code>
+          <div class="tip" id="10">
+            <strong>Signature:</strong> string<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+          
+              <p>CompiledName: <code>get_AsString</code></p>
         </td>
       </tr>
     </tbody>

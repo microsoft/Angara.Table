@@ -5,5 +5,6 @@
       "../DelimitedFile.fs"
       "../DelimitedFile.Implementation.fs"
       "../Funcs.fs"
+      "../Util.fs"
       "../Table.fs"
       "../Serializers.fs"

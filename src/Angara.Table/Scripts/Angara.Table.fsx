@@ -8,41 +8,127 @@ open System.Collections.Immutable
 (**
 # Angara.Data.Table (F#)
 
-A **table** is an immutable collection of named columns. A **column** is one-dimensional immutable array of one of the supported 
-types. Heights of all columns in a table are equal.
-Columns **names** are arbitrary strings. A table column can be identified by both name and index.
-Duplicate names are allowed but may cause ambiguity in some API functions.
+A table is an immutable collection of named columns. 
+Column values are represented as lazy one-dimensional immutable array of one of the supported types. 
+Heights of all columns in a table are equal.
+Columns names are arbitrary strings;
+duplicate names are allowed but may cause ambiguity in some API functions.
 *)
 
-(** A column is represented as a discriminitated union `Angara.Data.Column`: 
+(**
+## Column
+
+A column is represented as an immutable type `Angara.Data.Column` which
+keeps column name, height and values: *)
+
+(*** include:typedef-Column ***)
+
+(**
+Column values are represented as an instance of discriminated union `Angara.Data.ColumnValues`:
 *)
 
-type Column =
-    | IntColumn     of Lazy<ImmutableArray<int>>
-    | RealColumn    of Lazy<ImmutableArray<float>>
-    | StringColumn  of Lazy<ImmutableArray<string>>
-    | DateColumn    of Lazy<ImmutableArray<DateTime>>
-    | BooleanColumn of Lazy<ImmutableArray<Boolean>>
+(*** include:typedef-ColumnValues ***)
 
 (** The [ImmutableArray<'a>](https://msdn.microsoft.com/en-us/library/dn638264(v=vs.111).aspx)
 structure represents an array that cannot be changed once it is created. Use of 
 [Lazy<'a>](https://msdn.microsoft.com/en-us/library/dd233247.aspx) enables evaluation of
-the column array on demand.
+the column array on demand. 
 
-The type `Angara.Data.Table` represents an immutable table:
+There are several static functions to build a column from name and values:
+
+- `Column.OfArray` creates a column from an array of one of the valid column types. If a mutable array is given, 
+it is copied to guarantee immutability of the column; otherwise, if an immutable array is given, it is used without copying.*)
+let cx = Column.OfArray ("x", [| for i in 0..99 -> float(i) / 10.0  |])
+(**
+- `Column.OfLazyArray` creates a column from a lazy immutable array of one of the valid types. This function requires a user to provide
+a length of the given lazy array. Evalutation of the array will be performed when the column rows are first time accessed.*)
+let cx = Column.OfLazyArray ("x", lazy(ImmutableArray.CreateRange(seq{ for i in 0..99 -> float(i) / 10.0 })), 100)
+(**
+- `Colum.OfColumnValues` creates a column from an instance of `ColumnValues` discriminated union. This is a type safe function since
+validity of the array type is checked on compilation; also this function allows to create a new column from values of another column.*)
+let cx = Column.OfColumnValues ("x", RealColumn(lazy(ImmutableArray.CreateRange(seq{ for i in 0..99 -> float(i) / 10.0 }))), 100)
+
+(**
+### Getting Column Values
+
+To get values of a column when its type is unknown at compile time, use `match` by value of the `Column.Rows`.
+The following example prints values of the column: *)
+
+(*** define-output:print-rows ***)
+match cx.Rows with
+| RealColumn v -> printf "floats: %A" v.Value
+| IntColumn v -> printf "ints: %A" v.Value
+| StringColumn v -> printf "strings: %A" v.Value
+| DateColumn v -> printf "dates: %A" v.Value
+| BooleanColumn v -> printf "bools: %A" v.Value
+(*** include-output:print-rows ***)
+
+(**
+When a column is expected to be of a certain type, use one of the functions `ColumnValues.AsReal`,
+`ColumnValues.AsInt`, `ColumnValues.AsString`, `ColumnValues.AsDate`, `ColumnValues.AsBoolean`
+which evaluate the column array (if it is not evaluated yet) and return the `ImmutableArray<'a>` instance, 
+assuming that the column type corresponds the function;
+otherwise, if the column type is incorrect, the function fails. 
 *)
-   
-type Table =
-    new : nameColumns : (string*Column) list -> Table
-    new : nameColumns : (string*Column) list * rowsCount:int -> Table
-    
-    member ColumnsCount : int with get    
-    member RowsCount : int with get
-    
-    member Column : index:int -> Column
-    member Column : name:string -> Column
-    
-    member Columns : (string*Column) list with get
+
+let x : ImmutableArray<float> = cx.Rows.AsReal
+
+(*** include-value:x ***)
+
+(** Also, the `ColumnValues` allows getting an individual data value by an index; again, 
+there is a generic approach based on `match` and a succinct approach when a certain type is expected.
+
+The following example returns a median of the ordered column `cx` when type is unknown:
+*)
+
+(*** define-output:print-rows-item ***)
+match cx.Rows.[cx.Height / 2] with
+| RealValue v -> printf "float: %f" v
+| IntValue v -> printf "int: %d" v
+| StringValue v -> printf "string: %s" v
+| DateValue v -> printf "date: %A" v
+| BooleanValue v -> printf "bool: %A" v
+(*** include-output:print-rows-item ***)
+
+(** The next example assumes that the column is real:*)
+(*** define-output:print-rows-item2 ***)
+printf "float: %f" (cx.Rows.[cx.Height / 2].AsReal)
+(*** include-output:print-rows-item2 ***)
+
+(**
+## Table
+
+The type `Angara.Data.Table` represents an immutable table. 
+A table can be created from a finite sequence of columns:
+*)
+
+let table = 
+    Table(
+        [ Column.OfArray ("x", [| for i in 0..99 -> float(i) / 10.0  |])
+          Column.OfArray ("sin(x)", [| for i in 0..99 -> sin (float(i) / 10.0) |]) ])
+
+(**
+It implements the `IEnumerable<Column>` interface and exposes members
+`Count` and `Item` that allow to get a count of the total number of columns in the table
+and get a column by its index or name.
+
+The following example prints information about each column of a table:
+*)
+(*** define-output:table-as-seq ***)
+let xxx = 
+    table
+    |> Seq.mapi (fun colIdx col ->
+        sprintf "%d: %s of type %s" colIdx col.Name
+                   (match col.Rows with
+                    | RealColumn _    -> "float"
+                    | IntColumn _     -> "int"
+                    | StringColumn _  -> "string"
+                    | DateColumn _    -> "DateTime"
+                    | BooleanColumn _ -> "bool"))
+    |> Seq.toList
+
+(*** include-output:table-as-seq ***)  
+(*** include-value: xxx ***)
 
 (**
 `Table` can be constructed from a list of name and column pairs.
@@ -55,25 +141,25 @@ you should use the second constructor to provide the `rowsCount` argument.
 The example builds a table from a list of names and columns:
 *)
 
-let table = 
-    Table(
-        ["x",      RealColumn (lazy(ImmutableArray.Create [| for i in 0..99 -> float(i) / 10.0  |]))
-         "sin(x)", RealColumn (lazy(ImmutableArray.Create [| for i in 0..99 -> sin (float(i) / 10.0) |])) ])
+//let table = 
+//    Table(
+//        ["x",      RealColumn (lazy(ImmutableArray.Create [| for i in 0..99 -> float(i) / 10.0  |]))
+//         "sin(x)", RealColumn (lazy(ImmutableArray.Create [| for i in 0..99 -> sin (float(i) / 10.0) |])) ])
 
 (**
 The `Table.Columns` property allows listing columns names and types without forcing evaluation of lazy arrays; 
 for example, the following code prints the table schema:
 *)
 
-table.Columns
-|> List.iteri (fun colIdx (name, col) ->
-    printf "%d: %s of type %s" colIdx name
-        match col with
-        | RealColumn _    -> "float"
-        | IntColumn _     -> "int"
-        | StringColumn _  -> "string"
-        | DateColumn _    -> "DateTime"
-        | BooleanColumn _ -> "bool")
+//table.Columns
+//|> List.iteri (fun colIdx (name, col) ->
+//    printf "%d: %s of type %s" colIdx name
+//        match col with
+//        | RealColumn _    -> "float"
+//        | IntColumn _     -> "int"
+//        | StringColumn _  -> "string"
+//        | DateColumn _    -> "DateTime"
+//        | BooleanColumn _ -> "bool")
 
 (** 
 The methods `Table.Column` return a column by its index or name. If a column is not found,
@@ -85,10 +171,10 @@ the first column having the name is returned.
 The `Table` type exposes column-wise data access because it enables type safe code.
 The following example computes an average of a column `wheat`: *)
 
-let av = 
-    match table.Column "wheat" with
-    | RealColumn a -> Seq.average a.Value
-    | _ -> failwith "Unexpected type of column" 
+//let av = 
+//    match table.Column "wheat" with
+//    | RealColumn a -> Seq.average a.Value
+//    | _ -> failwith "Unexpected type of column" 
 
 (**
 There are three ways to perform row-wise access:
@@ -97,16 +183,16 @@ There are three ways to perform row-wise access:
 `Rows : 'r list`.
 * Create type safe code by accessing columns elements at certain index:
 *)
-    let rowsLatLon : (float*float)[] = 
-        match table.Column "lat", table.Column "lon" with
-        | RealColumn lat, RealColumn lon -> [| i in 0..table.RowsCount-1 -> lat.Value.[i], lon.Value.[i] |]
-        | _ -> failwith "Unexpected type"    
+//    let rowsLatLon : (float*float)[] = 
+//        match table.Column "lat", table.Column "lon" with
+//        | RealColumn lat, RealColumn lon -> [| i in 0..table.RowsCount-1 -> lat.Value.[i], lon.Value.[i] |]
+//        | _ -> failwith "Unexpected type"    
 (**
 * Use helper function `Table.Map` which enables succinct code but with runtime type check: 
 *)
-    let rowsLatLon : (float*float)[] =
-        table
-        |> Table.Map ["lat";"lon"] (fun lat lon -> lat, lon)
+//    let rowsLatLon : (float*float)[] =
+//        table
+//        |> Table.Map ["lat";"lon"] (fun lat lon -> lat, lon)
 
 (**
 If table schema is known at compile time, the generic table type `Type<'r>` can be used.
@@ -116,10 +202,10 @@ corresponding names. The columns are ordered in an alphabetical order.
 
 The `Table<'r>` instance can be built from a list of instances of `'r`:
 *)
-
-type Table<'r> inherit Table =
-    new : 'r list -> Table<'r>
-    member Rows : 'r list
+//
+//type Table<'r> inherit Table =
+//    new : 'r list -> Table<'r>
+//    member Rows : 'r list
     
 (**
 Arrays of columns are computed using reflection on demand. 
@@ -147,33 +233,33 @@ For example, if `table` has several columns named `wheat` and you need only one 
 create a table that contains only one needed column `wheat`:
 *)
 
-let table2 =
-    Table( 
-        table.Columns
-        |> Seq.mapi (fun i x -> i, x)
-        |> Seq.choose (fun (i,(n,c)) -> 
-            match n with
-            | "wheat" when i <> wheatIdx -> None
-            | _ -> Some(n,c)))
+//let table2 =
+//    Table( 
+//        table.Columns
+//        |> Seq.mapi (fun i x -> i, x)
+//        |> Seq.choose (fun (i,(n,c)) -> 
+//            match n with
+//            | "wheat" when i <> wheatIdx -> None
+//            | _ -> Some(n,c)))
 
 (** Next example renames columns named `wheat` by appending their index to the name: *)
 
-let table3 =
-    Table( 
-        table.Columns
-        |> Seq.mapi (fun i (n,c) -> 
-            match n with
-            | "wheat" -> sprintf "wheat (%d)" i, c
-            | _ -> n, c))
+//let table3 =
+//    Table( 
+//        table.Columns
+//        |> Seq.mapi (fun i (n,c) -> 
+//            match n with
+//            | "wheat" -> sprintf "wheat (%d)" i, c
+//            | _ -> n, c))
 
 (**
 ### Constructing from Columns
 
 The `Table.Empty` property returns an empty table, i.e. a table that has no columns.
 *)
-open Angara.Data
-
-let tableEmpty = Table.Empty
+//open Angara.Data
+//
+//let tableEmpty = Table.Empty
 
 (**
 To build a table from arrays (or other kinds of sequences) representing table columns, 
@@ -184,10 +270,10 @@ The following example creates
 a table with two columns `"x"` and `"y"` with data given as arrays of floats:
 *)
 
-let table =
-    Table.Empty 
-    |> Table.Add "x" [| 1; 2; 3 |]
-    |> Table.Add "y" [| 2; 4; 6 |]
+//let table =
+//    Table.Empty 
+//    |> Table.Add "x" [| 1; 2; 3 |]
+//    |> Table.Add "y" [| 2; 4; 6 |]
 
 (** To remove columns from a table, use `Table.Remove`. *)
 
@@ -198,18 +284,18 @@ let table =
 There are several ways how rows can be represented to construct a table. First is to use `Table.ofRecords` which builds a table
 from a sequence of record type instances, when one instance is one row and record field is a column: *)
 
-type Wheat = { lat: float; lon: float; wheat: float }
-let records : Wheat[] = [| (* ... *) |]
-
-let tableWheat = Table.ofRecords records
+//type Wheat = { lat: float; lon: float; wheat: float }
+//let records : Wheat[] = [| (* ... *) |]
+//
+//let tableWheat = Table.ofRecords records
 
 (**
 Second way is to use `Table.ofTuples2`, `Table.ofTuples3` etc which builds a table from a sequence of tuples,
 when one tuple instance is one row and tuple elements are columns; columns names are given separately: *)
-  
-let tuples : (float*float*float)[] = [| (*...*) |]
-
-let tableWheat = Table.ofTuples3 ("lat", "lon", "wheat") tuples  
+//  
+//let tuples : (float*float*float)[] = [| (*...*) |]
+//
+//let tableWheat = Table.ofTuples3 ("lat", "lon", "wheat") tuples  
   
 (** Third way is to use `Table.OfRows: columnNames:string seq -> rows:System.Array seq -> Table` which creates a table from 
 a sequence of `System.Array` instances and a sequence of column names. *)
@@ -227,51 +313,51 @@ To load a table from a delimited text file, such as CSV file, you can use
 
 *)
 
-let tableWheat = Table.Load @"data\wheat.csv"
+//let tableWheat = Table.Load @"data\wheat.csv"
 
 (** or typed: *)
 
-let tableWheat = Table.Load<Wheat> @"data\wheat.csv"
+//let tableWheat = Table.Load<Wheat> @"data\wheat.csv"
 
 (**
 The `Table.Save` function saves a table to a file or stream: *)
 
-Table.Save (tableWheat, "wheat.csv")
+//Table.Save (tableWheat, "wheat.csv")
 
 (**Also there are overloaded functions `Load` and `Save` that allow to provide custom settings: *)
-
-type SaveSettings = 
-    { /// Determines which character will delimit columns.
-      Delimiter : Delimiter
-      /// If true, writes null strings as an empty string and an empty string as double quotes (""), 
-      /// so that these cases could be distinguished; otherwise, if false, throws an exception if null is 
-      /// in a string data array.
-      AllowNullStrings : bool 
-      /// If true, the first line will contain names corresponding to the columns of the table.
-      /// Otherwise, if false, the first line is a data line.
-      SaveHeader: bool }
-    /// Uses comma as delimiter, saves a header, and disallows null strings.
-    static member Default : WriteSettings
-
-type LoadSettings = 
-    { /// Determines which character delimits columns.
-      Delimiter : Delimiter
-      /// If true, double quotes ("") are considered as empty string and an empty string is considered as null; 
-      /// otherwise, if false, both cases are considered as an empty string.
-      InferNullStrings : bool
-      /// If true, the first line is considered as a header of the table.
-      /// This header will contain names corresponding to the fields in the file
-      /// and should contain the same number of fields as the records in
-      /// the rest of the file. Otherwise, if false, the first line is a data line and columns are named as 
-      /// A, B, C, ..., Z, AA, AB... .
-      HasHeader: bool
-      /// An optional value that allows to provide an expected number of columns. If number of columns differs, the reading fails.
-      ColumnsCount : int option
-      /// An optional value that allows a user to specify element types for some of columns. In particular this allows
-      /// reading integer columns since automatic inference always uses Double type for numeric values.
-      ColumnTypes : (int * string -> System.Type option) option }
-    /// Expects comma as delimiter, has header, doesn't infer null strings, and doesn't predefine column count or types.
-    static member Default : ReadSettings
+//
+//type SaveSettings = 
+//    { /// Determines which character will delimit columns.
+//      Delimiter : Delimiter
+//      /// If true, writes null strings as an empty string and an empty string as double quotes (""), 
+//      /// so that these cases could be distinguished; otherwise, if false, throws an exception if null is 
+//      /// in a string data array.
+//      AllowNullStrings : bool 
+//      /// If true, the first line will contain names corresponding to the columns of the table.
+//      /// Otherwise, if false, the first line is a data line.
+//      SaveHeader: bool }
+//    /// Uses comma as delimiter, saves a header, and disallows null strings.
+//    static member Default : WriteSettings
+//
+//type LoadSettings = 
+//    { /// Determines which character delimits columns.
+//      Delimiter : Delimiter
+//      /// If true, double quotes ("") are considered as empty string and an empty string is considered as null; 
+//      /// otherwise, if false, both cases are considered as an empty string.
+//      InferNullStrings : bool
+//      /// If true, the first line is considered as a header of the table.
+//      /// This header will contain names corresponding to the fields in the file
+//      /// and should contain the same number of fields as the records in
+//      /// the rest of the file. Otherwise, if false, the first line is a data line and columns are named as 
+//      /// A, B, C, ..., Z, AA, AB... .
+//      HasHeader: bool
+//      /// An optional value that allows to provide an expected number of columns. If number of columns differs, the reading fails.
+//      ColumnsCount : int option
+//      /// An optional value that allows a user to specify element types for some of columns. In particular this allows
+//      /// reading integer columns since automatic inference always uses Double type for numeric values.
+//      ColumnTypes : (int * string -> System.Type option) option }
+//    /// Expects comma as delimiter, has header, doesn't infer null strings, and doesn't predefine column count or types.
+//    static member Default : ReadSettings
 
 (**
 ### Getting Data
@@ -284,28 +370,28 @@ The following examples computes an average of the column `wheat`:
 
 *)
 
-let averageWheat = 
-    tableWheat 
-    |> Table.ToSeq<float> "wheat"
-    |> Seq.average
+//let averageWheat = 
+//    tableWheat 
+//    |> Table.ToSeq<float> "wheat"
+//    |> Seq.average
 
 (*** include-value: averageWheat ***)
 
 (** To get row-wise access to a table, use `Table.Map` or `Table.Mapi`.
 The following sample gets a sequence of tuples containing latitides and longitudes of each table row: *)
-
-let locationsWheat : (float*float) seq = 
-    tableWheat 
-    |> Table.Map ["Lat"; "Lon"] (fun lat lon -> lat,lon)
+//
+//let locationsWheat : (float*float) seq = 
+//    tableWheat 
+//    |> Table.Map ["Lat"; "Lon"] (fun lat lon -> lat,lon)
 
 (*** include-value: locationsWheat ***)
 
 (**
 Typed `Table<'a>` exposes indexing property `Rows` which returns a row as a typed instance: *)
-
-for i = 0..tableWheat.RowsCount-1 do
-    let row = tableWheat.Rows.[i] 
-    printf "%f, %f" row.Lat row.Lon
+//
+//for i = 0..tableWheat.RowsCount-1 do
+//    let row = tableWheat.Rows.[i] 
+//    printf "%f, %f" row.Lat row.Lon
 
 (**
 
@@ -327,9 +413,9 @@ The generic function `map:'a->'b` is only partially defined. If `columnNames` co
 The following example prints locations for each row of the table:
 *)
 
-let locationsWheat2 : string seq = 
-    tableWheat 
-    |> Table.Map ["Lat"; "Lon"] (sprintf "%.2f, %.2f")    
+//let locationsWheat2 : string seq = 
+//    tableWheat 
+//    |> Table.Map ["Lat"; "Lon"] (sprintf "%.2f, %.2f")    
 
 (*** include-value: locationsWheat2 ***)
 
@@ -354,9 +440,9 @@ Ultimate result type of the map function must be valid column type: either `int`
 The following examples adds new table column named "log(wheat)" which contains logarithm of wheat for each row:
 *)
 
-let tableLogWheat = 
-    tableWheat 
-    |> Table.MapToColumn ["wheat"] "log(wheat)" log
+//let tableLogWheat = 
+//    tableWheat 
+//    |> Table.MapToColumn ["wheat"] "log(wheat)" log
 
 (*** include-value: tableLogWheat ***)
 
@@ -374,8 +460,8 @@ where the predicate takes a set of columns.
 (** 
 To get a subset of table rows, use the function `Table.Filteri':
 *)
-
-let tableWheat_10rows = tableWheat |> Table.Filteri [] (fun i -> i < 10)
+//
+//let tableWheat_10rows = tableWheat |> Table.Filteri [] (fun i -> i < 10)
 
 (**
 ### Transforming and Joining Tables
@@ -413,70 +499,87 @@ The original data is taken from [https://www.kaggle.com/c/titanic](https://www.k
 *)
 
 (** Having the table functions: *)
-
-let GroupBy (colName : string) (projection : 'a -> 'b) (table : Table) : ('b * Table) seq =
-    Table.ToArray<'a[]> colName table 
-    |> Array.groupBy projection 
-    |> Seq.map(fun (key: 'b, _) ->
-        key, table |> Table.Filter [colName] (fun (v:'a) -> projection v = key))
-
-let OrderBy<'a,'b when 'b : comparison> (colName: string) (projection : 'a -> 'b) (table : Table) : Table =
-    let order = 
-        Table.ToArray<'a[]> colName table
-        |> Array.mapi (fun i v -> (i, projection v)) 
-        |> Array.sortBy snd |> Array.map fst
-    let cols =
-        table.Columns |> Seq.mapi(fun i c -> 
-            table.Names.[i],            
-            match Column.Type c with
-            | t when t = typeof<float> -> Column.New(lazy(let arr:float[] = Column.ToArray c in Array.init arr.Length (fun i -> arr.[order.[i]])))
-            | t when t = typeof<int> -> Column.New(lazy(let arr:int[] = Column.ToArray c in Array.init arr.Length (fun i -> arr.[order.[i]])))
-            | t when t = typeof<string> -> Column.New(lazy(let arr:string[] = Column.ToArray c in Array.init arr.Length (fun i -> arr.[order.[i]])))
-            | t when t = typeof<System.DateTime> -> Column.New(lazy(let arr:System.DateTime[] = Column.ToArray c in Array.init arr.Length (fun i -> arr.[order.[i]])))
-            | t when t = typeof<bool> -> Column.New(lazy(let arr:bool[] = Column.ToArray c  in Array.init arr.Length (fun i -> arr.[order.[i]])))
-            | _ -> failwith "Unexpected column type")
-    Table(cols)
-
-let OfTuples3<'a,'b,'c> (names: string*string*string) (rows : ('a*'b*'c) seq) : Table =
-    let na, nb, nc = names   
-    let ca, cb, cc = rows |> Seq.toArray |> Array.unzip3
-    Table([na; nb; nc], [Column.New ca; Column.New cb; Column.New cc])
-
-(** then - untyped solution: *)
-
-let survivors =         
-    Table.Load(@"data\titanic.csv",
-               { DelimitedFile.ReadSettings.Default with 
-                     ColumnTypes = Some(fun (_,name) -> match name with "Survived" | "Pclass"-> Some typeof<int> | _ -> None) })
-    |> GroupBy "Pclass" id 
-    |> Seq.map(fun (pclass:int, table) -> 
-        let stat = table |> Table.ToArray<int[]> "Survived" |> Array.countBy id |> Array.sortBy fst |> Array.map snd
-        pclass, stat.[0], stat.[1])
-    |> OfTuples3 ("Pclass", "Died", "Survived") 
-    |> Table.MapToColumn ["Died"; "Survived"] "Died" (fun (died:int) (survived:int) -> 100.0*(float died)/(float (died + survived)))
-    |> Table.MapToColumn ["Died"] "Survived" (fun (died:float) -> 100.0 - died)
-    |> OrderBy<int,int> "Pclass" id
+//
+//let GroupBy (colName : string) (projection : 'a -> 'b) (table : Table) : ('b * Table) seq =
+//    Table.ToArray<'a[]> colName table 
+//    |> Array.groupBy projection 
+//    |> Seq.map(fun (key: 'b, _) ->
+//        key, table |> Table.Filter [colName] (fun (v:'a) -> projection v = key))
+//
+//let OrderBy<'a,'b when 'b : comparison> (colName: string) (projection : 'a -> 'b) (table : Table) : Table =
+//    let order = 
+//        Table.ToArray<'a[]> colName table
+//        |> Array.mapi (fun i v -> (i, projection v)) 
+//        |> Array.sortBy snd |> Array.map fst
+//    let cols =
+//        table.Columns |> Seq.mapi(fun i c -> 
+//            table.Names.[i],            
+//            match Column.Type c with
+//            | t when t = typeof<float> -> Column.New(lazy(let arr:float[] = Column.ToArray c in Array.init arr.Length (fun i -> arr.[order.[i]])))
+//            | t when t = typeof<int> -> Column.New(lazy(let arr:int[] = Column.ToArray c in Array.init arr.Length (fun i -> arr.[order.[i]])))
+//            | t when t = typeof<string> -> Column.New(lazy(let arr:string[] = Column.ToArray c in Array.init arr.Length (fun i -> arr.[order.[i]])))
+//            | t when t = typeof<System.DateTime> -> Column.New(lazy(let arr:System.DateTime[] = Column.ToArray c in Array.init arr.Length (fun i -> arr.[order.[i]])))
+//            | t when t = typeof<bool> -> Column.New(lazy(let arr:bool[] = Column.ToArray c  in Array.init arr.Length (fun i -> arr.[order.[i]])))
+//            | _ -> failwith "Unexpected column type")
+//    Table(cols)
+//
+//let OfTuples3<'a,'b,'c> (names: string*string*string) (rows : ('a*'b*'c) seq) : Table =
+//    let na, nb, nc = names   
+//    let ca, cb, cc = rows |> Seq.toArray |> Array.unzip3
+//    Table([na; nb; nc], [Column.New ca; Column.New cb; Column.New cc])
+//
+//(** then - untyped solution: *)
+//
+//let survivors =         
+//    Table.Load(@"data\titanic.csv",
+//               { DelimitedFile.ReadSettings.Default with 
+//                     ColumnTypes = Some(fun (_,name) -> match name with "Survived" | "Pclass"-> Some typeof<int> | _ -> None) })
+//    |> GroupBy "Pclass" id 
+//    |> Seq.map(fun (pclass:int, table) -> 
+//        let stat = table |> Table.ToArray<int[]> "Survived" |> Array.countBy id |> Array.sortBy fst |> Array.map snd
+//        pclass, stat.[0], stat.[1])
+//    |> OfTuples3 ("Pclass", "Died", "Survived") 
+//    |> Table.MapToColumn ["Died"; "Survived"] "Died" (fun (died:int) (survived:int) -> 100.0*(float died)/(float (died + survived)))
+//    |> Table.MapToColumn ["Died"] "Survived" (fun (died:float) -> 100.0 - died)
+//    |> OrderBy<int,int> "Pclass" id
 
 (*** include-value: survivors ***)
 
 (** Typed solution: *)
 
-type Passenger = { Pclass: int; Survived: int }
-type Survivors = { Pclass: int; Survived: float; Died: float }
-
-let survivors : Table<Survivors> =         
-    Table.Load<Passenger> @"data\titanic.csv"
-    |> GroupBy (fun (p:Passenger) -> p.Pclass) 
-    |> Seq.map(fun (pclass:int, table:Table<Passenger>) -> 
-        let stat = table?Survived |> Array.countBy id |> Array.sortBy fst |> Array.map snd
-        { Pclass = pclass; Survived = float(stat.[0]); Died = float(stat.[1]) })
-    |> OfRecords
-    |> Table.Map (fun (s:Survivors) -> 
-        { Pclass = pclass; 
-          Died = 100.0*s.Died/(s.Died + s.Survived)
-          Survived = 100.0*s.Survived/(s.Died + s.Survived))
-    |> OrderBy (fun (s:Survivors) -> s.Pclass)
-
-let pclass1 : Survivors = survivors.[0];
+//type Passenger = { Pclass: int; Survived: int }
+//type Survivors = { Pclass: int; Survived: float; Died: float }
+//
+//let survivors : Table<Survivors> =         
+//    Table.Load<Passenger> @"data\titanic.csv"
+//    |> GroupBy (fun (p:Passenger) -> p.Pclass) 
+//    |> Seq.map(fun (pclass:int, table:Table<Passenger>) -> 
+//        let stat = table?Survived |> Array.countBy id |> Array.sortBy fst |> Array.map snd
+//        { Pclass = pclass; Survived = float(stat.[0]); Died = float(stat.[1]) })
+//    |> OfRecords
+//    |> Table.Map (fun (s:Survivors) -> 
+//        { Pclass = pclass; 
+//          Died = 100.0*s.Died/(s.Died + s.Survived)
+//          Survived = 100.0*s.Survived/(s.Died + s.Survived))
+//    |> OrderBy (fun (s:Survivors) -> s.Pclass)
+//
+//let pclass1 : Survivors = survivors.[0];
 
 (*** include-value: survivors ***)
+
+(*** define:typedef-Column ***)
+type Column =
+    /// Gets a name of the column.
+    member Name : string with get
+    /// Gets a number of rows in the column.
+    member Height : int with get
+    /// Returns column values.
+    member Rows : ColumnValues with get
+
+(*** define:typedef-ColumnValues ***)
+type ColumnValues =
+    | IntColumn     of Lazy<ImmutableArray<int>>
+    | RealColumn    of Lazy<ImmutableArray<float>>
+    | StringColumn  of Lazy<ImmutableArray<string>>
+    | DateColumn    of Lazy<ImmutableArray<DateTime>>
+    | BooleanColumn of Lazy<ImmutableArray<Boolean>>

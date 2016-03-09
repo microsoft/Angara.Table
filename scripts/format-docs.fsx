@@ -29,8 +29,8 @@ for f in [tips_path; style_path] do
 // Generates HTML from FSharp script files using F# Literate Programming.
 // process script files
 let fsi = FsiEvaluator()
-for f in [  src "Angara.Table/Scripts/Angara.Table.fsx"
-            ] 
+for f in 
+    [ src "Angara.Table/Scripts/Angara.Table.fsx" ] 
     do
     if File.Exists f then
         printfn "Processing %s" (Path.GetFullPath(f))

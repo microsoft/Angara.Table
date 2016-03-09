@@ -41,7 +41,9 @@ type ColumnValues =
 [<Class>]
 type Column =
     member Name : string with get
+    /// Returns column values.
     member Rows : ColumnValues with get
+    /// Gets a count of the total number of values in the column.
     member Height : int with get 
     static member OfArray : name:string * rows:'a[] -> Column
     static member OfArray : name:string * rows:ImmutableArray<'a> -> Column

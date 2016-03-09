@@ -5,3 +5,4 @@
 #r "System.Core.dll"
 #r "System.dll"
 #r "System.Numerics.dll"
+#r "../../../ext/nuget/System.Collections.Immutable.1.1.36/lib/portable-net45+win8+wp8+wpa81/System.Collections.Immutable.dll"
