@@ -125,7 +125,9 @@ type Table private (columns : Column list, height : int) =
         | [] -> 0
         | c :: cols -> let n = c.Height in if not(cols |> List.forall (fun q -> q.Height = n)) then raiseDiffHeights() else n
 
-    new(columns:Column list) = Table(columns, assertAndGetHeight columns)
+    new(columns:Column seq) = 
+        let columns_l = columns |> Seq.toList
+        Table(columns_l, assertAndGetHeight columns_l)
 
     member internal x.Columns = columns
 
@@ -282,9 +284,10 @@ type Table private (columns : Column list, height : int) =
             let colArrays = cs |> Array.map(fun n -> table.[n].Rows.ToUntypedList() |> box)
             deleg.DynamicInvoke(colArrays) :?> 'c
             
-    static member ReadStream (settings:Angara.Data.DelimitedFile.ReadSettings) (stream:IO.Stream) : Table =
+
+    static member Load (reader:System.IO.TextReader, settings:Angara.Data.DelimitedFile.ReadSettings) : Table =
         let cols = 
-            stream 
+            reader 
             |> Angara.Data.DelimitedFile.Implementation.Read settings
             |> Seq.map(fun (schema, data) ->                 
                 match schema.Type with
@@ -294,16 +297,22 @@ type Table private (columns : Column list, height : int) =
                 | Angara.Data.DelimitedFile.ColumnType.DateTime -> Column.OfArray (schema.Name, data :?> ImmutableArray<DateTime>)
                 | Angara.Data.DelimitedFile.ColumnType.String   -> Column.OfArray (schema.Name, data :?> ImmutableArray<string>))
         new Table(cols |> Seq.toList)
+    static member Load (reader:System.IO.TextReader) : Table = 
+        Table.Load (reader, Angara.Data.DelimitedFile.ReadSettings.Default)
+    static member Load (path: string, settings:Angara.Data.DelimitedFile.ReadSettings) : Table = 
+        use reader = System.IO.File.OpenText path
+        Table.Load (reader, settings)
+    static member Load (path: string) : Table = 
+        Table.Load (path, Angara.Data.DelimitedFile.ReadSettings.Default)
 
-    static member WriteStream (settings:Angara.Data.DelimitedFile.WriteSettings) (stream:IO.Stream) (table:Table) : unit =
-        table.Columns
+    static member Save (table:Table, writer:System.IO.TextWriter, settings:Angara.Data.DelimitedFile.WriteSettings) : unit =
+        table
         |> Seq.map(fun column -> column.Name, column.Rows.ToUntypedList())
-        |> Angara.Data.DelimitedFile.Implementation.Write settings stream            
-
-    static member Read (settings:Angara.Data.DelimitedFile.ReadSettings) (path:string) : Table =
-        use stream = new System.IO.FileStream(path, System.IO.FileMode.Open, System.IO.FileAccess.Read)
-        Table.ReadStream settings stream
-
-    static member Write (settings:Angara.Data.DelimitedFile.WriteSettings) (path:string) (table:Table) : unit =
-        use stream = new System.IO.FileStream(path, System.IO.FileMode.Create, System.IO.FileAccess.Write)
-        Table.WriteStream settings stream table
+        |> Angara.Data.DelimitedFile.Implementation.Write settings writer
+    static member Save (table:Table, writer:System.IO.TextWriter) : unit = 
+        Table.Save (table, writer, Angara.Data.DelimitedFile.WriteSettings.Default)
+    static member Save (table:Table, path: string, settings:Angara.Data.DelimitedFile.WriteSettings) : unit = 
+        use writer = System.IO.File.CreateText path
+        Table.Save (table, writer, settings)
+    static member Save (table:Table, path: string) : unit =
+        Table.Save (table, path, Angara.Data.DelimitedFile.WriteSettings.Default)

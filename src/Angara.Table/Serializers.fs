@@ -16,7 +16,8 @@ type internal TableBlob(table : Table) =
             stream :> IO.Stream
             
         member this.WriteTo stream = 
-            table |> Table.WriteStream { WriteSettings.Default with AllowNullStrings = true } stream
+            use writer = new System.IO.StreamWriter(stream, System.Text.Encoding.UTF8, 1024, true) // 1024 mentioned here: http://stackoverflow.com/questions/29412757/what-is-the-default-buffer-size-for-streamwriter)
+            Table.Save (table, writer, { WriteSettings.Default with AllowNullStrings = true })
 
 /// The serializer keeps table schema as typed InfoSet and 
 /// table data formatted as CSV and represented as a InfoSet blob.
@@ -58,8 +59,9 @@ type TableReinstateSerializer() =
         let data:Lazy<IList[]> =
             lazy(
                 use stream = (snd (map.["data"].ToBlob())).GetStream()
+                use reader = new System.IO.StreamReader(stream, Text.Encoding.UTF8)
                 let cols = 
-                    stream 
+                    reader
                     |> Implementation.Read
                             { ReadSettings.Default with 
                                 InferNullStrings = true

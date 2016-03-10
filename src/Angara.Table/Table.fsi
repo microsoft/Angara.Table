@@ -58,7 +58,7 @@ type Column =
 type Table = 
     interface IEnumerable<Column> 
 
-    new : nameColumns : Column list -> Table
+    new : nameColumns : Column seq -> Table
 
     /// Gets a count of the total number of columns in the table.
     member Count : int with get
@@ -87,7 +87,11 @@ type Table =
 
     /// Creates a new, empty table
     static member Empty : Table
+    /// Creates a new table that has all columns of the original table appended with the given column.
+    /// Duplicate names are allowed.
     static member Add : column:Column -> table:Table -> Table
+    /// Creates a new table that has all columns of the original table excluding the columns having name
+    /// contained in the given column names.
     static member Remove : columnNames:seq<string> -> table:Table -> Table
 
     /// Return a new table containing all rows from a table where a predicate is true, where the predicate takes a set of columns
@@ -162,7 +166,7 @@ type Table =
     /// </remarks>
     static member MapiToColumn : columnNames:seq<string> -> newColumnName:string -> map:(int->'a) -> table:Table -> Table
 
-        /// <summary>Applies the given function to the arrays of given table columns.</summary>
+    /// <summary>Applies the given function to the arrays of given table columns.</summary>
     /// <remarks>
     /// <p>The generic curried transform function is only partially defined.
     /// If there are:
@@ -189,17 +193,23 @@ type Table =
     /// </remarks>
     static member AppendTransform : columnNames:seq<string> -> transform:(ImmutableArray<'a>->'b) -> table:Table -> Table
 
-    /// Reads table from a delimited text file.
-    static member Read : settings:Angara.Data.DelimitedFile.ReadSettings -> path:string -> Table
+    /// Loads a table from a delimited text file.
+    static member Load : path:string -> Table
+    /// Loads a table from a delimited text file.
+    static member Load : path:string * settings:Angara.Data.DelimitedFile.ReadSettings -> Table
+    /// Loads a table from a delimited text stream using given reader.
+    static member Load : reader:System.IO.TextReader -> Table
+    /// Loads a table from a delimited text stream using given reader.
+    static member Load : reader:System.IO.TextReader * settings:Angara.Data.DelimitedFile.ReadSettings -> Table
 
-    /// Reads table from a delimited text stream.
-    static member ReadStream : settings:Angara.Data.DelimitedFile.ReadSettings -> stream:IO.Stream -> Table
-    
-    /// Writes a table to a stream as a delimited text.
-    static member Write : settings:Angara.Data.DelimitedFile.WriteSettings -> path:string -> table:Table -> unit
-
-    /// Writes a table to a stream as a delimited text.
-    static member WriteStream : settings:Angara.Data.DelimitedFile.WriteSettings -> stream:IO.Stream -> table:Table -> unit
+    /// Saves the table to a delimited text file, overwriting an existing file, if it exists.
+    static member Save : table:Table * path:string -> unit
+    /// Saves the table to a delimited text file, overwriting an existing file, if it exists.
+    static member Save : table:Table * path:string * settings:Angara.Data.DelimitedFile.WriteSettings -> unit
+    /// Saves the table to a delimited text stream using given writer.
+    static member Save : table:Table * writer:System.IO.TextWriter -> unit
+    /// Saves the table to a delimited text stream using given writer.
+    static member Save : table:Table * writer:System.IO.TextWriter * settings:Angara.Data.DelimitedFile.WriteSettings -> unit
 
 
 //[<Class>]

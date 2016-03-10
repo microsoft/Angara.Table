@@ -42,16 +42,17 @@ let cx = Column.OfArray ("x", [| for i in 0..99 -> float(i) / 10.0  |])
 (**
 - `Column.OfLazyArray` creates a column from a lazy immutable array of one of the valid types. This function requires a user to provide
 a length of the given lazy array. Evalutation of the array will be performed when the column rows are first time accessed.*)
-let cx = Column.OfLazyArray ("x", lazy(ImmutableArray.CreateRange(seq{ for i in 0..99 -> float(i) / 10.0 })), 100)
+let cx' = Column.OfLazyArray ("x", lazy(ImmutableArray.CreateRange(seq{ for i in 0..99 -> float(i) / 10.0 })), 100)
 (**
 - `Colum.OfColumnValues` creates a column from an instance of `ColumnValues` discriminated union. This is a type safe function since
 validity of the array type is checked on compilation; also this function allows to create a new column from values of another column.*)
-let cx = Column.OfColumnValues ("x", RealColumn(lazy(ImmutableArray.CreateRange(seq{ for i in 0..99 -> float(i) / 10.0 }))), 100)
+let cx'' = Column.OfColumnValues ("x", RealColumn(lazy(ImmutableArray.CreateRange(seq{ for i in 0..99 -> float(i) / 10.0 }))), 100)
 
 (**
 ### Getting Column Values
 
-To get values of a column when its type is unknown at compile time, use `match` by value of the `Column.Rows`.
+Generic tools usually do not expect a column to have a certain type, but must handle all possible types.
+In this case, use `match` by value of the `Column.Rows` property to get column values.
 The following example prints values of the column: *)
 
 (*** define-output:print-rows ***)
@@ -95,10 +96,23 @@ match cx.Rows.[cx.Height / 2] with
 printf "float: %f" (cx.Rows.[cx.Height / 2].AsReal)
 (*** include-output:print-rows-item2 ***)
 
+
 (**
+
+
 ## Table
 
-The type `Angara.Data.Table` represents an immutable table. 
+
+The type `Angara.Data.Table` represents an immutable table. *)
+
+(*** include:typedef-Table ***)
+
+(**
+
+### Constructing from Columns
+
+The `Table.Empty` property returns an empty table, i.e. a table that has no columns.
+
 A table can be created from a finite sequence of columns:
 *)
 
@@ -108,178 +122,69 @@ let table =
           Column.OfArray ("sin(x)", [| for i in 0..99 -> sin (float(i) / 10.0) |]) ])
 
 (**
-It implements the `IEnumerable<Column>` interface and exposes members
+To add a column to a table, you can use the static function `Table.Add` which creates 
+a new table that has all columns of the original table appended with the given column.
+Duplicate names are allowed. 
+Normally, all columns of a table must have same height which is the table row count; 
+if the new table column has different height, `Table.Add` fails.
+
+In the following example the resulting `table` is identical to the `table` of the previous example:
+*)
+
+let table =
+    Table.Empty 
+    |> Table.Add (Column.OfArray ("x", [| for i in 0..99 -> float(i) / 10.0  |]))
+    |> Table.Add (Column.OfArray ("sin(x)", [| for i in 0..99 -> sin (float(i) / 10.0) |]))
+
+(** To remove columns from a table by names, you can use `Table.Remove`: *)
+
+let table2 = table |> Table.Remove ["sin(x)"]
+
+(** Alternatively, you can filter a table as a sequence of columns and create a new table instance. *)
+
+(**
+
+### Table as a Collection of Columns
+
+The `Table` implements the `IEnumerable<Column>` interface and exposes members
 `Count` and `Item` that allow to get a count of the total number of columns in the table
 and get a column by its index or name.
 
-The following example prints information about each column of a table:
+The following example prints a schema of the table without evalutation of the columns values:
 *)
 (*** define-output:table-as-seq ***)
-let xxx = 
-    table
-    |> Seq.mapi (fun colIdx col ->
-        sprintf "%d: %s of type %s" colIdx col.Name
-                   (match col.Rows with
-                    | RealColumn _    -> "float"
-                    | IntColumn _     -> "int"
-                    | StringColumn _  -> "string"
-                    | DateColumn _    -> "DateTime"
-                    | BooleanColumn _ -> "bool"))
-    |> Seq.toList
+table
+|> Seq.iteri (fun colIdx col ->
+    printfn "%d: %s of type %s" colIdx col.Name
+                (match col.Rows with
+                | RealColumn _    -> "float"
+                | IntColumn _     -> "int"
+                | StringColumn _  -> "string"
+                | DateColumn _    -> "DateTime"
+                | BooleanColumn _ -> "bool"))
 
 (*** include-output:table-as-seq ***)  
-(*** include-value: xxx ***)
-
-(**
-`Table` can be constructed from a list of name and column pairs.
-Then the rows count is determined on the first access to the `RowsCount` property.
-If there is a column whose lazy array already has value, its length is taken; otherwise, the first column is evaluated.
-
-If evaluation of a column takes significant time and the number of rows is known on table construction, 
-you should use the second constructor to provide the `rowsCount` argument.
-
-The example builds a table from a list of names and columns:
-*)
-
-//let table = 
-//    Table(
-//        ["x",      RealColumn (lazy(ImmutableArray.Create [| for i in 0..99 -> float(i) / 10.0  |]))
-//         "sin(x)", RealColumn (lazy(ImmutableArray.Create [| for i in 0..99 -> sin (float(i) / 10.0) |])) ])
-
-(**
-The `Table.Columns` property allows listing columns names and types without forcing evaluation of lazy arrays; 
-for example, the following code prints the table schema:
-*)
-
-//table.Columns
-//|> List.iteri (fun colIdx (name, col) ->
-//    printf "%d: %s of type %s" colIdx name
-//        match col with
-//        | RealColumn _    -> "float"
-//        | IntColumn _     -> "int"
-//        | StringColumn _  -> "string"
-//        | DateColumn _    -> "DateTime"
-//        | BooleanColumn _ -> "bool")
 
 (** 
-The methods `Table.Column` return a column by its index or name. If a column is not found,
+The indexed properties `Table.Item` and `Table.TryItem` return a column by its index or name. If a column is not found,
 an exception is thrown; if there are two or more columns with the given name,
 the first column having the name is returned.
+
+The example gets a name of a table column with index 1: *)
+
+let col_name = table.[1].Name
+
+(*** include-value:col_name ***)
+
+(**
+Next, we compute an average of the column named "sin(x)", assuming that it is real:
 *)
+let sin_avg = table.["sin(x)"].Rows.AsReal |> Seq.average
+
+(*** include-value:sin_avg ***)
 
 (**
-The `Table` type exposes column-wise data access because it enables type safe code.
-The following example computes an average of a column `wheat`: *)
-
-//let av = 
-//    match table.Column "wheat" with
-//    | RealColumn a -> Seq.average a.Value
-//    | _ -> failwith "Unexpected type of column" 
-
-(**
-There are three ways to perform row-wise access:
-
-* If table schema is known and can be represented as a record, use the generic type `Table<'r>` which exposes property 
-`Rows : 'r list`.
-* Create type safe code by accessing columns elements at certain index:
-*)
-//    let rowsLatLon : (float*float)[] = 
-//        match table.Column "lat", table.Column "lon" with
-//        | RealColumn lat, RealColumn lon -> [| i in 0..table.RowsCount-1 -> lat.Value.[i], lon.Value.[i] |]
-//        | _ -> failwith "Unexpected type"    
-(**
-* Use helper function `Table.Map` which enables succinct code but with runtime type check: 
-*)
-//    let rowsLatLon : (float*float)[] =
-//        table
-//        |> Table.Map ["lat";"lon"] (fun lat lon -> lat, lon)
-
-(**
-If table schema is known at compile time, the generic table type `Type<'r>` can be used.
-The type `'r` defines structure of a table and instance of `'r` represents a single table row.
-The type `'r` must be sealed and all its public read-only instance properties are considered as table columns with 
-corresponding names. The columns are ordered in an alphabetical order.
-
-The `Table<'r>` instance can be built from a list of instances of `'r`:
-*)
-//
-//type Table<'r> inherit Table =
-//    new : 'r list -> Table<'r>
-//    member Rows : 'r list
-    
-(**
-Arrays of columns are computed using reflection on demand. 
-*)
-
-(**
-## Table Operations
-
-[Angara.Data.Table](angara-data-table.html) exposes a number of functions that should simplify the code
-operating with tables though payoff for some of them is that the type checking is performed in runtime.
-*)
-
-(**
-All functions described below identify a column by its name. Thus duplicate names cause ambiguity which is implicitly resolved
-by using the first column having the given name. Still you can explicitly resolve the ambiguity using following approaches:
-
-1. If only one of the columns is needed, then you can build a new table that 
-has all columns except those which are not needed. 
-2. If several columns with same name are needed, build a new table that has same columns but give unique names 
-to the columns with duplicate names.
-
-Both approaches do not cause any column data evaluation or copying.
-
-For example, if `table` has several columns named `wheat` and you need only one with index `wheatIdx`,
-create a table that contains only one needed column `wheat`:
-*)
-
-//let table2 =
-//    Table( 
-//        table.Columns
-//        |> Seq.mapi (fun i x -> i, x)
-//        |> Seq.choose (fun (i,(n,c)) -> 
-//            match n with
-//            | "wheat" when i <> wheatIdx -> None
-//            | _ -> Some(n,c)))
-
-(** Next example renames columns named `wheat` by appending their index to the name: *)
-
-//let table3 =
-//    Table( 
-//        table.Columns
-//        |> Seq.mapi (fun i (n,c) -> 
-//            match n with
-//            | "wheat" -> sprintf "wheat (%d)" i, c
-//            | _ -> n, c))
-
-(**
-### Constructing from Columns
-
-The `Table.Empty` property returns an empty table, i.e. a table that has no columns.
-*)
-//open Angara.Data
-//
-//let tableEmpty = Table.Empty
-
-(**
-To build a table from arrays (or other kinds of sequences) representing table columns, 
-use `Table.Empty` and `Table.Add` functions. 
-Normally, all columns of a table must have same number of elements; otherwise, `Table.Add` fails.
-
-The following example creates
-a table with two columns `"x"` and `"y"` with data given as arrays of floats:
-*)
-
-//let table =
-//    Table.Empty 
-//    |> Table.Add "x" [| 1; 2; 3 |]
-//    |> Table.Add "y" [| 2; 4; 6 |]
-
-(** To remove columns from a table, use `Table.Remove`. *)
-
-
-(**
-### Constructing from Rows 
+### Constructing from Rows _to do_
 
 There are several ways how rows can be represented to construct a table. First is to use `Table.ofRecords` which builds a table
 from a sequence of record type instances, when one instance is one row and record field is a column: *)
@@ -288,6 +193,11 @@ from a sequence of record type instances, when one instance is one row and recor
 //let records : Wheat[] = [| (* ... *) |]
 //
 //let tableWheat = Table.ofRecords records
+
+(** Appending a table with a row:
+*)
+
+// tableWheat |> Table.AppendRow r
 
 (**
 Second way is to use `Table.ofTuples2`, `Table.ofTuples3` etc which builds a table from a sequence of tuples,
@@ -300,101 +210,133 @@ when one tuple instance is one row and tuple elements are columns; columns names
 (** Third way is to use `Table.OfRows: columnNames:string seq -> rows:System.Array seq -> Table` which creates a table from 
 a sequence of `System.Array` instances and a sequence of column names. *)
 
+(**
+
+### Table as a Collection of Rows
+
+A number of rows in the table is available through the property `Table.RowsCount`:
+*)
+
+(*** define-output:rowscount ***)
+printf "Rows count: %d" table.RowsCount
+(*** include-output:rowscount ***)
 
 (**
 
-### Save and load
+There are three ways to perform row-wise data access:
 
-The `Table` exposes functions to load and save a table in the delimited text format
+* If table schema is known and can be represented as a record, you can use the generic function `Table.ToRows<'r>` which returns `'r seq`,
+one instance of `'r` for each row.
+* Get column values then do explicit slicing:
+*)
+let rows : (float*float) seq = 
+    let x = table.["x"].Rows.AsReal
+    let sinx = table.["sin(x)"].Rows.AsReal
+    seq{ for i in 0..table.RowsCount-1 -> x.[i], sinx.[i] }
+
+(*** include-value:rows ***)
+
+(**
+* Use helper function `Table.Map` which invokes the given function for each of the table rows and provides values of certain columns as arguments;
+the result is a sequence of values returned by the function calls: 
+*)
+let rows' : (float*float) seq =
+    table |> Table.Map ["x";"sin(x)"] (fun (x:float) (sinx:float) -> x, sinx)
+
+(*** include-value:rows' ***)
+
+(**
+
+## Save and Load
+
+The `Table` type exposes static functions `Save` and `Load` to save and load a table in the delimited text format
 in accordance with [RFC 4180](https://tools.ietf.org/html/rfc4180) but with extended set of delimiters: comma, tab, semicolon and space.
 
-To load a table from a delimited text file, such as CSV file, you can use 
+The `Table.Save` function saves a table to a file or using given `TextWriter`: *)
+
+Table.Save(table, "table.csv")
+
+(** The `table.csv` contains the following text: 
+
+    x,sin(x)
+    0,0
+    0.1,0.099833416646828155
+    0.2,0.19866933079506122
+    0.3,0.29552020666133955
+    ...
+*)
+
+(**
+To load a table from a delimited text file, such as CSV file, or using given `TextReader`, you can call 
 `Table.Load` function:
-
 *)
 
-//let tableWheat = Table.Load @"data\wheat.csv"
+let table = Table.Load("table.csv")
 
-(** or typed: *)
-
-//let tableWheat = Table.Load<Wheat> @"data\wheat.csv"
-
-(**
-The `Table.Save` function saves a table to a file or stream: *)
-
-//Table.Save (tableWheat, "wheat.csv")
-
-(**Also there are overloaded functions `Load` and `Save` that allow to provide custom settings: *)
-//
-//type SaveSettings = 
-//    { /// Determines which character will delimit columns.
-//      Delimiter : Delimiter
-//      /// If true, writes null strings as an empty string and an empty string as double quotes (""), 
-//      /// so that these cases could be distinguished; otherwise, if false, throws an exception if null is 
-//      /// in a string data array.
-//      AllowNullStrings : bool 
-//      /// If true, the first line will contain names corresponding to the columns of the table.
-//      /// Otherwise, if false, the first line is a data line.
-//      SaveHeader: bool }
-//    /// Uses comma as delimiter, saves a header, and disallows null strings.
-//    static member Default : WriteSettings
-//
-//type LoadSettings = 
-//    { /// Determines which character delimits columns.
-//      Delimiter : Delimiter
-//      /// If true, double quotes ("") are considered as empty string and an empty string is considered as null; 
-//      /// otherwise, if false, both cases are considered as an empty string.
-//      InferNullStrings : bool
-//      /// If true, the first line is considered as a header of the table.
-//      /// This header will contain names corresponding to the fields in the file
-//      /// and should contain the same number of fields as the records in
-//      /// the rest of the file. Otherwise, if false, the first line is a data line and columns are named as 
-//      /// A, B, C, ..., Z, AA, AB... .
-//      HasHeader: bool
-//      /// An optional value that allows to provide an expected number of columns. If number of columns differs, the reading fails.
-//      ColumnsCount : int option
-//      /// An optional value that allows a user to specify element types for some of columns. In particular this allows
-//      /// reading integer columns since automatic inference always uses Double type for numeric values.
-//      ColumnTypes : (int * string -> System.Type option) option }
-//    /// Expects comma as delimiter, has header, doesn't infer null strings, and doesn't predefine column count or types.
-//    static member Default : ReadSettings
-
-(**
-### Getting Data
-
-There are two different views on a table: column-wise and row-wise. In the first case, you can get column elements using
-`Table.ToArray` or `Table.ToSeq` functions. The former builds and returns a copy of a column array to 
-guarantee immutability of the table; the latter doesn't create a copy and enumerates column elements.
-
-The following examples computes an average of the column `wheat`:
-
+(** 
+`Table.Load` performs columns types inference from text, but numeric values are always read as `float` 
+and never as `int` to avoid ambiguity. If you need an integer column, you can provide custom settings to the 
+`Load` function with specific `ColumnTypes` function.
 *)
 
-//let averageWheat = 
-//    tableWheat 
-//    |> Table.ToSeq<float> "wheat"
-//    |> Seq.average
+(** Typed load: *)
 
-(*** include-value: averageWheat ***)
+//let table = Table.Load<SinX> "table.csv"
 
-(** To get row-wise access to a table, use `Table.Map` or `Table.Mapi`.
-The following sample gets a sequence of tuples containing latitides and longitudes of each table row: *)
-//
-//let locationsWheat : (float*float) seq = 
-//    tableWheat 
-//    |> Table.Map ["Lat"; "Lon"] (fun lat lon -> lat,lon)
 
-(*** include-value: locationsWheat ***)
 
-(**
-Typed `Table<'a>` exposes indexing property `Rows` which returns a row as a typed instance: *)
-//
-//for i = 0..tableWheat.RowsCount-1 do
-//    let row = tableWheat.Rows.[i] 
-//    printf "%f, %f" row.Lat row.Lon
+(**Also there are overloaded functions `Load` and `Save` that allow to provide custom settings,
+such as specific delimiter, header, support of null strings, and prefefined columns count and types.
+*)
 
 (**
 
+
+## Table Operations
+
+
+
+[Angara.Data.Table](angara-data-table.html) exposes a set of functions that should simplify a code
+operating with tables, though payoff is that the type checking is performed in runtime.
+*)
+
+(**
+
+### Duplicate Names Disambiguation 
+
+All functions described below identify a column by its name. Thus duplicate names cause ambiguity which is implicitly resolved
+by choosing the first column having the given name. Still you can explicitly resolve the ambiguity using one of the following approaches:
+
+1. If only one of the columns is needed, then you can build a new table that 
+has all columns excluding unnecessary. 
+2. If multiple columns with same name are necessary, build a new table that has same columns but with unique names.
+
+Both approaches do not cause any column data evaluation or copying.
+
+For example, if `table` has several columns named `"x"` and you need only one with index 0,
+create a table that contains the only needed column `"x"`:
+*)
+
+let table2 =
+    Table( 
+        table
+        |> Seq.mapi (fun i c -> i, c)
+        |> Seq.choose (fun (i, c) -> 
+            match c.Name with
+            | "x" when i <> 0 -> None
+            | _ -> Some c))
+
+(** Next example renames columns named `"x"` by appending the column index to the name: *)
+
+let table3 =
+    Table( 
+        table
+        |> Seq.mapi (fun i c -> 
+            match c.Name with
+            | "x" -> Column.OfColumnValues (sprintf "x (%d)" i, c.Rows, c.Height)
+            | _ -> c))
+
+(**
 ### Mapping Rows
 
 The function `Table.Map` builds a sequence whose elements are the results of applying the given function to each of the rows of certain table columns.
@@ -583,3 +525,22 @@ type ColumnValues =
     | StringColumn  of Lazy<ImmutableArray<string>>
     | DateColumn    of Lazy<ImmutableArray<DateTime>>
     | BooleanColumn of Lazy<ImmutableArray<Boolean>>
+
+(*** define:typedef-Table ***)
+type Table = 
+    new : columns : Column seq -> Table
+    interface IEnumerable<Column> 
+    /// Gets a count of the total number of columns in the table.
+    member Count : int with get
+    /// Gets a count of the total number of rows in the table.
+    member RowsCount : int with get
+    /// Gets a column by its index.
+    member Item : index:int -> Column with get
+    /// Gets a column by its name.
+    /// If there are several columns with same name, returns the fist column having the name.
+    member Item : name:string -> Column with get
+    /// Tries to get a column by its index.
+    member TryItem : index:int -> Column option with get
+    /// Tries to get a column by its name.
+    /// If there are several columns with same name, returns the fist column having the name.
+    member TryItem : name:string -> Column option with get

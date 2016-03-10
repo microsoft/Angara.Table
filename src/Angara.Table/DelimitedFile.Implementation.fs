@@ -42,7 +42,7 @@ module internal Helpers =
     let internal IsBool s (formatProvider:IFormatProvider) : bool =
         bool.TryParse(s) |> fst
 
-    /// Splits string lines read from the given StreamReader by delimeter; supports escaping using double quotes and quoted elements with newlines.
+    /// Splits string lines read from the given TextReader by delimeter; supports escaping using double quotes and quoted elements with newlines.
     /// Returns None, if input stream is ended;
     /// Some of split items, otherwise.
     ///
@@ -67,7 +67,7 @@ module internal Helpers =
     ///                         ["""..."] 
     /// ".\n.. (escaped string starting with quote)
     ///                         [""".\n.."]
-    let splitRow (delimiter: char) (reader: StreamReader) : string[] option = 
+    let splitRow (delimiter: char) (reader: TextReader) : string[] option = 
         let missingValue : string = null
         match reader.ReadLine() with
         | null -> None
@@ -141,7 +141,7 @@ module internal Helpers =
             Some(items.ToArray())
 
     /// Reads header from the file specified by the reader.
-    let internal readHeader (delimiter:char) (reader : StreamReader) : InferredColumnSchema[]  = 
+    let internal readHeader (delimiter:char) (reader : TextReader) : InferredColumnSchema[]  = 
         match reader |> splitRow delimiter with
         | None -> Array.empty
         | Some items -> 
@@ -230,17 +230,16 @@ open System.Collections.Immutable
 /// The implementation mostly follows RFC 4180, but in addition to comma separator, it supports tab, semicolon and space.
 [<AbstractClass; Sealed>]
 type internal Implementation =
-    /// Writes a sequence of named arrays to a stream in a delimited text format (e.g. CSV).
-    static member Write (settings:WriteSettings) (stream: Stream) (table:(string * System.Collections.IList) seq) : unit =
+    /// Writes a sequence of named arrays in a delimited text format (e.g. CSV).
+    static member Write (settings:WriteSettings) (writer: TextWriter) (table:(string * System.Collections.IList) seq) : unit =
         let table = table |> Seq.toArray
         if table.Length > 0 then
-            let output = new StreamWriter(stream, Text.Encoding.UTF8, 1024, true) // 1024 mentioned here: http://stackoverflow.com/questions/29412757/what-is-the-default-buffer-size-for-streamwriter
             let delimiter = settings.Delimiter |> Helpers.delimiterToChar
             let delimiterStr = delimiter.ToString()
 
             if settings.SaveHeader then
                 let header = String.Join(delimiterStr, table |> Array.map (fun (name, _) -> Helpers.escapeString name delimiterStr settings.AllowNullStrings))
-                output.WriteLine(header)
+                writer.WriteLine(header)
 
             let columns = table |> Array.map snd
             for i in 0..columns.Length-2 do
@@ -274,14 +273,13 @@ type internal Implementation =
                         sb.Append(escapeString item delimiterStr settings.AllowNullStrings) |> ignore
 
                     if j < types.Length - 1 then (sb.Append(delimiter) |> ignore)
-                output.WriteLine(sb.ToString())
+                writer.WriteLine(sb.ToString())
                 sb.Clear() |> ignore
-            output.Flush()
+            writer.Flush()
 
     /// Reads a table from a delimited text format.
-    static member Read (settings: ReadSettings) (stream: Stream) : (ColumnSchema * System.Collections.IList) []  =
+    static member Read (settings: ReadSettings) (reader: TextReader) : (ColumnSchema * System.Collections.IList) []  =
         let delimiter = settings.Delimiter |> Helpers.delimiterToChar
-        let reader = new StreamReader(stream)
     
         // Prepare schema
         let headerSchema, firstRow = 
