@@ -44,13 +44,13 @@ keeps column name, height and values:</p>
 <span class="l">6: </span>
 <span class="l">7: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs71', 216)" onmouseover="showTip(event, 'fs71', 216)" class="t">Column</span> <span class="o">=</span>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs79', 246)" onmouseover="showTip(event, 'fs79', 246)" class="t">Column</span> <span class="o">=</span>
     <span class="c">/// Gets a name of the column.</span>
-    <span class="k">member</span> <span class="i">Name</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs72', 217)" onmouseover="showTip(event, 'fs72', 217)" class="i">string</span> <span class="k">with</span> <span class="i">get</span>
+    <span class="k">member</span> <span class="i">Name</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs80', 247)" onmouseover="showTip(event, 'fs80', 247)" class="i">string</span> <span class="k">with</span> <span class="i">get</span>
     <span class="c">/// Gets a number of rows in the column.</span>
-    <span class="k">member</span> <span class="i">Height</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs73', 218)" onmouseover="showTip(event, 'fs73', 218)" class="i">int</span> <span class="k">with</span> <span class="i">get</span>
+    <span class="k">member</span> <span class="i">Height</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs81', 248)" onmouseover="showTip(event, 'fs81', 248)" class="i">int</span> <span class="k">with</span> <span class="i">get</span>
     <span class="c">/// Returns column values.</span>
-    <span class="k">member</span> <span class="i">Rows</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs74', 219)" onmouseover="showTip(event, 'fs74', 219)" class="i">ColumnValues</span> <span class="k">with</span> <span class="i">get</span>
+    <span class="k">member</span> <span class="i">Rows</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs82', 249)" onmouseover="showTip(event, 'fs82', 249)" class="i">ColumnValues</span> <span class="k">with</span> <span class="i">get</span>
 </code></pre></td>
 </tr>
 </table>
@@ -62,12 +62,12 @@ keeps column name, height and values:</p>
 <span class="l">5: </span>
 <span class="l">6: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs75', 220)" onmouseover="showTip(event, 'fs75', 220)" class="t">ColumnValues</span> <span class="o">=</span>
-    | <span onmouseout="hideTip(event, 'fs21', 221)" onmouseover="showTip(event, 'fs21', 221)" class="p">IntColumn</span>     <span class="k">of</span> <span onmouseout="hideTip(event, 'fs76', 222)" onmouseover="showTip(event, 'fs76', 222)" class="t">Lazy</span><span class="o">&lt;</span><span class="i">ImmutableArray</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs73', 223)" onmouseover="showTip(event, 'fs73', 223)" class="i">int</span><span class="o">&gt;</span><span class="o">&gt;</span>
-    | <span onmouseout="hideTip(event, 'fs17', 224)" onmouseover="showTip(event, 'fs17', 224)" class="p">RealColumn</span>    <span class="k">of</span> <span onmouseout="hideTip(event, 'fs76', 225)" onmouseover="showTip(event, 'fs76', 225)" class="t">Lazy</span><span class="o">&lt;</span><span class="i">ImmutableArray</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs11', 226)" onmouseover="showTip(event, 'fs11', 226)" class="i">float</span><span class="o">&gt;</span><span class="o">&gt;</span>
-    | <span onmouseout="hideTip(event, 'fs22', 227)" onmouseover="showTip(event, 'fs22', 227)" class="p">StringColumn</span>  <span class="k">of</span> <span onmouseout="hideTip(event, 'fs76', 228)" onmouseover="showTip(event, 'fs76', 228)" class="t">Lazy</span><span class="o">&lt;</span><span class="i">ImmutableArray</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs72', 229)" onmouseover="showTip(event, 'fs72', 229)" class="i">string</span><span class="o">&gt;</span><span class="o">&gt;</span>
-    | <span onmouseout="hideTip(event, 'fs23', 230)" onmouseover="showTip(event, 'fs23', 230)" class="p">DateColumn</span>    <span class="k">of</span> <span onmouseout="hideTip(event, 'fs76', 231)" onmouseover="showTip(event, 'fs76', 231)" class="t">Lazy</span><span class="o">&lt;</span><span class="i">ImmutableArray</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs77', 232)" onmouseover="showTip(event, 'fs77', 232)" class="i">DateTime</span><span class="o">&gt;</span><span class="o">&gt;</span>
-    | <span onmouseout="hideTip(event, 'fs24', 233)" onmouseover="showTip(event, 'fs24', 233)" class="p">BooleanColumn</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs76', 234)" onmouseover="showTip(event, 'fs76', 234)" class="t">Lazy</span><span class="o">&lt;</span><span class="i">ImmutableArray</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs78', 235)" onmouseover="showTip(event, 'fs78', 235)" class="i">Boolean</span><span class="o">&gt;</span><span class="o">&gt;</span>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs83', 250)" onmouseover="showTip(event, 'fs83', 250)" class="t">ColumnValues</span> <span class="o">=</span>
+    | <span onmouseout="hideTip(event, 'fs21', 251)" onmouseover="showTip(event, 'fs21', 251)" class="p">IntColumn</span>     <span class="k">of</span> <span onmouseout="hideTip(event, 'fs84', 252)" onmouseover="showTip(event, 'fs84', 252)" class="t">Lazy</span><span class="o">&lt;</span><span class="i">ImmutableArray</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs81', 253)" onmouseover="showTip(event, 'fs81', 253)" class="i">int</span><span class="o">&gt;</span><span class="o">&gt;</span>
+    | <span onmouseout="hideTip(event, 'fs17', 254)" onmouseover="showTip(event, 'fs17', 254)" class="p">RealColumn</span>    <span class="k">of</span> <span onmouseout="hideTip(event, 'fs84', 255)" onmouseover="showTip(event, 'fs84', 255)" class="t">Lazy</span><span class="o">&lt;</span><span class="i">ImmutableArray</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs11', 256)" onmouseover="showTip(event, 'fs11', 256)" class="i">float</span><span class="o">&gt;</span><span class="o">&gt;</span>
+    | <span onmouseout="hideTip(event, 'fs22', 257)" onmouseover="showTip(event, 'fs22', 257)" class="p">StringColumn</span>  <span class="k">of</span> <span onmouseout="hideTip(event, 'fs84', 258)" onmouseover="showTip(event, 'fs84', 258)" class="t">Lazy</span><span class="o">&lt;</span><span class="i">ImmutableArray</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs80', 259)" onmouseover="showTip(event, 'fs80', 259)" class="i">string</span><span class="o">&gt;</span><span class="o">&gt;</span>
+    | <span onmouseout="hideTip(event, 'fs23', 260)" onmouseover="showTip(event, 'fs23', 260)" class="p">DateColumn</span>    <span class="k">of</span> <span onmouseout="hideTip(event, 'fs84', 261)" onmouseover="showTip(event, 'fs84', 261)" class="t">Lazy</span><span class="o">&lt;</span><span class="i">ImmutableArray</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs85', 262)" onmouseover="showTip(event, 'fs85', 262)" class="i">DateTime</span><span class="o">&gt;</span><span class="o">&gt;</span>
+    | <span onmouseout="hideTip(event, 'fs24', 263)" onmouseover="showTip(event, 'fs24', 263)" class="p">BooleanColumn</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs84', 264)" onmouseover="showTip(event, 'fs84', 264)" class="t">Lazy</span><span class="o">&lt;</span><span class="i">ImmutableArray</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs86', 265)" onmouseover="showTip(event, 'fs86', 265)" class="i">Boolean</span><span class="o">&gt;</span><span class="o">&gt;</span>
 </code></pre></td>
 </tr>
 </table>
@@ -193,23 +193,23 @@ there is a generic approach based on <code>match</code> and a succinct approach 
 <span class="l">16: </span>
 <span class="l">17: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs79', 236)" onmouseover="showTip(event, 'fs79', 236)" class="t">Table</span> <span class="o">=</span> 
-    <span class="k">new</span> <span class="o">:</span> <span class="i">columns</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs71', 237)" onmouseover="showTip(event, 'fs71', 237)" class="i">Column</span> <span onmouseout="hideTip(event, 'fs14', 238)" onmouseover="showTip(event, 'fs14', 238)" class="i">seq</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs79', 239)" onmouseover="showTip(event, 'fs79', 239)" class="i">Table</span>
-    <span class="k">interface</span> <span onmouseout="hideTip(event, 'fs80', 240)" onmouseover="showTip(event, 'fs80', 240)" class="t">IEnumerable</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs71', 241)" onmouseover="showTip(event, 'fs71', 241)" class="t">Column</span><span class="o">&gt;</span> 
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs87', 266)" onmouseover="showTip(event, 'fs87', 266)" class="t">Table</span> <span class="o">=</span> 
+    <span class="k">new</span> <span class="o">:</span> <span class="i">columns</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs79', 267)" onmouseover="showTip(event, 'fs79', 267)" class="i">Column</span> <span onmouseout="hideTip(event, 'fs14', 268)" onmouseover="showTip(event, 'fs14', 268)" class="i">seq</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs87', 269)" onmouseover="showTip(event, 'fs87', 269)" class="i">Table</span>
+    <span class="k">interface</span> <span onmouseout="hideTip(event, 'fs88', 270)" onmouseover="showTip(event, 'fs88', 270)" class="t">IEnumerable</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs79', 271)" onmouseover="showTip(event, 'fs79', 271)" class="t">Column</span><span class="o">&gt;</span> 
     <span class="c">/// Gets a count of the total number of columns in the table.</span>
-    <span class="k">member</span> <span class="i">Count</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs73', 242)" onmouseover="showTip(event, 'fs73', 242)" class="i">int</span> <span class="k">with</span> <span class="i">get</span>
+    <span class="k">member</span> <span class="i">Count</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs81', 272)" onmouseover="showTip(event, 'fs81', 272)" class="i">int</span> <span class="k">with</span> <span class="i">get</span>
     <span class="c">/// Gets a count of the total number of rows in the table.</span>
-    <span class="k">member</span> <span class="i">RowsCount</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs73', 243)" onmouseover="showTip(event, 'fs73', 243)" class="i">int</span> <span class="k">with</span> <span class="i">get</span>
+    <span class="k">member</span> <span class="i">RowsCount</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs81', 273)" onmouseover="showTip(event, 'fs81', 273)" class="i">int</span> <span class="k">with</span> <span class="i">get</span>
     <span class="c">/// Gets a column by its index.</span>
-    <span class="k">member</span> <span class="i">Item</span> <span class="o">:</span> <span class="i">index</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs73', 244)" onmouseover="showTip(event, 'fs73', 244)" class="i">int</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs71', 245)" onmouseover="showTip(event, 'fs71', 245)" class="i">Column</span> <span class="k">with</span> <span class="i">get</span>
+    <span class="k">member</span> <span class="i">Item</span> <span class="o">:</span> <span class="i">index</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs81', 274)" onmouseover="showTip(event, 'fs81', 274)" class="i">int</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs79', 275)" onmouseover="showTip(event, 'fs79', 275)" class="i">Column</span> <span class="k">with</span> <span class="i">get</span>
     <span class="c">/// Gets a column by its name.</span>
     <span class="c">/// If there are several columns with same name, returns the fist column having the name.</span>
-    <span class="k">member</span> <span class="i">Item</span> <span class="o">:</span> <span class="i">name</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs72', 246)" onmouseover="showTip(event, 'fs72', 246)" class="i">string</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs71', 247)" onmouseover="showTip(event, 'fs71', 247)" class="i">Column</span> <span class="k">with</span> <span class="i">get</span>
+    <span class="k">member</span> <span class="i">Item</span> <span class="o">:</span> <span class="i">name</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs80', 276)" onmouseover="showTip(event, 'fs80', 276)" class="i">string</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs79', 277)" onmouseover="showTip(event, 'fs79', 277)" class="i">Column</span> <span class="k">with</span> <span class="i">get</span>
     <span class="c">/// Tries to get a column by its index.</span>
-    <span class="k">member</span> <span class="i">TryItem</span> <span class="o">:</span> <span class="i">index</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs73', 248)" onmouseover="showTip(event, 'fs73', 248)" class="i">int</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs71', 249)" onmouseover="showTip(event, 'fs71', 249)" class="i">Column</span> <span onmouseout="hideTip(event, 'fs81', 250)" onmouseover="showTip(event, 'fs81', 250)" class="i">option</span> <span class="k">with</span> <span class="i">get</span>
+    <span class="k">member</span> <span class="i">TryItem</span> <span class="o">:</span> <span class="i">index</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs81', 278)" onmouseover="showTip(event, 'fs81', 278)" class="i">int</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs79', 279)" onmouseover="showTip(event, 'fs79', 279)" class="i">Column</span> <span onmouseout="hideTip(event, 'fs89', 280)" onmouseover="showTip(event, 'fs89', 280)" class="i">option</span> <span class="k">with</span> <span class="i">get</span>
     <span class="c">/// Tries to get a column by its name.</span>
     <span class="c">/// If there are several columns with same name, returns the fist column having the name.</span>
-    <span class="k">member</span> <span class="i">TryItem</span> <span class="o">:</span> <span class="i">name</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs72', 251)" onmouseover="showTip(event, 'fs72', 251)" class="i">string</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs71', 252)" onmouseover="showTip(event, 'fs71', 252)" class="i">Column</span> <span onmouseout="hideTip(event, 'fs81', 253)" onmouseover="showTip(event, 'fs81', 253)" class="i">option</span> <span class="k">with</span> <span class="i">get</span>
+    <span class="k">member</span> <span class="i">TryItem</span> <span class="o">:</span> <span class="i">name</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs80', 281)" onmouseover="showTip(event, 'fs80', 281)" class="i">string</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs79', 282)" onmouseover="showTip(event, 'fs79', 282)" class="i">Column</span> <span onmouseout="hideTip(event, 'fs89', 283)" onmouseover="showTip(event, 'fs89', 283)" class="i">option</span> <span class="k">with</span> <span class="i">get</span>
 </code></pre></td>
 </tr>
 </table>
@@ -426,8 +426,8 @@ in accordance with <a href="https://tools.ietf.org/html/rfc4180">RFC 4180</a> bu
 </code></pre></td>
 </tr>
 </table>
-<p><code>Table.Load</code> performs column types inference from text, but numeric values are always read as <code>float</code>
-and never as <code>int</code> to avoid ambibuity. If you need <code>int</code> column, you can provide custom settings to the
+<p><code>Table.Load</code> performs columns types inference from text, but numeric values are always read as <code>float</code>
+and never as <code>int</code> to avoid ambiguity. If you need an integer column, you can provide custom settings to the
 <code>Load</code> function with specific <code>ColumnTypes</code> function.</p>
 <p>Typed load:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
@@ -493,76 +493,32 @@ create a table that contains the only needed column <code>"x"</code>:</p>
 </code></pre></td>
 </tr>
 </table>
-<h3>Getting Data</h3>
-<p>There are two different views on a table: column-wise and row-wise. In the first case, you can get column elements using
-<code>Table.ToArray</code> or <code>Table.ToSeq</code> functions. The former builds and returns a copy of a column array to
-guarantee immutability of the table; the latter doesn't create a copy and enumerates column elements.</p>
-<p>The following examples computes an average of the column <code>wheat</code>:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">//let averageWheat = </span>
-<span class="c">//    tableWheat </span>
-<span class="c">//    |&gt; Table.ToSeq&lt;float&gt; &quot;wheat&quot;</span>
-<span class="c">//    |&gt; Seq.average</span>
-</code></pre></td>
-</tr>
-</table>
-<table class="pre"><tr><td><pre><code>No value has been returned</code></pre></td></tr></table>
-<p>To get row-wise access to a table, use <code>Table.Map</code> or <code>Table.Mapi</code>.
-The following sample gets a sequence of tuples containing latitides and longitudes of each table row:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">//</span>
-<span class="c">//let locationsWheat : (float*float) seq = </span>
-<span class="c">//    tableWheat </span>
-<span class="c">//    |&gt; Table.Map [&quot;Lat&quot;; &quot;Lon&quot;] (fun lat lon -&gt; lat,lon)</span>
-</code></pre></td>
-</tr>
-</table>
-<table class="pre"><tr><td><pre><code>No value has been returned</code></pre></td></tr></table>
-<p>Typed <code>Table&lt;'a&gt;</code> exposes indexing property <code>Rows</code> which returns a row as a typed instance:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">//</span>
-<span class="c">//for i = 0..tableWheat.RowsCount-1 do</span>
-<span class="c">//    let row = tableWheat.Rows.[i] </span>
-<span class="c">//    printf &quot;%f, %f&quot; row.Lat row.Lon</span>
-</code></pre></td>
-</tr>
-</table>
 <h3>Mapping Rows</h3>
+<h4>Table.Map, Table.Mapi</h4>
 <p>The function <code>Table.Map</code> builds a sequence whose elements are the results of applying the given function to each of the rows of certain table columns.
 <code>Table.Mapi</code> also provides an integer index passed to the function which indicates the index of row being transformed.</p>
 <p>The signature is: <code>Map&lt;'a,'b,'c&gt; : columnNames:seq&lt;string&gt; -&gt; map:('a-&gt;'b) -&gt; table:Table -&gt; 'c seq</code></p>
 <p>The generic function <code>map:'a-&gt;'b</code> is only partially defined. If <code>columnNames</code> contains:</p>
 <ul>
-<li>0 columns, map should be <code>map:unit-&gt;'c</code>, so <code>'a = unit</code>, <code>'b = 'c</code></li>
-<li>1 column, map should be <code>map:'a-&gt;'c</code>, where <code>'a</code> is the type of the column, so <code>'b = 'c</code></li>
-<li>2 columns, <code>map:'a-&gt;'d-&gt;'c</code>, where <code>'a</code> and <code>'d</code> are the types of the columns, so <code>'b = 'd-&gt;'c</code></li>
-<li>3 columns, <code>map:'a-&gt;'d-&gt;'e-&gt;'c</code>, where <code>'a</code>, <code>'d</code> and <code>'e</code> are the types of the columns, so <code>'b = 'd-&gt;'e-&gt;'c</code></li>
+<li>0 columns, then <code>map:unit-&gt;'c</code>, so <code>'a = unit</code>, <code>'b = 'c</code></li>
+<li>1 column, then <code>map:'a-&gt;'c</code>, where <code>'a</code> is the type of the column, so <code>'b = 'c</code></li>
+<li>2 columns, then <code>map:'a-&gt;'d-&gt;'c</code>, where <code>'a</code> and <code>'d</code> are the types of the columns, so <code>'b = 'd-&gt;'c</code></li>
+<li>3 columns, then <code>map:'a-&gt;'d-&gt;'e-&gt;'c</code>, where <code>'a</code>, <code>'d</code> and <code>'e</code> are the types of the columns, so <code>'b = 'd-&gt;'e-&gt;'c</code></li>
 <li>n...</li>
 </ul>
-<p>The following example prints locations for each row of the table:</p>
+<p>The following example produces a sequence of multiplied values of columns <code>"x"</code> and <code>"sin(x)"</code> for each of the table rows:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">//let locationsWheat2 : string seq = </span>
-<span class="c">//    tableWheat </span>
-<span class="c">//    |&gt; Table.Map [&quot;Lat&quot;; &quot;Lon&quot;] (sprintf &quot;%.2f, %.2f&quot;)    </span>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs71', 216)" onmouseover="showTip(event, 'fs71', 216)" class="i">xsinx</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs11', 217)" onmouseover="showTip(event, 'fs11', 217)" class="t">float</span> <span onmouseout="hideTip(event, 'fs14', 218)" onmouseover="showTip(event, 'fs14', 218)" class="t">seq</span> <span class="o">=</span> 
+    <span onmouseout="hideTip(event, 'fs38', 219)" onmouseover="showTip(event, 'fs38', 219)" class="i">table</span>
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs39', 220)" onmouseover="showTip(event, 'fs39', 220)" class="t">Table</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs59', 221)" onmouseover="showTip(event, 'fs59', 221)" class="f">Map</span> [<span class="s">&quot;x&quot;</span>; <span class="s">&quot;sin(x)&quot;</span>] (<span class="k">fun</span> (<span onmouseout="hideTip(event, 'fs60', 222)" onmouseover="showTip(event, 'fs60', 222)" class="i">x</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs11', 223)" onmouseover="showTip(event, 'fs11', 223)" class="t">float</span>) (<span onmouseout="hideTip(event, 'fs61', 224)" onmouseover="showTip(event, 'fs61', 224)" class="i">sinx</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs11', 225)" onmouseover="showTip(event, 'fs11', 225)" class="t">float</span>) <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs60', 226)" onmouseover="showTip(event, 'fs60', 226)" class="i">x</span><span class="o">*</span><span onmouseout="hideTip(event, 'fs61', 227)" onmouseover="showTip(event, 'fs61', 227)" class="i">sinx</span>)    
 </code></pre></td>
 </tr>
 </table>
-<table class="pre"><tr><td><pre><code>No value has been returned</code></pre></td></tr></table>
+<table class="pre"><tr><td><pre><code>seq [0.0; 0.009983341665; 0.03973386616; 0.088656062; ...]</code></pre></td></tr></table>
+<h4>Table.MapToColumn, Table.MapiToColumn</h4>
 <p>The function <code>Table.MapToColumn</code> builds a new table that contains all columns of the given table and
 a new column or a replacement of an original table column (if there is an existing column with same name as the target name in the original table);
 elements of the column are the results of applying the given function to each of the rows of the given table columns.
@@ -570,55 +526,65 @@ elements of the column are the results of applying the given function to each of
 <p>The signature is: <code>MapToColumn : columnNames:seq&lt;string&gt; -&gt; newColumnName:string -&gt; map:('a-&gt;'b) -&gt; table:Table -&gt; Table</code></p>
 <p>The generic function <code>map:'a-&gt;'b</code> is only partially defined. If <code>columnNames</code> contains:</p>
 <ul>
-<li>0 columns, map should be <code>map:unit-&gt;'b</code>, so the new column type is <code>'b</code> and <code>'a = unit</code></li>
-<li>1 column, map should be <code>map:'a-&gt;'b</code>, where <code>'a</code> is the type of the source column, and <code>'b</code> is the new column type</li>
-<li>2 columns, <code>map:'a-&gt;'d-&gt;'c</code>, where <code>'a</code> and <code>'d</code> are the types of the source columns, so <code>'b = 'd-&gt;'c</code>, and <code>'c</code> is the new column type</li>
-<li>3 columns, <code>map:'a-&gt;'d-&gt;'e-&gt;'c</code>, where <code>'a</code>, <code>'d</code> and <code>'e</code> are the types of the source columns, so <code>'b = 'd-&gt;'e-&gt;'c</code>, and <code>'c</code> is the new column type</li>
+<li>0 columns, then <code>map:unit-&gt;'b</code>, so the new column type is <code>'b</code> and <code>'a = unit</code></li>
+<li>1 column, then <code>map:'a-&gt;'b</code>, where <code>'a</code> is the type of the source column, and <code>'b</code> is the new column type</li>
+<li>2 columns, then <code>map:'a-&gt;'d-&gt;'c</code>, where <code>'a</code> and <code>'d</code> are the types of the source columns, so <code>'b = 'd-&gt;'c</code>, and <code>'c</code> is the new column type</li>
+<li>3 columns, then <code>map:'a-&gt;'d-&gt;'e-&gt;'c</code>, where <code>'a</code>, <code>'d</code> and <code>'e</code> are the types of the source columns, so <code>'b = 'd-&gt;'e-&gt;'c</code>, and <code>'c</code> is the new column type</li>
 <li>n...</li>
 </ul>
-<p>Ultimate result type of the map function must be valid column type: either <code>int</code>, <code>float</code>, <code>string</code>, <code>bool</code> or <code>System.DateTime</code>.</p>
-<p>The following examples adds new table column named "log(wheat)" which contains logarithm of wheat for each row:</p>
+<p>Ultimate result type of the <code>map</code> function must be valid column type: either <code>int</code>, <code>float</code>, <code>string</code>, <code>bool</code> or <code>System.DateTime</code>.</p>
+<p>The following examples adds new table column named <code>"log(x)"</code> which contains logarithm of the column <code>"x"</code> value for each of the table rows:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">//let tableLogWheat = </span>
-<span class="c">//    tableWheat </span>
-<span class="c">//    |&gt; Table.MapToColumn [&quot;wheat&quot;] &quot;log(wheat)&quot; log</span>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs72', 228)" onmouseover="showTip(event, 'fs72', 228)" class="i">tableLog</span> <span class="o">=</span> 
+    <span onmouseout="hideTip(event, 'fs38', 229)" onmouseover="showTip(event, 'fs38', 229)" class="i">table</span>
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs39', 230)" onmouseover="showTip(event, 'fs39', 230)" class="t">Table</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs73', 231)" onmouseover="showTip(event, 'fs73', 231)" class="f">MapToColumn</span> [<span class="s">&quot;x&quot;</span>] <span class="s">&quot;log(x)&quot;</span> <span onmouseout="hideTip(event, 'fs74', 232)" onmouseover="showTip(event, 'fs74', 232)" class="f">log</span>
 </code></pre></td>
 </tr>
 </table>
-<table class="pre"><tr><td><pre><code>No value has been returned</code></pre></td></tr></table>
-<h3>Filtering Rows</h3>
+<table class="pre"><tr><td><pre><code>seq
+  [x[100]: float seq [0.0; 0.1; 0.2; 0.3; ...];
+   sin(x)[100]: float seq [0.0; 0.09983341665; 0.1986693308; 0.2955202067; ...];
+   log(x)[100]: Array is not evaluated yet]</code></pre></td></tr></table>
+<h3>Filtering Rows <em>to do</em></h3>
 <p>The filtering functions return a new table containing all rows from a table where a predicate is true,
-where the predicate takes a set of columns.</p>
+while the predicate takes a set of columns.</p>
 <p><code>Table.Filter</code>
 <code>Table.Filteri</code></p>
-<p>To get a subset of table rows, use the function `Table.Filteri':</p>
+<p>The following example creates a table that contains only the rows of the <code>table</code> where value of
+the column <code>"x"</code> is between 0 and 1:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">//</span>
-<span class="c">//let tableWheat_10rows = tableWheat |&gt; Table.Filteri [] (fun i -&gt; i &lt; 10)</span>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs75', 233)" onmouseover="showTip(event, 'fs75', 233)" class="i">table_filter_x</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs38', 234)" onmouseover="showTip(event, 'fs38', 234)" class="i">table</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs39', 235)" onmouseover="showTip(event, 'fs39', 235)" class="t">Table</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs76', 236)" onmouseover="showTip(event, 'fs76', 236)" class="f">Filter</span> [<span class="s">&quot;x&quot;</span>] (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs60', 237)" onmouseover="showTip(event, 'fs60', 237)" class="i">x</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs60', 238)" onmouseover="showTip(event, 'fs60', 238)" class="i">x</span> <span class="o">&gt;</span><span class="o">=</span> <span class="n">0.0</span> <span class="o">&amp;&amp;</span> <span onmouseout="hideTip(event, 'fs60', 239)" onmouseover="showTip(event, 'fs60', 239)" class="i">x</span> <span class="o">&lt;=</span> <span class="n">1.0</span>) 
 </code></pre></td>
 </tr>
 </table>
-<h3>Transforming and Joining Tables</h3>
-<p><code>Table.Join</code>
+<table class="pre"><tr><td><pre><code>seq [x[11]: Array is not evaluated yet; sin(x)[11]: Array is not evaluated yet]</code></pre></td></tr></table>
+<p>To get a subset of table rows, use the function <code>Table.Filteri</code>:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs77', 240)" onmouseover="showTip(event, 'fs77', 240)" class="i">table_10rows</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs38', 241)" onmouseover="showTip(event, 'fs38', 241)" class="i">table</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs39', 242)" onmouseover="showTip(event, 'fs39', 242)" class="t">Table</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs78', 243)" onmouseover="showTip(event, 'fs78', 243)" class="f">Filteri</span> [] (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs10', 244)" onmouseover="showTip(event, 'fs10', 244)" class="i">i</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs10', 245)" onmouseover="showTip(event, 'fs10', 245)" class="i">i</span> <span class="o">&lt;</span> <span class="n">10</span>)
+</code></pre></td>
+</tr>
+</table>
+<h3>Transforming and Appending Tables <em>to do</em></h3>
+<p><code>Table.Append</code>
 <code>Table.Transform</code>
-<code>Table.JoinTransform</code></p>
-<h3>Grouping Rows</h3>
-<p><code>Table.GroupBy</code> <em>to do</em></p>
-<h3>Ordering Rows</h3>
-<p><code>Table.OrderBy</code> <em>to do</em></p>
-<h3>Statistics</h3>
+<code>Table.AppendTransform</code></p>
+<h3>Grouping Rows <em>to do</em></h3>
+<p><code>Table.GroupBy</code></p>
+<h3>Ordering Rows <em>to do</em></h3>
+<p><code>Table.OrderBy</code></p>
+<h3>Statistics <em>to do</em></h3>
 <p><code>Table.Summary</code>
 <code>Table.TrySummary</code>
 <code>Table.Correlation</code>
 <code>Table.TryCorrelation</code>
 <code>Table.Pdf</code>
 <code>Table.TryPdf</code></p>
-<h1>Samples</h1>
+<h1>Samples <em>to do</em></h1>
 <h2>Titanic survivor analysis</h2>
 <p>The following example computes the survival rates for the different passenger classes.
 The original data is taken from <a href="https://www.kaggle.com/c/titanic"><a href="https://www.kaggle.com/c/titanic">https://www.kaggle.com/c/titanic</a></a>.</p>
@@ -825,17 +791,25 @@ The original data is taken from <a href="https://www.kaggle.com/c/titanic"><a hr
 <div class="tip" id="fs68">union case Option.Some: Value: &#39;T -&gt; Option&lt;&#39;T&gt;</div>
 <div class="tip" id="fs69">val table3 : Table<br /><br />Full name: Angara.Table.table3</div>
 <div class="tip" id="fs70">val sprintf : format:Printf.StringFormat&lt;&#39;T&gt; -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.sprintf</div>
-<div class="tip" id="fs71">type Column<br /><br />Full name: Angara.Table.Column</div>
-<div class="tip" id="fs72">Multiple items<br />val string : value:&#39;T -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.Operators.string<br /><br />--------------------<br />type string = String<br /><br />Full name: Microsoft.FSharp.Core.string</div>
-<div class="tip" id="fs73">Multiple items<br />val int : value:&#39;T -&gt; int (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.int<br /><br />--------------------<br />type int = int32<br /><br />Full name: Microsoft.FSharp.Core.int<br /><br />--------------------<br />type int&lt;&#39;Measure&gt; = int<br /><br />Full name: Microsoft.FSharp.Core.int&lt;_&gt;</div>
-<div class="tip" id="fs74">type ColumnValues =<br />&#160;&#160;| IntColumn of obj<br />&#160;&#160;| RealColumn of obj<br />&#160;&#160;| StringColumn of obj<br />&#160;&#160;| DateColumn of obj<br />&#160;&#160;| BooleanColumn of obj<br />&#160;&#160;member Item : rowIndex:&#39;a0 -&gt; DataValue<br />&#160;&#160;member internal ToImmutableArray : unit -&gt; obj<br />&#160;&#160;override ToString : unit -&gt; string<br />&#160;&#160;member internal ToUntypedList : unit -&gt; IList<br />&#160;&#160;member AsBoolean : obj<br />&#160;&#160;member AsDate : obj<br />&#160;&#160;member AsInt : obj<br />&#160;&#160;member AsReal : obj<br />&#160;&#160;member AsString : obj<br />&#160;&#160;static member internal Select : mask:bool [] -&gt; column:ColumnValues -&gt; ColumnValues<br /><br />Full name: Angara.Data.ColumnValues</div>
-<div class="tip" id="fs75">type ColumnValues =<br />&#160;&#160;| IntColumn of obj<br />&#160;&#160;| RealColumn of obj<br />&#160;&#160;| StringColumn of obj<br />&#160;&#160;| DateColumn of obj<br />&#160;&#160;| BooleanColumn of obj<br /><br />Full name: Angara.Table.ColumnValues<br /><em><br /><br />&#160;Gets a number of rows in the column.<br />&#160;Returns column values.</em></div>
-<div class="tip" id="fs76">Multiple items<br />active recognizer Lazy: Lazy&lt;&#39;T&gt; -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.( |Lazy| )<br /><br />--------------------<br />type Lazy&lt;&#39;T&gt; =<br />&#160;&#160;new : unit -&gt; Lazy&lt;&#39;T&gt; + 5 overloads<br />&#160;&#160;member IsValueCreated : bool<br />&#160;&#160;member ToString : unit -&gt; string<br />&#160;&#160;member Value : &#39;T<br /><br />Full name: System.Lazy&lt;_&gt;<br /><br />--------------------<br />Lazy() : unit<br />Lazy(valueFactory: Func&lt;&#39;T&gt;) : unit<br />Lazy(isThreadSafe: bool) : unit<br />Lazy(mode: Threading.LazyThreadSafetyMode) : unit<br />Lazy(valueFactory: Func&lt;&#39;T&gt;, isThreadSafe: bool) : unit<br />Lazy(valueFactory: Func&lt;&#39;T&gt;, mode: Threading.LazyThreadSafetyMode) : unit</div>
-<div class="tip" id="fs77">Multiple items<br />type DateTime =<br />&#160;&#160;struct<br />&#160;&#160;&#160;&#160;new : ticks:int64 -&gt; DateTime + 10 overloads<br />&#160;&#160;&#160;&#160;member Add : value:TimeSpan -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddDays : value:float -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddHours : value:float -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddMilliseconds : value:float -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddMinutes : value:float -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddMonths : months:int -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddSeconds : value:float -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddTicks : value:int64 -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddYears : value:int -&gt; DateTime<br />&#160;&#160;&#160;&#160;...<br />&#160;&#160;end<br /><br />Full name: System.DateTime<br /><br />--------------------<br />DateTime()<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(ticks: int64) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(ticks: int64, kind: DateTimeKind) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(year: int, month: int, day: int) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(year: int, month: int, day: int, calendar: Globalization.Calendar) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(year: int, month: int, day: int, hour: int, minute: int, second: int) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(year: int, month: int, day: int, hour: int, minute: int, second: int, kind: DateTimeKind) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(year: int, month: int, day: int, hour: int, minute: int, second: int, calendar: Globalization.Calendar) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(year: int, month: int, day: int, hour: int, minute: int, second: int, millisecond: int) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(year: int, month: int, day: int, hour: int, minute: int, second: int, millisecond: int, kind: DateTimeKind) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em></div>
-<div class="tip" id="fs78">type Boolean =<br />&#160;&#160;struct<br />&#160;&#160;&#160;&#160;member CompareTo : obj:obj -&gt; int + 1 overload<br />&#160;&#160;&#160;&#160;member Equals : obj:obj -&gt; bool + 1 overload<br />&#160;&#160;&#160;&#160;member GetHashCode : unit -&gt; int<br />&#160;&#160;&#160;&#160;member GetTypeCode : unit -&gt; TypeCode<br />&#160;&#160;&#160;&#160;member ToString : unit -&gt; string + 1 overload<br />&#160;&#160;&#160;&#160;static val TrueString : string<br />&#160;&#160;&#160;&#160;static val FalseString : string<br />&#160;&#160;&#160;&#160;static member Parse : value:string -&gt; bool<br />&#160;&#160;&#160;&#160;static member TryParse : value:string * result:bool -&gt; bool<br />&#160;&#160;end<br /><br />Full name: System.Boolean</div>
-<div class="tip" id="fs79">type Table =<br />&#160;&#160;interface<br />&#160;&#160;&#160;&#160;inherit IEnumerable&lt;Column&gt;<br />&#160;&#160;end<br /><br />Full name: Angara.Table.Table</div>
-<div class="tip" id="fs80">type IEnumerable&lt;&#39;T&gt; =<br />&#160;&#160;member GetEnumerator : unit -&gt; IEnumerator&lt;&#39;T&gt;<br /><br />Full name: System.Collections.Generic.IEnumerable&lt;_&gt;</div>
-<div class="tip" id="fs81">type &#39;T option = Option&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Core.option&lt;_&gt;</div>
+<div class="tip" id="fs71">val xsinx : seq&lt;float&gt;<br /><br />Full name: Angara.Table.xsinx</div>
+<div class="tip" id="fs72">val tableLog : Table<br /><br />Full name: Angara.Table.tableLog</div>
+<div class="tip" id="fs73">static member Table.MapToColumn : columnNames:seq&lt;string&gt; -&gt; newColumnName:string -&gt; map:(&#39;a -&gt; &#39;b) -&gt; table:Table -&gt; Table</div>
+<div class="tip" id="fs74">val log : value:&#39;T -&gt; &#39;T (requires member Log)<br /><br />Full name: Microsoft.FSharp.Core.Operators.log</div>
+<div class="tip" id="fs75">val table_filter_x : Table<br /><br />Full name: Angara.Table.table_filter_x</div>
+<div class="tip" id="fs76">static member Table.Filter : columnNames:seq&lt;string&gt; -&gt; predicate:(&#39;a -&gt; &#39;b) -&gt; table:Table -&gt; Table</div>
+<div class="tip" id="fs77">val table_10rows : Table<br /><br />Full name: Angara.Table.table_10rows</div>
+<div class="tip" id="fs78">static member Table.Filteri : columnNames:seq&lt;string&gt; -&gt; predicate:(int -&gt; &#39;a) -&gt; table:Table -&gt; Table</div>
+<div class="tip" id="fs79">type Column<br /><br />Full name: Angara.Table.Column</div>
+<div class="tip" id="fs80">Multiple items<br />val string : value:&#39;T -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.Operators.string<br /><br />--------------------<br />type string = String<br /><br />Full name: Microsoft.FSharp.Core.string</div>
+<div class="tip" id="fs81">Multiple items<br />val int : value:&#39;T -&gt; int (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.int<br /><br />--------------------<br />type int = int32<br /><br />Full name: Microsoft.FSharp.Core.int<br /><br />--------------------<br />type int&lt;&#39;Measure&gt; = int<br /><br />Full name: Microsoft.FSharp.Core.int&lt;_&gt;</div>
+<div class="tip" id="fs82">type ColumnValues =<br />&#160;&#160;| IntColumn of obj<br />&#160;&#160;| RealColumn of obj<br />&#160;&#160;| StringColumn of obj<br />&#160;&#160;| DateColumn of obj<br />&#160;&#160;| BooleanColumn of obj<br />&#160;&#160;member Item : rowIndex:&#39;a0 -&gt; DataValue<br />&#160;&#160;member internal ToImmutableArray : unit -&gt; obj<br />&#160;&#160;override ToString : unit -&gt; string<br />&#160;&#160;member internal ToUntypedList : unit -&gt; IList<br />&#160;&#160;member AsBoolean : obj<br />&#160;&#160;member AsDate : obj<br />&#160;&#160;member AsInt : obj<br />&#160;&#160;member AsReal : obj<br />&#160;&#160;member AsString : obj<br />&#160;&#160;static member internal Select : mask:bool [] -&gt; column:ColumnValues -&gt; ColumnValues<br /><br />Full name: Angara.Data.ColumnValues</div>
+<div class="tip" id="fs83">type ColumnValues =<br />&#160;&#160;| IntColumn of obj<br />&#160;&#160;| RealColumn of obj<br />&#160;&#160;| StringColumn of obj<br />&#160;&#160;| DateColumn of obj<br />&#160;&#160;| BooleanColumn of obj<br /><br />Full name: Angara.Table.ColumnValues<br /><em><br /><br />&#160;Gets a number of rows in the column.<br />&#160;Returns column values.</em></div>
+<div class="tip" id="fs84">Multiple items<br />active recognizer Lazy: Lazy&lt;&#39;T&gt; -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.( |Lazy| )<br /><br />--------------------<br />type Lazy&lt;&#39;T&gt; =<br />&#160;&#160;new : unit -&gt; Lazy&lt;&#39;T&gt; + 5 overloads<br />&#160;&#160;member IsValueCreated : bool<br />&#160;&#160;member ToString : unit -&gt; string<br />&#160;&#160;member Value : &#39;T<br /><br />Full name: System.Lazy&lt;_&gt;<br /><br />--------------------<br />Lazy() : unit<br />Lazy(valueFactory: Func&lt;&#39;T&gt;) : unit<br />Lazy(isThreadSafe: bool) : unit<br />Lazy(mode: Threading.LazyThreadSafetyMode) : unit<br />Lazy(valueFactory: Func&lt;&#39;T&gt;, isThreadSafe: bool) : unit<br />Lazy(valueFactory: Func&lt;&#39;T&gt;, mode: Threading.LazyThreadSafetyMode) : unit</div>
+<div class="tip" id="fs85">Multiple items<br />type DateTime =<br />&#160;&#160;struct<br />&#160;&#160;&#160;&#160;new : ticks:int64 -&gt; DateTime + 10 overloads<br />&#160;&#160;&#160;&#160;member Add : value:TimeSpan -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddDays : value:float -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddHours : value:float -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddMilliseconds : value:float -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddMinutes : value:float -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddMonths : months:int -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddSeconds : value:float -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddTicks : value:int64 -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddYears : value:int -&gt; DateTime<br />&#160;&#160;&#160;&#160;...<br />&#160;&#160;end<br /><br />Full name: System.DateTime<br /><br />--------------------<br />DateTime()<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(ticks: int64) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(ticks: int64, kind: DateTimeKind) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(year: int, month: int, day: int) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(year: int, month: int, day: int, calendar: Globalization.Calendar) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(year: int, month: int, day: int, hour: int, minute: int, second: int) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(year: int, month: int, day: int, hour: int, minute: int, second: int, kind: DateTimeKind) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(year: int, month: int, day: int, hour: int, minute: int, second: int, calendar: Globalization.Calendar) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(year: int, month: int, day: int, hour: int, minute: int, second: int, millisecond: int) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />DateTime(year: int, month: int, day: int, hour: int, minute: int, second: int, millisecond: int, kind: DateTimeKind) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em></div>
+<div class="tip" id="fs86">type Boolean =<br />&#160;&#160;struct<br />&#160;&#160;&#160;&#160;member CompareTo : obj:obj -&gt; int + 1 overload<br />&#160;&#160;&#160;&#160;member Equals : obj:obj -&gt; bool + 1 overload<br />&#160;&#160;&#160;&#160;member GetHashCode : unit -&gt; int<br />&#160;&#160;&#160;&#160;member GetTypeCode : unit -&gt; TypeCode<br />&#160;&#160;&#160;&#160;member ToString : unit -&gt; string + 1 overload<br />&#160;&#160;&#160;&#160;static val TrueString : string<br />&#160;&#160;&#160;&#160;static val FalseString : string<br />&#160;&#160;&#160;&#160;static member Parse : value:string -&gt; bool<br />&#160;&#160;&#160;&#160;static member TryParse : value:string * result:bool -&gt; bool<br />&#160;&#160;end<br /><br />Full name: System.Boolean</div>
+<div class="tip" id="fs87">type Table =<br />&#160;&#160;interface<br />&#160;&#160;&#160;&#160;inherit IEnumerable&lt;Column&gt;<br />&#160;&#160;end<br /><br />Full name: Angara.Table.Table</div>
+<div class="tip" id="fs88">type IEnumerable&lt;&#39;T&gt; =<br />&#160;&#160;member GetEnumerator : unit -&gt; IEnumerator&lt;&#39;T&gt;<br /><br />Full name: System.Collections.Generic.IEnumerable&lt;_&gt;</div>
+<div class="tip" id="fs89">type &#39;T option = Option&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Core.option&lt;_&gt;</div>
 
         </div>
         <div class="span1"></div>

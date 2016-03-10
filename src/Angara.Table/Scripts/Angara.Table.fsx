@@ -339,6 +339,8 @@ let table3 =
 (**
 ### Mapping Rows
 
+#### Table.Map, Table.Mapi
+
 The function `Table.Map` builds a sequence whose elements are the results of applying the given function to each of the rows of certain table columns.
 `Table.Mapi` also provides an integer index passed to the function which indicates the index of row being transformed.
 
@@ -346,22 +348,26 @@ The signature is: `Map<'a,'b,'c> : columnNames:seq<string> -> map:('a->'b) -> ta
 
 The generic function `map:'a->'b` is only partially defined. If `columnNames` contains:
 
-* 0 columns, map should be `map:unit->'c`, so `'a = unit`, `'b = 'c`
-* 1 column, map should be `map:'a->'c`, where `'a` is the type of the column, so `'b = 'c`
-* 2 columns, `map:'a->'d->'c`, where `'a` and `'d` are the types of the columns, so `'b = 'd->'c`
-* 3 columns, `map:'a->'d->'e->'c`, where `'a`, `'d` and `'e` are the types of the columns, so `'b = 'd->'e->'c`
+* 0 columns, then `map:unit->'c`, so `'a = unit`, `'b = 'c`
+* 1 column, then `map:'a->'c`, where `'a` is the type of the column, so `'b = 'c`
+* 2 columns, then `map:'a->'d->'c`, where `'a` and `'d` are the types of the columns, so `'b = 'd->'c`
+* 3 columns, then `map:'a->'d->'e->'c`, where `'a`, `'d` and `'e` are the types of the columns, so `'b = 'd->'e->'c`
 * n...
 
-The following example prints locations for each row of the table:
+The following example produces a sequence of multiplied values of columns `"x"` and `"sin(x)"` for each of the table rows:
 *)
 
-//let locationsWheat2 : string seq = 
-//    tableWheat 
-//    |> Table.Map ["Lat"; "Lon"] (sprintf "%.2f, %.2f")    
+let xsinx : float seq = 
+    table
+    |> Table.Map ["x"; "sin(x)"] (fun (x:float) (sinx:float) -> x*sinx)    
 
-(*** include-value: locationsWheat2 ***)
+(*** include-value:xsinx ***)
+
 
 (**
+
+#### Table.MapToColumn, Table.MapiToColumn
+
 The function `Table.MapToColumn` builds a new table that contains all columns of the given table and
 a new column or a replacement of an original table column (if there is an existing column with same name as the target name in the original table); 
 elements of the column are the results of applying the given function to each of the rows of the given table columns. 
@@ -371,28 +377,28 @@ The signature is: `MapToColumn : columnNames:seq<string> -> newColumnName:string
 
 The generic function `map:'a->'b` is only partially defined. If `columnNames` contains:
 
-* 0 columns, map should be `map:unit->'b`, so the new column type is `'b` and `'a = unit`
-* 1 column, map should be `map:'a->'b`, where `'a` is the type of the source column, and `'b` is the new column type
-* 2 columns, `map:'a->'d->'c`, where `'a` and `'d` are the types of the source columns, so `'b = 'd->'c`, and `'c` is the new column type
-* 3 columns, `map:'a->'d->'e->'c`, where `'a`, `'d` and `'e` are the types of the source columns, so `'b = 'd->'e->'c`, and `'c` is the new column type
+* 0 columns, then `map:unit->'b`, so the new column type is `'b` and `'a = unit`
+* 1 column, then `map:'a->'b`, where `'a` is the type of the source column, and `'b` is the new column type
+* 2 columns, then `map:'a->'d->'c`, where `'a` and `'d` are the types of the source columns, so `'b = 'd->'c`, and `'c` is the new column type
+* 3 columns, then `map:'a->'d->'e->'c`, where `'a`, `'d` and `'e` are the types of the source columns, so `'b = 'd->'e->'c`, and `'c` is the new column type
 * n...
 
-Ultimate result type of the map function must be valid column type: either `int`, `float`, `string`, `bool` or `System.DateTime`.
+Ultimate result type of the `map` function must be valid column type: either `int`, `float`, `string`, `bool` or `System.DateTime`.
 
-The following examples adds new table column named "log(wheat)" which contains logarithm of wheat for each row:
+The following examples adds new table column named `"log(x)"` which contains logarithm of the column `"x"` value for each of the table rows:
 *)
 
-//let tableLogWheat = 
-//    tableWheat 
-//    |> Table.MapToColumn ["wheat"] "log(wheat)" log
+let tableLog = 
+    table
+    |> Table.MapToColumn ["x"] "log(x)" log
 
-(*** include-value: tableLogWheat ***)
+(*** include-value: tableLog ***)
 
 (**
-### Filtering Rows
+### Filtering Rows _to do_
 
 The filtering functions return a new table containing all rows from a table where a predicate is true, 
-where the predicate takes a set of columns.
+while the predicate takes a set of columns.
 
 `Table.Filter`
 `Table.Filteri`
@@ -400,27 +406,36 @@ where the predicate takes a set of columns.
 *)
 
 (** 
-To get a subset of table rows, use the function `Table.Filteri':
+The following example creates a table that contains only the rows of the `table` where value of 
+the column `"x"` is between 0 and 1:
 *)
-//
-//let tableWheat_10rows = tableWheat |> Table.Filteri [] (fun i -> i < 10)
+
+let table_filter_x = table |> Table.Filter ["x"] (fun x -> x >= 0.0 && x <= 1.0) 
+
+(*** include-value: table_filter_x ***)
+
+(** 
+To get a subset of table rows, use the function `Table.Filteri`:
+*)
+
+let table_10rows = table |> Table.Filteri [] (fun i -> i < 10)
 
 (**
-### Transforming and Joining Tables
+### Transforming and Appending Tables _to do_
 
-`Table.Join`
+`Table.Append`
 `Table.Transform`
-`Table.JoinTransform`
+`Table.AppendTransform`
 
-### Grouping Rows
+### Grouping Rows _to do_
 
-`Table.GroupBy` _to do_
+`Table.GroupBy`
 
-### Ordering Rows 
+### Ordering Rows _to do_
 
-`Table.OrderBy` _to do_
+`Table.OrderBy`
 
-### Statistics
+### Statistics _to do_
 
 `Table.Summary`
 `Table.TrySummary`
@@ -432,7 +447,7 @@ To get a subset of table rows, use the function `Table.Filteri':
 *)
 
 (**
-# Samples
+# Samples _to do_
 
 ## Titanic survivor analysis
 
