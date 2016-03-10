@@ -59,7 +59,6 @@
     <Compile Include="Common.fs" />
     <Compile Include="CsvReadTests.fs" />
     <Compile Include="CsvWriteTests.fs" />
-    <Compile Include="ColumnTests.fs" />
     <Compile Include="TableTests.fs" />
     <Compile Include="TableSerializerTests.fs" />
     <Content Include="packages.config" />
@@ -145,6 +144,10 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Collections.Immutable">
+      <HintPath>..\..\ext\nuget\System.Collections.Immutable.1.1.36\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
   </ItemGroup>

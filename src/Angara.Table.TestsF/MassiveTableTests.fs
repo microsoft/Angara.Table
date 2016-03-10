@@ -2,14 +2,18 @@
 
 open FsCheck
 open Angara.Data
+open System.Collections.Immutable
 
 module internal Helpers = 
-    let colGen<'a> = gen {
+    let colGen<'a> (name:string) = gen {
         let! arr = Gen.sized(fun size -> Gen.arrayOfLength size Arb.generate<'a>)
-        return Column.New arr
+        return Column.OfLazyArray(name, lazy(ImmutableArray.Create<'a>(arr)), arr.Length)
     }
 
-    let colShrink<'a> col : Column seq = Arb.toShrink (Arb.Default.Array<'a>()) (col |> Column.ToArray) |> Seq.map Column.New
+    let colShrink<'a> (name:string) (values: ImmutableArray<'a>) : Column seq = 
+        let arr = Array.zeroCreate values.Length 
+        values.CopyTo(arr)
+        Arb.toShrink (Arb.Default.Array<'a>()) (arr) |> Seq.map (fun arr2 -> Column.OfArray (name, arr2))
 
 type Generators =
     /// Same as default string generator, but uses Environment.NewLine without individual \r, \n.
@@ -31,16 +35,16 @@ type Generators =
         { new Arbitrary<Column>() with
             override x.Generator =                 
                 gen {
-                    return! Gen.oneof [Helpers.colGen<int>; Helpers.colGen<float>; Helpers.colGen<string>; Helpers.colGen<System.DateTime>; Helpers.colGen<bool>]
+                    let! name = Arb.generate<string>
+                    return! Gen.oneof [Helpers.colGen<int> name; Helpers.colGen<float> name; Helpers.colGen<string> name; Helpers.colGen<System.DateTime> name; Helpers.colGen<bool> name]
                 } 
             override x.Shrinker (col:Column) =
-                match col |> Column.Type with
-                | t when t = typeof<int> -> Helpers.colShrink<int> col
-                | t when t = typeof<float> -> Helpers.colShrink<float> col
-                | t when t = typeof<string> -> Helpers.colShrink<string> col
-                | t when t = typeof<System.DateTime> -> Helpers.colShrink<System.DateTime> col
-                | t when t = typeof<bool> -> Helpers.colShrink<bool> col
-                | t -> failwithf "Unexpected column type %s" t.Name
+                match col.Rows with
+                | RealColumn v -> Helpers.colShrink col.Name v.Value
+                | IntColumn v -> Helpers.colShrink col.Name v.Value
+                | StringColumn v -> Helpers.colShrink col.Name v.Value
+                | DateColumn v -> Helpers.colShrink col.Name v.Value
+                | BooleanColumn v -> Helpers.colShrink col.Name v.Value
                     
         }
 
@@ -48,31 +52,24 @@ type Generators =
         { new Arbitrary<Table>() with
             override x.Generator = 
                 gen {
-                    let namedColGen = gen {
-                        let! name = Arb.generate<string>
-                        let! col = Arb.generate<Column>
-                        return name, col
-                    }
                     let! cols = Gen.sized(fun size -> gen{
                         let! colN = Gen.choose(0, 1 + int(sqrt(float(size))))
-                        return! Gen.listOfLength colN namedColGen
+                        return! Gen.listOfLength colN Arb.generate<Column>
                     })
                     return new Table (cols)
                 }
 
             override x.Shrinker (table:Table) =
-                let shrinkNamedCol name col = 
-                    let names = Arb.toShrink (Arb.Default.String()) name
+                let shrinkNamedCol (col:Column) = 
+                    let names = Arb.toShrink (Arb.Default.String()) col.Name
                     let cols = Arb.toShrink (Generators.Column()) col
-                    names |> Seq.map(fun n -> cols |> Seq.map(fun c -> Table.New n c)) |> Seq.concat
+                    names |> Seq.map(fun n -> cols |> Seq.map(fun c -> Table([Column.OfColumnValues(n, c.Rows, c.Height)]))) |> Seq.concat
 
-                let namedCols = table.Columns |> Seq.map(fun c -> Table.Name c table, c) |> Seq.toArray
-                if namedCols.Length > 1 then
-                    let t = table.Columns |> Seq.map(fun c -> new Table(namedCols |> Seq.filter(fun (_,c2) -> c2 <> c))) |> Seq.toArray
+                if table.Count > 1 then
+                    let t = table |> Seq.map(fun c -> new Table(table |> Seq.filter(fun c2 -> c2 <> c))) |> Seq.toArray
                     upcast t
-                else if namedCols.Length = 1 then 
-                    let name, col = namedCols.[0]
-                    shrinkNamedCol name col
+                else if table.Count = 1 then 
+                    shrinkNamedCol table.[0]
                 else Seq.empty
                     
         }

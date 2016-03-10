@@ -8,28 +8,29 @@ open NUnit.Framework
 open Angara.Data
 open Angara.Data.DelimitedFile
 open Angara.Data.DelimitedFile.Helpers
+open System.Collections
+open System.Collections.Immutable
 
-let internal CompareTables (table1: (ColumnSchema * Array) array) (table2: (ColumnSchema * Array) array) = 
+let internal CompareTables (table1: (ColumnSchema * IList) array) (table2: (ColumnSchema * IList) array) = 
     table1.Length |> should equal table2.Length
     for i = 0 to table1.Length - 1 do
         fst table1.[i]|> should equal (fst table2.[i])
         let column1 = table1.[i] |> snd
         let column2 = table2.[i] |> snd
-        column1.Length |> should equal column2.Length
-        for j = 0 to column1.Length - 1  do
-            column1.GetValue(j) |> should equal (column2.GetValue(j))     
+        column1.Count |> should equal column2.Count
+        for j = 0 to column1.Count - 1  do
+            column1.[j] |> should equal (column2.[j])     
 
-let asStream (content: string) =
+let asReader (content: string) =
     let ms = new MemoryStream()
     let sw = new StreamWriter(ms)
     sw.Write(content)
     sw.Flush()
     ms.Position <- int64(0)
-    ms
+    new StreamReader(ms)
 
 let splitRowStr delimiter (row:string) =
-    use s = asStream row
-    let r = new StreamReader(s)
+    use r = asReader row
     splitRow delimiter r
 
 let normalizeNL (s:string) =
@@ -43,7 +44,7 @@ let ``Csv.SplitRow is equivalent to String.Split if no newlines and quotes`` (s:
         let splitdata = splitRowStr ',' s
         let items2 = s.Split([| ',' |])
         match splitdata with 
-        | Some items-> Angara.Data.TestsF.Common.areEqualArraysForCsv items items2
+        | Some items-> Angara.Data.TestsF.Common.areEqualStringsForCsv (ImmutableArray.Create<string> items) (ImmutableArray.Create<string> items2)
         | None -> s = ""
     precondition s ==>  lazy(property s)
         
@@ -199,7 +200,7 @@ let ``Comma delimiter test with multi-line quote ``() =
 
 [<Test; Category("CI")>]
 let ``Simple schema reading test`` () = 
-    let reader = File.OpenRead(@"tests\Simple schema reading test.csv")
+    use reader = File.OpenText(@"tests\Simple schema reading test.csv")
     Implementation.Read ReadSettings.Default reader |> CompareTables  
         [|{Name = "1.0"; Type = ColumnType.String},upcast[||]
          ;{Name = "2.0"; Type = ColumnType.String},upcast[||]
@@ -207,25 +208,25 @@ let ``Simple schema reading test`` () =
 
 [<Test; Category("CI")>]
 let ``Reading empty file`` () = 
-    use ms = new MemoryStream()
-    Implementation.Read ReadSettings.Default ms |> CompareTables [||]
+    use r = asReader("")
+    Implementation.Read ReadSettings.Default r |> CompareTables [||]
 
 [<Test; Category("CI")>]
 let ``Reading header-only file`` () = 
-    use ms = asStream("x")
-    Implementation.Read ReadSettings.Default ms |> CompareTables [|{Name = "x"; Type = ColumnType.String}, upcast Array.empty<string>|]
+    use r = asReader("x")
+    Implementation.Read ReadSettings.Default r |> CompareTables [|{Name = "x"; Type = ColumnType.String}, upcast Array.empty<string>|]
 
     
 [<Test; Category("CI")>]
 let ``One line of data test`` () = 
-    let reader = File.OpenRead(@"tests\One line of data test.csv")
-    Implementation.Read ReadSettings.Default reader|> CompareTables 
+    let reader = File.OpenText(@"tests\One line of data test.csv")
+    Implementation.Read ReadSettings.Default reader |> CompareTables 
         [|{Name = "Col1"; Type = ColumnType.Double},upcast[|1.0|]
          ;{Name = "Col2"; Type = ColumnType.Double},upcast[|2.0|]
          ;{Name = "Col3"; Type = ColumnType.Double},upcast[|3.0|]|]
 [<Test; Category("CI")>]
 let ``All types of data test`` () = 
-    let reader = File.OpenRead(@"tests\All types of data test.csv")
+    let reader = File.OpenText(@"tests\All types of data test.csv")
     let doubles = [|1.0;2.0|]
     let bools :bool[] = [|true;false|]
     let dates = [|new DateTime(1995, 4, 10); new DateTime(1995, 4, 11)|]
@@ -238,14 +239,14 @@ let ``All types of data test`` () =
 
 [<Test; Category("CI")>]
 let ``Strings test 1`` () = 
-    let reader = File.OpenRead(@"tests\Strings test 1.csv")
+    let reader = File.OpenText(@"tests\Strings test 1.csv")
     Implementation.Read ReadSettings.Default reader|> CompareTables  
         [|{Name = "Quotes"; Type = ColumnType.String}, upcast [|"Hello, world";"Hi"|]
          ;{Name = "Authors"; Type = ColumnType.String}, upcast [|"Any \"good\" programmer";"\"someone quoted\""|]|]
 
 [<Test; Category("CI")>]
 let ``import correct file``() =
-    let reader = File.OpenRead(@"tests\wheat.csv")
+    let reader = File.OpenText(@"tests\wheat.csv")
     let resultingdata = Implementation.Read ReadSettings.Default reader
 
     resultingdata.Length |> should equal 3
@@ -265,7 +266,7 @@ let ``import correct file``() =
  
 [<Test; Category("CI")>]
 let ``import file with different column types``() =
-    let reader = File.OpenRead(@"tests\typedColumns.csv")
+    let reader = File.OpenText(@"tests\typedColumns.csv")
     let resultingdata = Implementation.Read {ReadSettings.Default with Delimiter = Delimiter.Semicolon} reader
 
     resultingdata.Length |> should equal 4
@@ -308,58 +309,62 @@ let ``Column index to name`` () =
 
 [<Test; Category("CI")>]
 let ``Read a table from a file with header by default``() =
-    let table = Table.Read ReadSettings.Default @"tests\wheat.csv"
+    let table = Table.Load(@"tests\wheat.csv")
 
-    table.Columns.Count |> should equal 3
+    table.Count |> should equal 3
+    table.RowsCount |> should equal 4
 
-    let lons = table |> Table.ToArray<float[]> "lon"
+    let lons = table.["lon"].Rows.AsReal
     Assert.AreEqual(lons.Length, 4)
     Assert.AreEqual(lons.[0], 111.5, 0.1)
 
-    let lats = table |> Table.ToArray<float[]> "lat"
+    let lats = table.["lat"].Rows.AsReal
     Assert.AreEqual(lats.Length, 4)
     Assert.AreEqual(lats.[0], 45.5, 0.1)
 
-    let wheat = table |> Table.ToArray<float[]> "wheat"
+    let wheat = table.["wheat"].Rows.AsReal
     Assert.AreEqual(wheat.Length, 4)
     Assert.AreEqual(wheat.[0], 0.004388, 0.1)
 
 [<Test; Category("CI")>]
 let ``Read a table from a file without header``() =
-    let table = Table.Read { ReadSettings.Default with HasHeader = false } @"tests\wheat-noheader.csv"
+    let table = Table.Load(@"tests\wheat-noheader.csv", { ReadSettings.Default with HasHeader = false })
 
-    table.Columns.Count |> should equal 3
+    table.Count |> should equal 3
+    table.RowsCount |> should equal 4
 
-    let lons = table |> Table.ToArray<float[]> "A"
+    let lons = table.["A"].Rows.AsReal
     Assert.AreEqual(lons.Length, 4)
     Assert.AreEqual(lons.[0], 111.5, 0.1)
 
-    let lats = table |> Table.ToArray<float[]> "B"
+    let lats = table.["B"].Rows.AsReal
     Assert.AreEqual(lats.Length, 4)
     Assert.AreEqual(lats.[0], 45.5, 0.1)
 
-    let wheat = table |> Table.ToArray<float[]> "C"
+    let wheat = table.["C"].Rows.AsReal
     Assert.AreEqual(wheat.Length, 4)
     Assert.AreEqual(wheat.[0], 0.004388, 0.1)
 
 [<Test; Category("CI")>]
 let ``Read a table from an empty file with a header``() =
-    let table = Table.Read { ReadSettings.Default with HasHeader = true } @"tests\empty.csv"
-    table.Columns.Count |> should equal 0
+    let table = Table.Load(@"tests\empty.csv", { ReadSettings.Default with HasHeader = true })
+    table.Count |> should equal 0
+    table.RowsCount |> should equal 0
 
 [<Test; Category("CI")>]
 let ``Read a table from an empty file without a header``() =
-    let table = Table.Read { ReadSettings.Default with HasHeader = false } @"tests\empty.csv"
-    table.Columns.Count |> should equal 0
+    let table = Table.Load(@"tests\empty.csv", { ReadSettings.Default with HasHeader = false })
+    table.Count |> should equal 0
+    table.RowsCount |> should equal 0
     
 [<Test; Category("CI")>]
 let ``Write without header really doesn't writes the header``() =
     let t = 
-        Table.New "lat" [1.0;2.0;3.0]
-        |> Table.Add "lon" [11.0;21.0;31.0]
+        Table(
+         [ Column.OfArray("lat", [|1.0;2.0;3.0|])
+           Column.OfArray("lon", [|11.0;21.0;31.0|]) ])
     use ms = new MemoryStream()
-
-    t |> Table.WriteStream { WriteSettings.Default with SaveHeader = false } ms
+    Table.Save(t, new StreamWriter(ms), { WriteSettings.Default with SaveHeader = false })
     ms.Position <- 0L
 
     let reader = new StreamReader(ms)
@@ -368,7 +373,7 @@ let ``Write without header really doesn't writes the header``() =
 
     ms.Position <- 0L
 
-    let t2 = Table.ReadStream { ReadSettings.Default with HasHeader = false } ms
-    Assert.AreEqual(t.Columns.Count, t2.Columns.Count, "columns count")
-    Assert.AreEqual(Table.ToArray<float[]> "lat" t, Table.ToArray<float[]> "A" t2, "lat -> A")
-    Assert.AreEqual(Table.ToArray<float[]> "lon" t, Table.ToArray<float[]> "B" t2, "lon -> B")
+    let t2 = Table.Load(reader, { ReadSettings.Default with HasHeader = false })
+    Assert.AreEqual(t.Count, t2.Count, "columns count")
+    Assert.AreEqual(t.["lat"].Rows.AsReal, t2.["A"].Rows.AsReal, "lat -> A")
+    Assert.AreEqual(t.["lon"].Rows.AsReal, t2.["B"].Rows.AsReal, "lon -> B")

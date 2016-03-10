@@ -109,7 +109,7 @@ The type `Angara.Data.Table` represents an immutable table. *)
 
 (**
 
-### Constructing from Columns
+### Table as Collection of Columns
 
 The `Table.Empty` property returns an empty table, i.e. a table that has no columns.
 
@@ -143,8 +143,6 @@ let table2 = table |> Table.Remove ["sin(x)"]
 (** Alternatively, you can filter a table as a sequence of columns and create a new table instance. *)
 
 (**
-
-### Table as a Collection of Columns
 
 The `Table` implements the `IEnumerable<Column>` interface and exposes members
 `Count` and `Item` that allow to get a count of the total number of columns in the table
@@ -184,7 +182,7 @@ let sin_avg = table.["sin(x)"].Rows.AsReal |> Seq.average
 (*** include-value:sin_avg ***)
 
 (**
-### Constructing from Rows _to do_
+### Table as Collection of Rows _to do_
 
 There are several ways how rows can be represented to construct a table. First is to use `Table.ofRecords` which builds a table
 from a sequence of record type instances, when one instance is one row and record field is a column: *)
@@ -211,8 +209,6 @@ when one tuple instance is one row and tuple elements are columns; columns names
 a sequence of `System.Array` instances and a sequence of column names. *)
 
 (**
-
-### Table as a Collection of Rows
 
 A number of rows in the table is available through the property `Table.RowsCount`:
 *)

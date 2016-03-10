@@ -6,203 +6,169 @@ open FsCheck
 open Angara.Data.TestsF.Common
 open Angara.Data
 open System.IO
+open System.Collections.Immutable
 
+let colNames (t:Table) = t |> Seq.map(fun c -> c.Name) |> Seq.toList
+let toArr (imar:ImmutableArray<'a>) = 
+    let arr = Array.zeroCreate imar.Length
+    imar.CopyTo arr
+    arr
 
 [<Test; Category("CI")>]
 let ``MapToColumn replaces existing column - one column to another existing column``() =
-    let t = Table.FromArrays ["a", upcast [|0;1|]; "b", upcast [|0;1|]]
+    let t = Table([Column.OfArray("a", [|0;1|]); Column.OfArray("b", [|0;1|])])
     let t2 = Table.MapToColumn ["b"] "a" (fun a -> a + 1) t
-    Assert.AreEqual(2, t2.Columns.Count, "number of columns")
-    Assert.AreEqual(["b"; "a"], t2.Names |> Seq.toList, "names of columns") // new 'a' added to the end
-    Assert.AreEqual([|1;2|], Table.ToArray<int[]> "a" t2, "array of t2.a")
+    Assert.AreEqual(2, t2.Count, "number of columns")
+    Assert.AreEqual(["b"; "a"], t2 |> colNames, "names of columns") // new 'a' added to the end
+    Assert.AreEqual([|1;2|], t2.["a"].Rows.AsInt |> toArr, "array of t2.a")
 
 [<Test; Category("CI")>]
 let ``MapToColumn replaces existing column - one column to itself``() =
-    let t = Table.FromArrays ["a", upcast [|0;1|]; "b", upcast [|0;1|]]
+    let t = Table([Column.OfArray("a", [|0;1|]); Column.OfArray("b", [|0;1|])])
     let t2 = Table.MapToColumn ["a"] "a" (fun a -> a + 1) t
-    Assert.AreEqual(2, t2.Columns.Count, "number of columns")
-    Assert.AreEqual(["b"; "a"], t2.Names |> Seq.toList, "names of columns") // new 'a' added to the end
-    Assert.AreEqual([|1;2|], Table.ToArray<int[]> "a" t2, "array of t2.a")
+    Assert.AreEqual(2, t2.Count, "number of columns")
+    Assert.AreEqual(["b"; "a"], t2 |> colNames, "names of columns") // new 'a' added to the end
+    Assert.AreEqual([|1;2|], t2.["a"].Rows.AsInt |> toArr, "array of t2.a")
 
 [<Test; Category("CI")>]
 let ``MapToColumn replaces existing column - 2 columns``() =
-    let t = Table.FromArrays ["a", upcast [|0;1|]; "b", upcast [|0;1|]]
+    let t = Table([Column.OfArray("a", [|0;1|]); Column.OfArray("b", [|0;1|])])
     let t2 = Table.MapToColumn ["a"; "b"] "a" (fun a b -> a + b + 1) t
-    Assert.AreEqual(2, t2.Columns.Count, "number of columns")
-    Assert.AreEqual(["b"; "a"], t2.Names |> Seq.toList, "names of columns") // new 'a' added to the end
-    Assert.AreEqual([|1;3|], Table.ToArray<int[]> "a" t2, "array of t2.a")
+    Assert.AreEqual(2, t2.Count, "number of columns")
+    Assert.AreEqual(["b"; "a"], t2 |> colNames, "names of columns") // new 'a' added to the end
+    Assert.AreEqual([|1;3|], t2.["a"].Rows.AsInt |> toArr, "array of t2.a")
 
 [<Test; Category("CI")>]
 let TableF_MapiToColumn_ManyArgs() =
     let table:Table = 
-        Table.New "a" [1] |>
-        Table.Add "b" [2] |> 
-        Table.Add "c" [3] |> 
-        Table.Add "d" [4] |> 
-        Table.Add "e" [5] |> 
-        Table.Add "f" [6] |> 
-        Table.Add "g" [7] |>
-        Table.Add "h" [8] |>
-        Table.Add "i" [9]  
+        Table.Empty 
+        |> Table.Add(Column.OfArray("a", [|1|])) 
+        |> Table.Add(Column.OfArray("b", [|2|]))  
+        |> Table.Add(Column.OfArray("c", [|3|]))  
+        |> Table.Add(Column.OfArray("d", [|4|]))  
+        |> Table.Add(Column.OfArray("e", [|5|]))  
+        |> Table.Add(Column.OfArray("f", [|6|]))  
+        |> Table.Add(Column.OfArray("g", [|7|])) 
+        |> Table.Add(Column.OfArray("h", [|8|])) 
+        |> Table.Add(Column.OfArray("i", [|9|]))  
     let table2 = table |> Table.MapiToColumn ["a"; "b"; "c"; "d"; "e"; "f"; "g"; "h"; "i"] "$" (fun idx a b c d e f g h i -> idx)
-    let col : int[] = table2 |> Table.ToArray "$"
+    let col : int[] = table2.["$"].Rows.AsInt |> toArr
     Assert.AreEqual([|0|], col, "Array of the column '$' produced by MapiToColumn")
 
 [<Test; Category("CI")>]
 let TableF_MapiToColumn_OneArg() =
-    let table:Table = Table.New "a" [1] 
+    let table:Table = Table([Column.OfArray("a", [|1|])])
     let table2 = table |> Table.MapiToColumn ["a"] "$" (fun idx (a:int) -> idx)
-    let col : int[] = table2 |> Table.ToArray "$"
+    let col : int[] = table2.["$"].Rows.AsInt |> toArr
     Assert.AreEqual([|0|], col, "Array of the column '$' produced by MapiToColumn")
 
 
 [<Test; Category("CI")>]
 let TableF_MapiToColumn_ZeroArg() =
-    let table:Table = Table.New "a" [1] 
+    let table:Table = Table([Column.OfArray("a", [|1|])])
     let table2 = table |> Table.MapiToColumn [] "$" (fun idx -> idx)
-    let col : int[] = table2 |> Table.ToArray "$"
+    let col : int[] = table2.["$"].Rows.AsInt |> toArr
     Assert.AreEqual([|0|], col, "Array of the column '$' produced by MapiToColumn")
 
 [<Test; Category("CI")>]
 let TableF_MapToColumn_ManyArgs() =
     let table:Table = 
-        Table.New "a" [1] |>
-        Table.Add "b" [2] |> 
-        Table.Add "c" [3] |> 
-        Table.Add "d" [4] |> 
-        Table.Add "e" [5] |> 
-        Table.Add "f" [6] |> 
-        Table.Add "g" [7] |>
-        Table.Add "h" [8] |>
-        Table.Add "i" [9]  
+        Table.Empty 
+        |> Table.Add(Column.OfArray("a", [|1|])) 
+        |> Table.Add(Column.OfArray("b", [|2|]))  
+        |> Table.Add(Column.OfArray("c", [|3|]))  
+        |> Table.Add(Column.OfArray("d", [|4|]))  
+        |> Table.Add(Column.OfArray("e", [|5|]))  
+        |> Table.Add(Column.OfArray("f", [|6|]))  
+        |> Table.Add(Column.OfArray("g", [|7|])) 
+        |> Table.Add(Column.OfArray("h", [|8|])) 
+        |> Table.Add(Column.OfArray("i", [|9|]))  
     let table2 = table |> Table.MapToColumn ["a"; "b"; "c"; "d"; "e"; "f"; "g"; "h"; "i"] "$" (fun a b c d e f g h i -> true)
-    let col : bool[] = table2 |> Table.ToArray "$"
+    let col : bool[] = table2.["$"].Rows.AsBoolean |> toArr
     Assert.AreEqual([|true|], col, "Array of the column '$' produced by MapToColumn")
 
 [<Test; Category("CI")>]
 let TableF_MapToColumn_OneArg() =
-    let table:Table = Table.New "a" [1] 
+    let table:Table = Table([Column.OfArray("a", [|1|])])
     let table2 = table |> Table.MapToColumn ["a"] "$" (fun a -> a > 0)
-    let col : bool[] = table2 |> Table.ToArray "$"
+    let col : bool[] = table2.["$"].Rows.AsBoolean |> toArr
     Assert.AreEqual([|true|], col, "Array of the column '$' produced by MapToColumn")
 
 
 [<Test; Category("CI")>]
 let TableF_MapToColumn_ZeroArg() =
-    let table:Table = Table.New "a" [1] 
+    let table:Table = Table([Column.OfArray("a", [|1|])])
     let table2 = table |> Table.MapToColumn [] "$" (fun () -> true)
-    let col : bool[] = table2 |> Table.ToArray "$"
+    let col : bool[] = table2.["$"].Rows.AsBoolean |> toArr
     Assert.AreEqual([|true|], col, "Array of the column '$' produced by MapToColumn")
 
 [<Test; Category("CI")>]
 let TableF_EmptyTable() =
     let table0:Table = Table.Empty
-    table0.Names |> should equal []
-    table0.Columns |> should equal []
+    table0 |> Seq.toList |> should equal []
     table0.Count |> should equal 0
-    table0.Types |> should equal []
 
 
 [<Test; Category("CI")>]
 let TableF_TestAddOneColumn() =
-
     let data:int[] = [| 1; 2; 4 |]
-
-    let column0:Column = Column.New<int[]>(data)
-
+    let column0:Column = Column.OfArray("col1", data)
     let table0:Table = Table.Empty
 
-    let table1 =
-        table0
-        |> Table.Add "col1" column0
+    let table1 = table0 |> Table.Add column0
 
-    table1.Names |> should equal [| "col1" |]
-    table1.Columns |> should equal [| column0 |]
-    table1.Types |> should equal [| typeof<int> |]
-    table1.Count  |> should equal 3
-
-    let column01 = Table.Column "col1" table1
-
-    Column.Type column01 |> should equal typeof<int>
-    Column.Count column01 |> should equal 3
-    Column.TryItem<int> -1 column01 |> should equal None
-    Column.TryItem<int> 0 column01 |> should equal (Some(1))
-    Column.TryItem<int> 1 column01 |> should equal (Some(2))
-    Column.TryItem<int> 2 column01 |> should equal (Some(4))
-    Column.TryItem<int> 3 column01 |> should equal None
-    (fun () -> Column.Item<int> -1 column01 |> ignore) |> should throw typeof<System.Exception>
-    Column.Item<int> 0 column01 |> should equal 1
-    Column.Item<int> 1 column01 |> should equal 2
-    Column.Item<int> 2 column01 |> should equal 4
-    (fun () -> Column.Item<int> 3 column01 |> ignore) |> should throw typeof<System.Exception>
-
-    Table.Type "col1" table1 |> should equal typeof<int>
-    Table.Column "col1" table1 |> Column.Count |> should equal 3
-    Table.TryItem<int> "col1" -1 table1 |> should equal None
-    Table.TryItem<int> "col1" 0 table1 |> should equal (Some(1))
-    Table.TryItem<int> "col1" 1 table1 |> should equal (Some(2))
-    Table.TryItem<int> "col1" 2 table1 |> should equal (Some(4))
-    Table.TryItem<int> "col1" 3 table1 |> should equal None
-    (fun () -> Table.Item<int> "col1" -1 table1 |> ignore) |> should throw typeof<System.Exception>
-    Table.Item<int> "col1" 0 table1 |> should equal 1
-    Table.Item<int> "col1" 1 table1 |> should equal 2
-    Table.Item<int> "col1" 2 table1 |> should equal 4
-    (fun () -> Table.Item<int> "col1" 3 table1 |> ignore) |> should throw typeof<System.Exception>
+    table1.[0].Name |> should equal "col1"
+    table1.[0] |> should equal column0
+    table1.["col1"] |> should equal column0 
+    table1 |> Seq.exactlyOne |> should equal column0
+    table1.RowsCount  |> should equal 3
+    
+    column0.Height |> should equal 3
+    column0.Rows.[0].AsInt |> should equal 1
+    column0.Rows.[1].AsInt |> should equal 2
+    column0.Rows.[2].AsInt |> should equal 4
+     |> should equal None
+    (fun () -> column0.Rows.[4] |> ignore) |> should throw typeof<System.IndexOutOfRangeException>
+    (fun () -> column0.Rows.[2].AsReal |> ignore) |> should throw typeof<System.InvalidCastException>
 
 [<Test; Category("CI")>]
 let TableF_Transform_1() =
-    let table = 
-        Table.Empty 
-        |> Table.Add "x" [0..10]
-    let res = Table.Transform<_,_,int> ["x"] (fun (x:int[]) -> x |> Array.sum) table
+    let table = Table([Column.OfArray("x", [|0..10|])])
+    let res : int = Table.Transform ["x"] (fun (x:ImmutableArray<int>) -> x |> Seq.sum) table
     res |> should equal 55
 
 [<Test; Category("CI")>]
 let TableF_Transform_2() =
-    let table = 
-        Table.Empty 
-        |> Table.Add "x" [0..10]
-        |> Table.Add "y" [ for i in 0..10 do yield float(i) ]
-    let res = Table.Transform<_,_,float> ["x"; "y"] (fun (x:int[]) (y:float[]) -> float(Array.sum x) + (Array.sum y)) table
+    let table = Table([ Column.OfArray("x", [|0..10|])
+                        Column.OfArray("y", [| for i in 0..10 do yield float(i) |]) ])
+    let res : float = Table.Transform ["x"; "y"] (fun (x:ImmutableArray<int>) (y:ImmutableArray<float>) -> float(Seq.sum x) + (Seq.sum y)) table
     res |> should equal 110.0
 
 [<Test; Category("CI")>]
-let TableF_JoinTransform_1() =
-    let table = 
-        Table.Empty 
-        |> Table.Add "x" [0..10]
-    let res = table |> Table.JoinTransform ["x"] (fun (x:int[]) -> Table.New "y" (x |> Array.map float))
-    res.Names |> should equal ["x"; "y"]
-    [|for i in 0..10 do yield float i|] |> should equal (let col = Table.Column "y" res in Column.ToArray<float[]> col)
+let TableF_AppendTransform_1() =
+    let table = Table([Column.OfArray("x", [|0..10|])])
+    let res = table |> Table.AppendTransform ["x"] (fun (x:ImmutableArray<int>) -> Table([Column.OfArray ("y", Seq.map float x |> Seq.toArray)]))
+    res |> colNames |> should equal ["x"; "y"]
+    [|for i in 0..10 do yield float i|] |> should equal (res.["y"].Rows.AsReal |> toArr)
     
 [<Test; Category("CI")>]
-let TableF_JoinTransform_2() =
-    let table = 
-        Table.Empty 
-        |> Table.Add "x" [0..10]
-        |> Table.Add "y" [ for i in 0..10 do yield float(i) ]
-    let res = table |> Table.JoinTransform ["x";"y"] (fun (x:int[]) (y:float[]) -> Table.New "z" (Array.zip x y |> Array.map (fun (s, t) -> float(s) + t)))
-    res.Names |> Set.ofSeq |> should equal (Set.ofList ["x"; "y"; "z"])
-    [|for i in 0..10 do yield 2.0*(float i)|] |> should equal (let col = Table.Column "z" res in Column.ToArray<float[]> col)
+let TableF_AppendTransform_2() =
+    let table = Table([ Column.OfArray("x", [|0..10|])
+                        Column.OfArray("y", [| for i in 0..10 do yield float(i) |]) ])
+    let res = table |> Table.AppendTransform ["x";"y"] (fun (x:ImmutableArray<int>) (y:ImmutableArray<float>) -> Table([Column.OfArray ("z", Seq.zip x y |> Seq.map (fun (s, t) -> float(s) + t) |> Seq.toArray)]))
+    res |> colNames |> Set.ofSeq |> should equal (Set.ofList ["x"; "y"; "z"])
+    [|for i in 0..10 do yield 2.0*(float i)|] |> should equal (res.["z"].Rows.AsReal |> toArr)
 
 
 [<Test; Category("CI")>]
 let ``Table.Add keeps order of columns as FIFO``() =
-    let table = 
-        Table.Empty 
-        |> Table.Add "x" [1]
-        |> Table.Add "y" [2]
-
-    let x = table.Columns.[0]
-    let y = table.Columns.[1]
-
-    Assert.AreEqual("x", table |> Table.Name x)
-    Assert.AreEqual("y", table |> Table.Name y)
-
-    Assert.AreEqual(0, table |> Table.ColumnIndex "x")
-    Assert.AreEqual(1, table |> Table.ColumnIndex "y")        
-
-
+    let table = Table.Empty |> Table.Add (Column.OfArray("x", [|1|])) |> Table.Add (Column.OfArray("y", [|2|]))
+    let x = table.[0]
+    let y = table.[1]
+    Assert.AreEqual("x", x.Name)
+    Assert.AreEqual("y", y.Name)
+    Assert.AreEqual(x, table.["x"])
+    Assert.AreEqual(y, table.["y"])
 
 [<Property; Category("CI")>]
 let ``Filters table rows by a single integer column`` (table: Table) (filterBy: int[]) =    
@@ -215,18 +181,17 @@ let ``Filters table rows by a single integer column`` (table: Table) (filterBy: 
         else
             Array.init count (fun i -> if i < filterBy.Length then filterBy.[i] else 0)
 
-    let table2 = table |> Table.Add "_filterBy_" filterBy
-    
+    let table2 = table |> Table.Add (Column.OfArray("_filterBy_", filterBy))
     let tableEven = table2 |> Table.Filter ["_filterBy_"] (fun d -> d % 2 = 0)
 
-    let mask = filterBy |> Seq.mapi(fun i d -> (i,d)) |> Seq.filter(fun (i,d) -> d % 2 = 0) |> Seq.map fst |> Seq.toArray
+    let mask = filterBy |> Seq.mapi(fun i d -> (i,d)) |> Seq.filter(fun (_,d) -> d % 2 = 0) |> Seq.map fst |> Seq.toArray
     
-    table.Columns 
+    table 
     |> Seq.mapi(fun colInd col ->
-        let original = Column.ToArray<System.Array> col
-        let filtered = Column.ToArray<System.Array> tableEven.Columns.[colInd]
+        let original = col.Rows
+        let filtered = tableEven.[colInd].Rows
         mask
-        |> Seq.mapi(fun iF iO -> System.Object.Equals(original.GetValue(iO), filtered.GetValue(iF)))
+        |> Seq.mapi(fun iF iO -> original.[iO] = filtered.[iF])
         |> Seq.forall id)
     |> Seq.forall id
         

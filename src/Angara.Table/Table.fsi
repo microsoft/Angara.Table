@@ -58,7 +58,7 @@ type Column =
 type Table = 
     interface IEnumerable<Column> 
 
-    new : nameColumns : Column seq -> Table
+    new : columns : Column seq -> Table
 
     /// Gets a count of the total number of columns in the table.
     member Count : int with get

@@ -3,6 +3,7 @@ module Angara.Data.TestsF.Common
 open Angara.Data
 open NUnit.Framework
 open System
+open System.Collections.Immutable
 
 type PropertyAttribute = FsCheck.NUnit.PropertyAttribute
 
@@ -48,72 +49,58 @@ let testOptionArraySome<'T, 'U> (expected:'T[]) (actual:'U option) : unit =
     Assert.IsTrue(actual.IsSome)
     Assert.AreEqual(expected, actual.Value)
 
-
-/// Considers 
-/// - two NaN equal and 
 /// - "string null" equals "string empty"
-/// - DateTime is compared without milliseconds
-let areEqualArraysForCsv (a1:System.Array) (a2:System.Array) =
-    let t1 = a1.GetType().GetElementType()
-    let t2 = a2.GetType().GetElementType()
-    
-    t1 = t2 &&
+let areEqualStringsForCsv (a1:ImmutableArray<string>) (a2:ImmutableArray<string>) =
     a1.Length = a2.Length &&     
-    match t1 with
-    | t when t = typeof<double> -> Array.forall2 (fun v1 v2 -> (Double.IsNaN(v1) && Double.IsNaN(v2)) || v1 = v2) (a1 :?> double[]) (a2 :?> double[])
-    | t when t = typeof<string> -> Array.forall2 (fun v1 v2 -> (String.IsNullOrEmpty(v1) && String.IsNullOrEmpty(v2)) || v1 = v2) (a1 :?> string[]) (a2 :?> string[])
-    | t when t = typeof<bool> -> Array.forall2 (fun v1 v2 -> v1 = v2) (a1 :?> bool[]) (a2 :?> bool[])
-    | t when t = typeof<DateTime> -> Array.forall2 (fun (v1:System.DateTime) (v2:System.DateTime) -> v1.Subtract(TimeSpan.FromMilliseconds(float(v1.Millisecond))) = v2.Subtract(TimeSpan.FromMilliseconds(float(v2.Millisecond)))) (a1 :?> DateTime[]) (a2 :?> DateTime[])
-    | _ -> failwithf "Unexpected type of column: %A" t1
+    Seq.forall2 (fun v1 v2 -> (String.IsNullOrEmpty(v1) && String.IsNullOrEmpty(v2)) || v1 = v2) a1 a2
+
+/// - two NaN equal
+let areEqualFloatsForCsv (a1:ImmutableArray<float>) (a2:ImmutableArray<float>) =
+    a1.Length = a2.Length &&     
+    Seq.forall2 (fun v1 v2 -> (Double.IsNaN(v1) && Double.IsNaN(v2)) || v1 = v2) a1 a2
+
+let areEqualBooleansForCsv (a1:ImmutableArray<bool>) (a2:ImmutableArray<bool>) =
+    a1.Length = a2.Length &&     
+    Seq.forall2 (fun v1 v2 -> v1 = v2) a1 a2
+
+/// - DateTime is compared without milliseconds
+let areEqualDatesForCsv (a1:ImmutableArray<System.DateTime>) (a2:ImmutableArray<System.DateTime>) =
+    a1.Length = a2.Length &&     
+    Seq.forall2 (fun (v1:System.DateTime) (v2:System.DateTime) -> (v1.Subtract(TimeSpan.FromMilliseconds(float(v1.Millisecond))) = v2.Subtract(TimeSpan.FromMilliseconds(float(v2.Millisecond)))) || v1 = v2) a1 a2
 
 let areEqualColumnsForCsv (c1:Column) (c2:Column) =
-    let a1 = Column.ToArray<System.Array>(c1)
-    let a2 = Column.ToArray<System.Array>(c2)
-    Column.Type c1 = Column.Type c2 &&
-    areEqualArraysForCsv a1 a2
-    
+    c1.Name = c2.Name &&
+    match c1.Rows, c2.Rows with
+    | RealColumn v1, RealColumn v2 -> areEqualFloatsForCsv v1.Value v2.Value
+    | StringColumn v1, StringColumn v2 -> areEqualStringsForCsv v1.Value v2.Value
+    | DateColumn v1, DateColumn v2 -> areEqualDatesForCsv v1.Value v2.Value
+    | BooleanColumn v1, BooleanColumn v2 -> areEqualBooleansForCsv v1.Value v2.Value
+    | t1, t2 -> failwithf "Unexpected column types: %A, %A" t1 t2
 
 /// Considers in data arrays:
 /// - two NaN equal and 
 /// - "string null" equals "string empty"
 /// - DateTime is compared without milliseconds
 let areEqualTablesForCsv (table:Table) (table2:Table) =
-    table.Names.Count = table2.Names.Count &&
-    areEqualArraysForCsv (table.Names|>Seq.toArray) (table2.Names|>Seq.toArray) &&
-    table.Columns.Count = table2.Columns.Count &&
-    Seq.forall2 (fun c1 c2 -> areEqualColumnsForCsv c1 c2) table.Columns table2.Columns
-
-/// Considers in data arrays:
-/// - two NaN equal 
-/// - DateTime is compared without milliseconds
-let areEqualArraysForSerialization (a1:System.Array) (a2:System.Array) =
-    let t1 = a1.GetType().GetElementType()
-    let t2 = a2.GetType().GetElementType()
-    
-    t1 = t2 &&
-    a1.Length = a2.Length &&     
-    match t1 with
-    | t when t = typeof<double> -> Array.forall2 (fun v1 v2 -> (Double.IsNaN(v1) && Double.IsNaN(v2)) || v1 = v2) (a1 :?> double[]) (a2 :?> double[])
-    | t when t = typeof<int> -> Array.forall2 (fun v1 v2 -> v1 = v2) (a1 :?> int[]) (a2 :?> int[])
-    | t when t = typeof<string> -> Array.forall2 (fun v1 v2 -> v1 = v2) (a1 :?> string[]) (a2 :?> string[])
-    | t when t = typeof<bool> -> Array.forall2 (fun v1 v2 -> v1 = v2) (a1 :?> bool[]) (a2 :?> bool[])
-    | t when t = typeof<DateTime> -> Array.forall2 (fun (v1:System.DateTime) (v2:System.DateTime) -> v1.Subtract(TimeSpan.FromMilliseconds(float(v1.Millisecond))) = v2.Subtract(TimeSpan.FromMilliseconds(float(v2.Millisecond)))) (a1 :?> DateTime[]) (a2 :?> DateTime[])
-    | _ -> failwithf "Unexpected type of column: %A" t1
+    table.Count = table2.Count &&
+    Seq.forall2 (fun c1 c2 -> areEqualColumnsForCsv c1 c2) table table2
     
 /// Considers in data arrays:
 /// - two NaN equal 
 /// - DateTime is compared without milliseconds
 let areEqualColumnsForSerialization (c1:Column) (c2:Column) =
-    let a1 = Column.ToArray<System.Array>(c1)
-    let a2 = Column.ToArray<System.Array>(c2)
-    Column.Type c1 = Column.Type c2 &&
-    areEqualArraysForSerialization a1 a2
+    c1.Name = c2.Name &&
+    match c1.Rows, c2.Rows with
+    | RealColumn v1, RealColumn v2 -> areEqualFloatsForCsv v1.Value v2.Value
+    | StringColumn v1, StringColumn v2 -> v1.Value.Length = v2.Value.Length && Seq.forall2 (fun v1 v2 -> v1 = v2) v1.Value v2.Value
+    | IntColumn v1, IntColumn v2 -> v1.Value.Length = v2.Value.Length && Seq.forall2 (fun v1 v2 -> v1 = v2) v1.Value v2.Value
+    | DateColumn v1, DateColumn v2 -> areEqualDatesForCsv v1.Value v2.Value
+    | BooleanColumn v1, BooleanColumn v2 -> v1.Value.Length = v2.Value.Length && Seq.forall2 (fun v1 v2 -> v1 = v2) v1.Value v2.Value
+    | t1, t2 -> failwithf "Unexpected column types: %A, %A" t1 t2
     
 /// Considers in data arrays:
 /// - two NaN equal 
 /// - DateTime is compared without milliseconds
 let areEqualTablesForSerialization (table:Table) (table2:Table) =
-    table.Names.Count = table2.Names.Count &&
-    areEqualArraysForSerialization (table.Names|>Seq.toArray) (table2.Names|>Seq.toArray) &&
-    table.Columns.Count = table2.Columns.Count &&
-    Seq.forall2 (fun c1 c2 -> areEqualColumnsForSerialization c1 c2) table.Columns table2.Columns
+    table.Count = table2.Count &&
+    Seq.forall2 (fun c1 c2 -> areEqualColumnsForSerialization c1 c2) table table2
