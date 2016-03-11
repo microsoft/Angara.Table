@@ -6,6 +6,7 @@ open System.Collections.Immutable
 open Angara.Statistics
 
 open Util
+open System.Linq.Expressions
 
 type DataValue =
     | IntValue      of int
@@ -155,10 +156,55 @@ type Table private (columns : Column list, height : int) =
         member x.GetEnumerator() : System.Collections.IEnumerator = ((columns |> Seq.ofList) :> System.Collections.IEnumerable).GetEnumerator()
 
     member x.ToRows<'r>() : 'r seq =
-        failwith ""
+        let typeR = typeof<'r>
+        let props = Util.getTypedRowProperties typeR
+        let ctor = typeR.GetConstructor(props |> Array.map snd)
+        let l_pars = props |> Array.map(fun (nm,tp) -> Expression.Parameter(tp))
+        let l_ctor = Expression.New(ctor, l_pars |> Seq.cast)
+        let lambda = Expression.Lambda(l_ctor, l_pars)
+        let d_createR = lambda.Compile()
+        let columns = props |> Array.map (fun (name,_) -> x.[name])
+        Table.Mapd columns d_createR x
 
     override x.ToString() = String.Join("\n", columns |> Seq.map (fun c -> c.ToString()))
 
+    static member OfRows<'r>(rows : 'r seq) =
+        let rows_a = rows |> Seq.toArray
+        let props = Util.getTypedRowProperties typeof<'r>
+
+        // f(c1, c2, ..., rows) :  =
+        // for(var i = 0; i < rows.Length; i++)
+        //   row = rows[i]
+        //   columns1 = row.A
+        //   columns2 = row.B
+        //   ...
+
+        let createBuilder = typeof<ImmutableArray>.GetMethod("CreateBuilder", [| typeof<int> |])
+
+        let l_clmns =
+            props |> Array.map(fun (nm,tp) ->
+                let createBuilder_p = createBuilder.MakeGenericMethod(tp)
+                let immArr_p = createBuilder_p.Invoke(null, [| box rows_a.Length |])
+                Expression.Constant(immArr_p))
+
+        let propType = typeof<int>
+        let l_rows = Expression.Constant(rows_a)
+        let l_n = Expression.Constant(rows_a.Length)
+        let paramName = Expression.Parameter(typeof<string>)                                
+        let column = Expression.Parameter(Array.CreateInstance(propType, 0).GetType())
+        let paramRowIdx = Expression.Variable(typeof<int>)
+        let paramRow = Expression.Variable(typeof<'r>)
+
+
+
+        let loopBody = // clmn.Add(rows[rowIdx].nm  
+            Expression.Block(
+                Expression.Assign(paramRow, Expression.ArrayIndex(l_rows, paramRowIdx)),
+                Expression.Assign(columnItem, 
+                    Expression.Property(l_row, paramName))
+            )
+
+        failwith ""
 
     static member Empty: Table = emptyTable        
     
@@ -193,6 +239,14 @@ type Table private (columns : Column list, height : int) =
         Table.Transform columnNames transform table
         |> Table.Append table
 
+    static member private Mapd<'a,'b,'c>(columns:Column[]) (map:Delegate) (table:Table) : 'c seq =        
+        let colArrays = columns |> Array.map (fun c -> c.Rows.ToUntypedList())
+        let n = columns.Length
+        let row : obj[] = Array.zeroCreate n
+        Seq.init table.RowsCount (fun rowIdx ->    
+            for i = 0 to n-1 do row.[i] <- colArrays.[i].[rowIdx]
+            map.DynamicInvoke(row) :?> 'c)
+
     static member Map<'a,'b,'c>(columnNames:seq<string>) (map:'a->'b) (table:Table) : 'c seq =        
         let columns = columnNames |> Seq.map (fun name -> table.[name]) |> Seq.toArray
         match columns.Length with
@@ -212,12 +266,7 @@ type Table private (columns : Column list, height : int) =
                 | _ -> failwith("Incorrect argument type of the given function `map`")
             | _ -> failwith("Incorrect `map` function")
         | _ -> // more than 1 column
-            let colArrays = columns |> Array.map (fun c -> c.Rows.ToUntypedList())
-            let deleg = Funcs.toDelegate map
-            let row : obj[] = Array.zeroCreate columns.Length
-            Seq.init table.RowsCount (fun rowIdx ->    
-                for i = 0 to columns.Length-1 do row.[i] <- colArrays.[i].[rowIdx]
-                deleg.DynamicInvoke(row) :?> 'c)
+            Table.Mapd columns (Funcs.toDelegate map) table
 
     static member Mapi<'a,'c>(columnNames:seq<string>) (map:(int->'a)) (table:Table) : 'c seq =
         let columns = columnNames |> Seq.map (fun name -> table.[name]) |> Seq.toArray

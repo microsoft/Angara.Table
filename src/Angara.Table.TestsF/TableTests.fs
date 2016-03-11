@@ -14,6 +14,22 @@ let toArr (imar:ImmutableArray<'a>) =
     imar.CopyTo arr
     arr
 
+
+type Person = { Name:string; Age:int; Height: float; Sex: bool; BirthDate: System.DateTime }
+
+[<Test; Category("CI")>]
+let ``Table.ToRows``() =
+    let t =
+        Table ([Column.OfArray("Name", [|"Abcdef"|])
+                Column.OfArray("Age", [|45|])
+                Column.OfArray("Height", [|185.0|])
+                Column.OfArray("Sex", [|true|])
+                Column.OfArray("BirthDate", [|System.DateTime(1950, 02, 03)|])])
+    let persons = t.ToRows<Person>() |> Seq.toArray
+    persons |> Seq.iter (fun p -> System.Diagnostics.Trace.WriteLine(sprintf "%A" p))
+    Assert.AreEqual(1, persons.Length)
+    Assert.AreEqual({Name = "Abcdef"; Age = 45; Height = 185.0; Sex = true; BirthDate = System.DateTime(1950, 02, 03)}, persons.[0])
+
 [<Test; Category("CI")>]
 let ``MapToColumn replaces existing column - one column to another existing column``() =
     let t = Table([Column.OfArray("a", [|0;1|]); Column.OfArray("b", [|0;1|])])
@@ -172,7 +188,6 @@ let ``Table.Add keeps order of columns as FIFO``() =
 
 [<Property; Category("CI")>]
 let ``Filters table rows by a single integer column`` (table: Table) (filterBy: int[]) =    
-    Assert.Inconclusive()
     let count = table.RowsCount
     let filterBy = 
         if filterBy.Length > count then
