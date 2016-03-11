@@ -35,7 +35,7 @@ type Generators =
         { new Arbitrary<Column>() with
             override x.Generator =                 
                 gen {
-                    let! name = Arb.generate<string>
+                    let! name = (Arb.from<NonNull<string>> |> Arb.convert (fun ns -> ns.Get) NonNull).Generator
                     return! Gen.oneof [Helpers.colGen<int> name; Helpers.colGen<float> name; Helpers.colGen<string> name; Helpers.colGen<System.DateTime> name; Helpers.colGen<bool> name]
                 } 
             override x.Shrinker (col:Column) =

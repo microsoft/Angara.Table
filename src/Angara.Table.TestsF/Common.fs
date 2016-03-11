@@ -69,6 +69,7 @@ let areEqualDatesForCsv (a1:ImmutableArray<System.DateTime>) (a2:ImmutableArray<
     Seq.forall2 (fun (v1:System.DateTime) (v2:System.DateTime) -> (v1.Subtract(TimeSpan.FromMilliseconds(float(v1.Millisecond))) = v2.Subtract(TimeSpan.FromMilliseconds(float(v2.Millisecond)))) || v1 = v2) a1 a2
 
 let areEqualColumnsForCsv (c1:Column) (c2:Column) =
+    //if c1.Name <> c2.Name then failwith(sprintf "!!! Different names: '%A' and '%A'" (if c1.Name = null then "<null>" else c1.Name) (if c2.Name = null then "<null>" else c2.Name))
     c1.Name = c2.Name &&
     match c1.Rows, c2.Rows with
     | RealColumn v1, RealColumn v2 -> areEqualFloatsForCsv v1.Value v2.Value

@@ -19,7 +19,7 @@ duplicate names are allowed but may cause ambiguity in some API functions.
 ## Column
 
 A column is represented as an immutable type `Angara.Data.Column` which
-keeps column name, height and values: *)
+keeps column name, height and values. Column name cannot be a null string. *)
 
 (*** include:typedef-Column ***)
 

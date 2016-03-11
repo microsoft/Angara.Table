@@ -32,6 +32,14 @@ let ``When reading the written table we get a table that equals original table``
     precondition table ==> lazy(table |> CheckReadWrite { DelimitedFile.ReadSettings.Default with InferNullStrings = true } { DelimitedFile.WriteSettings.Default with AllowNullStrings = true } )
 
 [<Test; Category("CI")>]
+let ``When reading the written table we get a table that equals original table - case 8`` () =
+    Table.Empty 
+    |> Table.Add (Column.OfArray("0&", [| true; true |])) 
+    |> Table.Add (Column.OfArray("", [| null; "" |])) 
+    |> CheckReadWrite { DelimitedFile.ReadSettings.Default with InferNullStrings = true } { DelimitedFile.WriteSettings.Default with AllowNullStrings = true }
+
+
+[<Test; Category("CI")>]
 let ``When reading the written table we get a table that equals original table - case 7`` () =
     Table.Empty |> Table.Add (Column.OfArray("a", [| "10" |])) |> CheckReadWrite { DelimitedFile.ReadSettings.Default with DelimitedFile.ColumnTypes = Some(fun _ -> Some(typeof<string>)) } DelimitedFile.WriteSettings.Default
 

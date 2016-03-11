@@ -251,15 +251,15 @@ let ``import correct file``() =
 
     resultingdata.Length |> should equal 3
 
-    let lons = (resultingdata.[0] |> snd) :?> double[]
+    let lons = (resultingdata.[0] |> snd) :?> ImmutableArray<double>
     Assert.AreEqual(lons.Length, 4)
     Assert.AreEqual(lons.[0], 111.5, 0.1)
 
-    let lat = (resultingdata.[1] |> snd) :?> double[]
+    let lat = (resultingdata.[1] |> snd) :?> ImmutableArray<double>
     Assert.AreEqual(lat.Length, 4)
     Assert.AreEqual(lat.[0], 45.5, 0.1)
 
-    let wheat = (resultingdata.[2] |> snd) :?> double[]
+    let wheat = (resultingdata.[2] |> snd) :?> ImmutableArray<double>
     Assert.AreEqual(wheat.Length, 4)
     Assert.AreEqual(wheat.[0], 0.004388, 0.1)
 
@@ -271,19 +271,19 @@ let ``import file with different column types``() =
 
     resultingdata.Length |> should equal 4
 
-    let ints = (resultingdata.[0] |> snd) :?> double[]
+    let ints = (resultingdata.[0] |> snd) :?> ImmutableArray<double>
     Assert.AreEqual(ints.Length, 19)
     Assert.AreEqual(ints.[0], 0)
 
-    let floats = (resultingdata.[1] |> snd) :?> double[]
+    let floats = (resultingdata.[1] |> snd) :?> ImmutableArray<double>
     Assert.AreEqual(floats.Length, 19)
     Assert.AreEqual(floats.[0], 0.0, 0.1)
     
-    let strings = (resultingdata.[2] |> snd) :?> string[]
+    let strings = (resultingdata.[2] |> snd) :?> ImmutableArray<string>
     Assert.AreEqual(strings.Length, 19)
     Assert.AreEqual(strings.[0], "string_0")
 
-    let dates = (resultingdata.[3] |> snd) :?> DateTime[]
+    let dates = (resultingdata.[3] |> snd) :?> ImmutableArray<DateTime>
     Assert.AreEqual(dates.Length, 19)
     Assert.AreEqual(dates.[0], System.DateTime(2014,10,15))
 

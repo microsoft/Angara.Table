@@ -77,6 +77,8 @@ type ColumnValues =
 [<NoComparison>]
 type Column private (name:string, values: ColumnValues, height: int) =
     
+    do if name = null then raise (ArgumentNullException("name", "Column name cannot be null"))
+
     member x.Name with get() = name
     member x.Rows with get() = values
     member x.Height with get() = height
