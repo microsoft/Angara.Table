@@ -65,7 +65,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ColumnTests.cs" />
     <Compile Include="Common.cs" />
     <Compile Include="Csv.cs" />
     <Compile Include="TableTests.cs" />

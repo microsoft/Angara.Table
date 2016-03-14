@@ -1,5 +1,6 @@
 /ext/nuget
 /src/Angara.TableJS/lib
+/docs
 .vscode
 bower_components
 node_modules

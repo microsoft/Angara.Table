@@ -212,5 +212,4 @@ let ``Filters table rows by a single integer column`` (table: Table) (filterBy: 
         | IntColumn v -> Column.OfArray(co.Name, mask |> Array.map (fun i -> v.Value.[i]))
         | StringColumn v -> Column.OfArray(co.Name, mask |> Array.map (fun i -> v.Value.[i]))
         | BooleanColumn v -> Column.OfArray(co.Name, mask |> Array.map (fun i -> v.Value.[i]))
-        | DateColumn v -> Column.OfArray(co.Name, mask |> Array.map (fun i -> v.Value.[i])))
-        |> areEqualColumnsForSerialization cf)
+        | DateColumn v -> Column.OfArray(co.Name, mask |> Array.map (fun i -> v.Value.[i]))) |> areEqualColumnsForSerialization cf)
