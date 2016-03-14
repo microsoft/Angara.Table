@@ -197,26 +197,20 @@ let ``Table.Add keeps order of columns as FIFO``() =
 let ``Filters table rows by a single integer column`` (table: Table) (filterBy: int[]) =    
     let count = table.RowsCount
     let filterBy = 
-        if filterBy.Length > count then
-            filterBy |> Seq.take count |> Seq.toArray
-        elif filterBy.Length = count then
-            filterBy
-        else
-            Array.init count (fun i -> if i < filterBy.Length then filterBy.[i] else 0)
+        if filterBy.Length > count then filterBy |> Seq.take count |> Seq.toArray
+        elif filterBy.Length = count then filterBy
+        else Array.init count (fun i -> if i < filterBy.Length then filterBy.[i] else 0)
 
     let table2 = table |> Table.Add (Column.OfArray("_filterBy_", filterBy))
     let tableEven = table2 |> Table.Filter ["_filterBy_"] (fun d -> d % 2 = 0)
 
     let mask = filterBy |> Seq.mapi(fun i d -> (i,d)) |> Seq.filter(fun (_,d) -> d % 2 = 0) |> Seq.map fst |> Seq.toArray
-    
-    let res = 
-        table 
-        |> Seq.mapi(fun colInd col ->
-            let original = col.Rows
-            let filtered = tableEven.[colInd].Rows
-            mask
-            |> Seq.mapi(fun iF iO -> original.[iO] = filtered.[iF])
-            |> Seq.forall id)
-        |> Seq.forall id
-    res
-        
+    Seq.zip table (tableEven |> Table.Remove ["_filterBy_"])
+    |> Seq.forall(fun (co, cf) ->
+        (match co.Rows with
+        | RealColumn v -> Column.OfArray(co.Name, mask |> Array.map (fun i -> v.Value.[i]))
+        | IntColumn v -> Column.OfArray(co.Name, mask |> Array.map (fun i -> v.Value.[i]))
+        | StringColumn v -> Column.OfArray(co.Name, mask |> Array.map (fun i -> v.Value.[i]))
+        | BooleanColumn v -> Column.OfArray(co.Name, mask |> Array.map (fun i -> v.Value.[i]))
+        | DateColumn v -> Column.OfArray(co.Name, mask |> Array.map (fun i -> v.Value.[i])))
+        |> areEqualColumnsForSerialization cf)
