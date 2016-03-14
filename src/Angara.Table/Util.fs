@@ -28,12 +28,11 @@ let inline invalidCast message = raise (new System.InvalidCastException(message)
 
 let inline notFound message = raise (new System.Collections.Generic.KeyNotFoundException(message))
 
-let getTypedRowProperties (typeR : System.Type) =    
-    typeR.GetProperties() // check: sealed & record
+let getRecordProperties (typeR : System.Type) =    
+    typeR.GetProperties()
     |> Seq.choose(fun p -> 
         let cm_attrs = p.GetCustomAttributes(typeof<CompilationMappingAttribute>, false)
-        if cm_attrs.Length >= 1 then
-            Some(p, (cm_attrs.[0] :?> CompilationMappingAttribute).SequenceNumber)
+        if cm_attrs.Length >= 1 then Some(p, (cm_attrs.[0] :?> CompilationMappingAttribute).SequenceNumber)
         else None)
     |> Seq.sortBy snd
     |> Seq.map fst

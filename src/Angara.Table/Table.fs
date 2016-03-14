@@ -157,21 +157,46 @@ type Table private (columns : Column list, height : int) =
 
     member x.ToRows<'r>() : 'r seq =
         let typeR = typeof<'r>
-        let props = Util.getTypedRowProperties typeR |> Seq.map(fun p -> p.Name, p.PropertyType) |> Seq.toArray
-        let ctor = typeR.GetConstructor(props |> Array.map snd)
-        let l_pars = props |> Array.map(fun (nm,tp) -> Expression.Parameter(tp))
-        let l_ctor = Expression.New(ctor, l_pars |> Seq.cast)
-        let lambda = Expression.Lambda(l_ctor, l_pars)
-        let d_createR = lambda.Compile()
-        let columns = props |> Array.map (fun (name,_) -> x.[name])
-        Table.Mapd columns d_createR x
+        let d_createR, props = 
+            match typeR.GetCustomAttributes(typeof<CompilationMappingAttribute>, false) 
+                  |> Seq.exists(fun attr -> (attr :?> CompilationMappingAttribute).SourceConstructFlags = SourceConstructFlags.RecordType) with
+            | true -> // F# record
+                let props = Util.getRecordProperties typeR |> Seq.map(fun p -> p.Name, p.PropertyType) |> Seq.toArray
+                let ctor = typeR.GetConstructor(props |> Array.map snd)
+                let l_pars = props |> Array.map(fun (_,tp) -> Expression.Parameter(tp))
+                Expression.Lambda(Expression.New(ctor, l_pars |> Seq.cast), l_pars).Compile(), props |> Array.map fst
+            | false -> // non-record
+                let ctor = typeR.GetConstructor(Type.EmptyTypes) // default constuctor
+                let props = 
+                    typeR.GetProperties(Reflection.BindingFlags.Instance ||| Reflection.BindingFlags.Public)
+                    |> Array.filter (fun p -> p.CanWrite)
+                let l_pars = props |> Array.map(fun p -> Expression.Parameter(p.PropertyType, p.Name))
+                let l_r = Expression.Variable(typeR, "row")
+                let l =
+                    Expression.Lambda(
+                        Expression.Block(
+                            [l_r], 
+                            Seq.concat
+                                [seq{ yield Expression.Assign(l_r, Expression.New(ctor)) :> Expression }
+                                 Seq.zip props l_pars |> Seq.map(fun (p, l_p) -> Expression.Assign(Expression.Property(l_r, p), l_p) :> Expression)
+                                 seq{ yield upcast l_r }]),
+                        l_pars)
+                l.Compile(), props |> Array.map(fun p -> p.Name)
+        Table.Mapd (props |> Array.map (fun name -> x.[name])) d_createR x
 
     override x.ToString() = String.Join("\n", columns |> Seq.map (fun c -> c.ToString()))
 
     static member OfRows<'r>(rows : 'r seq) =
+        let typeR = typeof<'r>
         let rows_a = rows |> Seq.toArray
         let n = rows_a.Length
-        let props = Util.getTypedRowProperties typeof<'r>
+        let props =
+            match typeR.GetCustomAttributes(typeof<CompilationMappingAttribute>, false) 
+                  |> Seq.exists(fun attr -> (attr :?> CompilationMappingAttribute).SourceConstructFlags = SourceConstructFlags.RecordType) with
+            | true -> // F# record
+                Util.getRecordProperties typeR 
+            | false -> // non-record
+                typeR.GetProperties(Reflection.BindingFlags.Instance ||| Reflection.BindingFlags.Public) |> Seq.filter (fun p -> p.CanRead)
         let columns =
             props 
             |> Seq.map(fun p ->
@@ -181,7 +206,7 @@ type Table private (columns : Column list, height : int) =
                 | t when t = typeof<string> -> Column.OfLazyArray(p.Name, arrayOfProp<'r,string>(rows_a, p), n)
                 | t when t = typeof<DateTime> -> Column.OfLazyArray(p.Name, arrayOfProp<'r,DateTime>(rows_a, p), n)
                 | t when t = typeof<bool> -> Column.OfLazyArray(p.Name, arrayOfProp<'r,bool>(rows_a, p), n)
-                | t -> invalidCast (sprintf "Property '%s' has type '%A' which is not a valid table column type" p.Name t))
+                | t -> invalidArg "rows" (sprintf "Property '%s' has type '%A' which is not a valid table column type" p.Name t))
         Table(columns)
 
     static member Empty: Table = emptyTable        

@@ -16,16 +16,20 @@ let toArr (imar:ImmutableArray<'a>) =
 
 
 type ValidTypesRec = { TypeString:string; TypeInt:int; TypeFloat: float; TypeBool: bool; TypeDate: System.DateTime }
+type InvalidTypesRec = { TypeDecimal:System.Decimal }
+type [<Class>] PubPropClass() = 
+    let mutable p : string = ""
+    member x.Prop with get() : string = p and set(v) = p <- v
 
 [<Property; Category("CI")>]
-let ``Combination of functions ToRows and FromRows returns a record array identical to original`` (p:ValidTypesRec[]) =
+let ``Combination of functions ToRows and OfRows returns a record array identical to original`` (p:ValidTypesRec[]) =
     let table = Table.OfRows p
     let rows = table.ToRows<ValidTypesRec>() |> Seq.toArray
     Assert.AreEqual(p, rows)
 
 
 [<Test; Category("CI")>]
-let ``Table.ToRows``() =
+let ``Table.ToRows for a record``() =
     let t =
         Table ([Column.OfArray("TypeString", [|"Abcdef"|])
                 Column.OfArray("TypeInt", [|45|])
@@ -36,6 +40,50 @@ let ``Table.ToRows``() =
     persons |> Seq.iter (fun p -> System.Diagnostics.Trace.WriteLine(sprintf "%A" p))
     Assert.AreEqual(1, persons.Length)
     Assert.AreEqual({TypeString = "Abcdef"; TypeInt = 45; TypeFloat = 185.0; TypeBool = true; TypeDate = System.DateTime(1950, 02, 03)}, persons.[0])
+
+[<Test; Category("CI")>]
+let ``Table.ToRows for a non-record``() =
+    let t =
+        Table ([Column.OfArray("Prop", [|"A";"b"|])
+                Column.OfArray("Prop2", [|45; 56|])]) // should be ignored since not presented in the target type
+    let p = t.ToRows<PubPropClass>() |> Seq.toArray
+    p |> Seq.iter (fun p -> System.Diagnostics.Trace.WriteLine(sprintf "%A" p))
+    Assert.AreEqual(2, p.Length)
+    Assert.AreEqual("A", p.[0].Prop, "item 0")
+    Assert.AreEqual("b", p.[1].Prop, "item 1")
+
+[<Test; Category("CI")>]
+let ``Table.OfRows for a non-record``() =
+    let rows = [PubPropClass(); PubPropClass()] 
+    rows.[0].Prop <- "A"
+    rows.[1].Prop <- "B"
+    let t = Table.OfRows rows
+    Assert.AreEqual(1, t.Count, "columns count")
+    Assert.AreEqual(2, t.RowsCount, "rows count")
+    Assert.AreEqual("A", t.[0].Rows.[0].AsString, "0,0")
+    Assert.AreEqual("B", t.["Prop"].Rows.[1].AsString, "0,1")
+
+[<Test; Category("CI"); ExpectedException(typeof<System.Collections.Generic.KeyNotFoundException>)>]
+let ``Table.ToRows fails when table has no column for a property``() =
+    let t = Table ([Column.OfArray("Prop2", [|45; 56|])]) 
+    t.ToRows<PubPropClass>() |> Seq.toArray |> ignore
+
+[<Test; Category("CI"); ExpectedException(typeof<System.ArgumentException>)>]
+let ``Table.ToRows fails when table has different type of column than the property``() =
+    let t =
+        Table ([Column.OfArray("TypeString", [|123|]); Column.OfArray("TypeInt", [|45|]); Column.OfArray("TypeFloat", [|185.0|]);
+                Column.OfArray("TypeBool", [|true|]); Column.OfArray("TypeDate", [|System.DateTime(1950, 02, 03)|])])
+    t.ToRows<ValidTypesRec>() |> Seq.toArray |> ignore
+
+[<Test; Category("CI"); ExpectedException(typeof<System.ArgumentException>)>]
+let ``Table.ToRows fails when target property has invalid type``() =
+    let t = Table ([Column.OfArray("TypeDecimal", [|45; 56|])]) 
+    t.ToRows<InvalidTypesRec>() |> Seq.toArray |> ignore
+
+[<Test; Category("CI"); ExpectedException(typeof<System.ArgumentException>)>]
+let ``Table.OfRows fails when property has invalid type``() =
+    let rows = [| { TypeDecimal = System.Decimal(100) } |] 
+    Table.OfRows rows |> ignore
 
 [<Test; Category("CI")>]
 let ``MapToColumn replaces existing column - one column to another existing column``() =
