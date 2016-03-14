@@ -45,3 +45,8 @@ let arrayOfProp<'r,'p> (rows: 'r[], p:System.Reflection.PropertyInfo) =
         for i in 0..n-1 do bld.[i] <- p.GetValue(rows.[i]) :?> 'p
         bld.MoveToImmutable()
     )
+
+let inline immToArray (imm: ImmutableArray<'a>) =
+    let arr = Array.zeroCreate imm.Length
+    imm.CopyTo(arr)
+    arr

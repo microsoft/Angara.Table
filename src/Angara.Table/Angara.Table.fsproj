@@ -59,6 +59,8 @@
     <Compile Include="Util.fs" />
     <Compile Include="Table.fsi" />
     <Compile Include="Table.fs" />
+    <Compile Include="Statistics.fsi" />
+    <Compile Include="Statistics.fs" />
     <Compile Include="Serializers.fs" />
     <Content Include="packages.config" />
     <None Include="Angara.Table.nuspec" />
