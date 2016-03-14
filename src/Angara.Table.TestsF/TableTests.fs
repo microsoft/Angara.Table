@@ -15,20 +15,27 @@ let toArr (imar:ImmutableArray<'a>) =
     arr
 
 
-type Person = { Name:string; Age:int; Height: float; Sex: bool; BirthDate: System.DateTime }
+type ValidTypesRec = { TypeString:string; TypeInt:int; TypeFloat: float; TypeBool: bool; TypeDate: System.DateTime }
+
+[<Property; Category("CI")>]
+let ``Combination of functions ToRows and FromRows returns a record array identical to original`` (p:ValidTypesRec[]) =
+    let table = Table.OfRows p
+    let rows = table.ToRows<ValidTypesRec>() |> Seq.toArray
+    Assert.AreEqual(p, rows)
+
 
 [<Test; Category("CI")>]
 let ``Table.ToRows``() =
     let t =
-        Table ([Column.OfArray("Name", [|"Abcdef"|])
-                Column.OfArray("Age", [|45|])
-                Column.OfArray("Height", [|185.0|])
-                Column.OfArray("Sex", [|true|])
-                Column.OfArray("BirthDate", [|System.DateTime(1950, 02, 03)|])])
-    let persons = t.ToRows<Person>() |> Seq.toArray
+        Table ([Column.OfArray("TypeString", [|"Abcdef"|])
+                Column.OfArray("TypeInt", [|45|])
+                Column.OfArray("TypeFloat", [|185.0|])
+                Column.OfArray("TypeBool", [|true|])
+                Column.OfArray("TypeDate", [|System.DateTime(1950, 02, 03)|])])
+    let persons = t.ToRows<ValidTypesRec>() |> Seq.toArray
     persons |> Seq.iter (fun p -> System.Diagnostics.Trace.WriteLine(sprintf "%A" p))
     Assert.AreEqual(1, persons.Length)
-    Assert.AreEqual({Name = "Abcdef"; Age = 45; Height = 185.0; Sex = true; BirthDate = System.DateTime(1950, 02, 03)}, persons.[0])
+    Assert.AreEqual({TypeString = "Abcdef"; TypeInt = 45; TypeFloat = 185.0; TypeBool = true; TypeDate = System.DateTime(1950, 02, 03)}, persons.[0])
 
 [<Test; Category("CI")>]
 let ``MapToColumn replaces existing column - one column to another existing column``() =

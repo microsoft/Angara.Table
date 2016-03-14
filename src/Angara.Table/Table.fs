@@ -157,7 +157,7 @@ type Table private (columns : Column list, height : int) =
 
     member x.ToRows<'r>() : 'r seq =
         let typeR = typeof<'r>
-        let props = Util.getTypedRowProperties typeR
+        let props = Util.getTypedRowProperties typeR |> Seq.map(fun p -> p.Name, p.PropertyType) |> Seq.toArray
         let ctor = typeR.GetConstructor(props |> Array.map snd)
         let l_pars = props |> Array.map(fun (nm,tp) -> Expression.Parameter(tp))
         let l_ctor = Expression.New(ctor, l_pars |> Seq.cast)
@@ -170,41 +170,19 @@ type Table private (columns : Column list, height : int) =
 
     static member OfRows<'r>(rows : 'r seq) =
         let rows_a = rows |> Seq.toArray
+        let n = rows_a.Length
         let props = Util.getTypedRowProperties typeof<'r>
-
-        // f(c1, c2, ..., rows) :  =
-        // for(var i = 0; i < rows.Length; i++)
-        //   row = rows[i]
-        //   columns1 = row.A
-        //   columns2 = row.B
-        //   ...
-
-        let createBuilder = typeof<ImmutableArray>.GetMethod("CreateBuilder", [| typeof<int> |])
-
-        let l_clmns =
-            props |> Array.map(fun (nm,tp) ->
-                let createBuilder_p = createBuilder.MakeGenericMethod(tp)
-                let immArr_p = createBuilder_p.Invoke(null, [| box rows_a.Length |])
-                Expression.Constant(immArr_p))
-
-        let propType = typeof<int>
-        let l_rows = Expression.Constant(rows_a)
-        let l_n = Expression.Constant(rows_a.Length)
-        let paramName = Expression.Parameter(typeof<string>)                                
-        let column = Expression.Parameter(Array.CreateInstance(propType, 0).GetType())
-        let paramRowIdx = Expression.Variable(typeof<int>)
-        let paramRow = Expression.Variable(typeof<'r>)
-
-
-
-        let loopBody = // clmn.Add(rows[rowIdx].nm  
-            Expression.Block(
-                Expression.Assign(paramRow, Expression.ArrayIndex(l_rows, paramRowIdx)),
-                Expression.Assign(columnItem, 
-                    Expression.Property(l_row, paramName))
-            )
-
-        failwith ""
+        let columns =
+            props 
+            |> Seq.map(fun p ->
+                match p.PropertyType with
+                | t when t = typeof<float> -> Column.OfLazyArray(p.Name, arrayOfProp<'r,float>(rows_a, p), n)
+                | t when t = typeof<int> -> Column.OfLazyArray(p.Name, arrayOfProp<'r,int>(rows_a, p), n)
+                | t when t = typeof<string> -> Column.OfLazyArray(p.Name, arrayOfProp<'r,string>(rows_a, p), n)
+                | t when t = typeof<DateTime> -> Column.OfLazyArray(p.Name, arrayOfProp<'r,DateTime>(rows_a, p), n)
+                | t when t = typeof<bool> -> Column.OfLazyArray(p.Name, arrayOfProp<'r,bool>(rows_a, p), n)
+                | t -> invalidCast (sprintf "Property '%s' has type '%A' which is not a valid table column type" p.Name t))
+        Table(columns)
 
     static member Empty: Table = emptyTable        
     

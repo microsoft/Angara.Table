@@ -76,14 +76,22 @@ type Table =
     /// Gets a count of the total number rows in the table.
     member RowsCount : int with get
 
-    /// Builds and returns rows of the table represented as a sequence of instances of certain type,
-    /// so that one instance of `'r` corresponds to one row of the table with order respeced.
-    /// Columns are mapped to public properties of `'r`.
+    /// Builds and returns rows of the table represented as a sequence of instances of the type '`r',
+    /// so that one instance of `'r` corresponds to one row of the table with the order respected.
+    /// Columns are mapped to public properties of `'r`; if there is a column such that '`r' has no 
+    /// public writable property with same name, the column is ignored.
     ///
     /// The method uses reflection to build instances of `'r` from the table columns:
-    /// - If `'r` is F# record, then for each property of the type there must be a corresponding column of appropriate type
+    /// - If `'r` is F# record, then for each property of the type there must be a corresponding column of identical type
     /// - Otherwise, then for each public property of the type that has get and set accessors there must a corresponding column of appropriate type
     member ToRows<'r> : unit -> 'r seq
+
+    /// Builds and returns a table where each public property of a given type `'r` having get-access becomes the table column with the name and type
+    /// identical to the property;
+    /// each table row corresponds to an element of the input sequence with the order respected.
+    /// If the type `'r` is an F# record, the order of columns is identical to the record properties order.
+    /// If there is a public property having a type that is not valid for a table column, the function fails with an exception.
+    static member OfRows<'r> : 'r seq -> Table
 
     /// Creates a new, empty table
     static member Empty : Table

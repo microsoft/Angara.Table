@@ -28,13 +28,21 @@ let inline invalidCast message = raise (new System.InvalidCastException(message)
 
 let inline notFound message = raise (new System.Collections.Generic.KeyNotFoundException(message))
 
-let getTypedRowProperties (typeR : System.Type) : (string*System.Type)[] =    
+let getTypedRowProperties (typeR : System.Type) =    
     typeR.GetProperties() // check: sealed & record
     |> Seq.choose(fun p -> 
         let cm_attrs = p.GetCustomAttributes(typeof<CompilationMappingAttribute>, false)
         if cm_attrs.Length >= 1 then
-            Some((p.Name, p.PropertyType), (cm_attrs.[0] :?> CompilationMappingAttribute).SequenceNumber)
+            Some(p, (cm_attrs.[0] :?> CompilationMappingAttribute).SequenceNumber)
         else None)
     |> Seq.sortBy snd
     |> Seq.map fst
-    |> Seq.toArray
+
+let arrayOfProp<'r,'p> (rows: 'r[], p:System.Reflection.PropertyInfo) =
+    lazy(
+        let n = rows.Length
+        let bld = ImmutableArray.CreateBuilder<'p>(n)
+        bld.Count <- n
+        for i in 0..n-1 do bld.[i] <- p.GetValue(rows.[i]) :?> 'p
+        bld.MoveToImmutable()
+    )
