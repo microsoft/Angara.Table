@@ -38,8 +38,7 @@ type ColumnValues =
     member Item      : rowIndex:int -> DataValue
 
 /// Represents a table column which is a pair of column name and an immutable array of one of the supported types.
-[<Class>]
-type Column =
+type [<Class>] Column =
     member Name : string with get
     /// Returns column values.
     member Rows : ColumnValues with get
@@ -54,8 +53,7 @@ type Column =
 
 /// Represents a table wich is an immutable list of named columns.
 /// The type is thread safe.
-[<Class>]
-type Table = 
+type [<Class>] Table = 
     interface IEnumerable<Column> 
     
     /// Gets a count of the total number of columns in the table.
@@ -84,7 +82,7 @@ type Table =
     /// The method uses reflection to build instances of `'r` from the table columns:
     /// - If `'r` is F# record, then for each property of the type there must be a corresponding column of identical type.
     /// - Otherwise, then `'r` has default constructor and for each public writable property there must be a column of same name and type as the property.
-    member ToRows<'r> : unit -> 'r seq
+    abstract ToRows<'r> : unit -> 'r seq
 
     /// Builds a table from a finite sequence of columns.
     /// All given columns must be of same height. 
@@ -97,7 +95,13 @@ type Table =
     /// each table row corresponds to an element of the input sequence with the order respected.
     /// If the type `'r` is an F# record, the order of columns is identical to the record properties order.
     /// If there is a public property having a type that is not valid for a table column, the function fails with an exception.
-    static member OfRows<'r> : 'r seq -> Table
+    static member OfRows<'r> : 'r seq -> Table<'r>
+    /// Builds a table such that each public property of a given type `'r` 
+    /// becomes the table column with the name and type identical to the property;
+    /// each table row corresponds to an element of the input sequence with the order respected.
+    /// If the type `'r` is an F# record, the order of columns is identical to the record properties order.
+    /// If there is a public property having a type that is not valid for a table column, the function fails with an exception.
+    static member OfRows<'r> : ImmutableArray<'r> -> Table<'r>
 
     /// Creates a new, empty table
     static member Empty : Table
@@ -225,12 +229,7 @@ type Table =
     /// Saves the table to a delimited text stream using given writer.
     static member Save : table:Table * writer:System.IO.TextWriter * settings:Angara.Data.DelimitedFile.WriteSettings -> unit
 
-
-//[<Class>]
-//type Table<'r> = 
-//    inherit Table
-//
-//    new : rows : 'r seq -> Table<'r>
-//
-//    member Rows : ImmutableArray<'r>
-
+and [<Class>] Table<'r> =
+    inherit Table
+    new : rows:ImmutableArray<'r> -> Table<'r>
+    member Rows : ImmutableArray<'r>

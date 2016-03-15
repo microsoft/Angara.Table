@@ -120,9 +120,9 @@ type Column private (name:string, values: ColumnValues, height: int) =
             | t -> raise (new NotSupportedException(sprintf "Type '%A' is not a valid column type" t))
         Column(name, values, count)
 
-type Table private (columns : Column list, height : int) =
-    static let emptyTable = new Table(List.Empty)
-    static let raiseDiffHeights() = invalidOp("Given columns are of different heights")
+type Table internal (columns : Column list, height : int) =
+    static let emptyTable : Table = Table(List.Empty, 0)
+
     static let assertAndGetHeight (columns:Column list) =
         match columns with
         | [] -> 0
@@ -155,11 +155,39 @@ type Table private (columns : Column list, height : int) =
         member x.GetEnumerator() : IEnumerator<Column> = (columns |> Seq.ofList).GetEnumerator()
         member x.GetEnumerator() : System.Collections.IEnumerator = ((columns |> Seq.ofList) :> System.Collections.IEnumerable).GetEnumerator()
 
-    member x.ToRows<'r>() : 'r seq =
+    abstract ToRows<'r> : unit -> 'r seq
+    default x.ToRows<'r>() : 'r seq = Table.ToRows x
+
+    override x.ToString() = String.Join("\n", columns |> Seq.map (fun c -> c.ToString()))
+
+    static member OfColumns (columns: Column seq) : Table = Table(columns)
+    static member OfRows<'r> (rows : 'r seq) : Table<'r> = Table<'r>(rows |> ImmutableArray.CreateRange)
+    static member OfRows<'r> (rows : ImmutableArray<'r>) : Table<'r> = Table<'r>(rows)
+
+    static member internal ColumnsOfRows<'r>(rows : ImmutableArray<'r>) : Column seq =
+        let typeR = typeof<'r>
+        let n = rows.Length
+        let props =
+            match typeR.GetCustomAttributes(typeof<CompilationMappingAttribute>, false) 
+                  |> Seq.exists(fun attr -> (attr :?> CompilationMappingAttribute).SourceConstructFlags = SourceConstructFlags.RecordType) with
+            | true -> // F# record
+                Util.getRecordProperties typeR 
+            | false -> // non-record
+                typeR.GetProperties(Reflection.BindingFlags.Instance ||| Reflection.BindingFlags.Public) |> Seq.filter (fun p -> p.CanRead)
+        props |> Seq.map(fun p ->
+            match p.PropertyType with
+            | t when t = typeof<float> -> Column.OfLazyArray(p.Name, arrayOfProp<'r,float>(rows, p), n)
+            | t when t = typeof<int> -> Column.OfLazyArray(p.Name, arrayOfProp<'r,int>(rows, p), n)
+            | t when t = typeof<string> -> Column.OfLazyArray(p.Name, arrayOfProp<'r,string>(rows, p), n)
+            | t when t = typeof<DateTime> -> Column.OfLazyArray(p.Name, arrayOfProp<'r,DateTime>(rows, p), n)
+            | t when t = typeof<bool> -> Column.OfLazyArray(p.Name, arrayOfProp<'r,bool>(rows, p), n)
+            | t -> invalidArg "rows" (sprintf "Property '%s' has type '%A' which is not a valid table column type" p.Name t))
+
+    static member internal ToRows<'r>(t: Table) : 'r seq =
         let typeR = typeof<'r>
         let d_createR, props = 
             match typeR.GetCustomAttributes(typeof<CompilationMappingAttribute>, false) 
-                  |> Seq.exists(fun attr -> (attr :?> CompilationMappingAttribute).SourceConstructFlags = SourceConstructFlags.RecordType) with
+                    |> Seq.exists(fun attr -> (attr :?> CompilationMappingAttribute).SourceConstructFlags = SourceConstructFlags.RecordType) with
             | true -> // F# record
                 let props = Util.getRecordProperties typeR |> Seq.map(fun p -> p.Name, p.PropertyType) |> Seq.toArray
                 let ctor = typeR.GetConstructor(props |> Array.map snd)
@@ -177,39 +205,12 @@ type Table private (columns : Column list, height : int) =
                         Expression.Block(
                             [l_r], 
                             Seq.concat
-                                [seq{ yield Expression.Assign(l_r, Expression.New(ctor)) :> Expression }
-                                 Seq.zip props l_pars |> Seq.map(fun (p, l_p) -> Expression.Assign(Expression.Property(l_r, p), l_p) :> Expression)
-                                 seq{ yield upcast l_r }]),
+                                [ seq{ yield Expression.Assign(l_r, Expression.New(ctor)) :> Expression }
+                                  Seq.zip props l_pars |> Seq.map(fun (p, l_p) -> Expression.Assign(Expression.Property(l_r, p), l_p) :> Expression)
+                                  seq{ yield upcast l_r }]),
                         l_pars)
                 l.Compile(), props |> Array.map(fun p -> p.Name)
-        Table.Mapd (props |> Array.map (fun name -> x.[name])) d_createR x
-
-    override x.ToString() = String.Join("\n", columns |> Seq.map (fun c -> c.ToString()))
-
-    static member OfColumns (columns: Column seq) = Table(columns)
-
-    static member OfRows<'r>(rows : 'r seq) =
-        let typeR = typeof<'r>
-        let rows_a = rows |> Seq.toArray
-        let n = rows_a.Length
-        let props =
-            match typeR.GetCustomAttributes(typeof<CompilationMappingAttribute>, false) 
-                  |> Seq.exists(fun attr -> (attr :?> CompilationMappingAttribute).SourceConstructFlags = SourceConstructFlags.RecordType) with
-            | true -> // F# record
-                Util.getRecordProperties typeR 
-            | false -> // non-record
-                typeR.GetProperties(Reflection.BindingFlags.Instance ||| Reflection.BindingFlags.Public) |> Seq.filter (fun p -> p.CanRead)
-        let columns =
-            props 
-            |> Seq.map(fun p ->
-                match p.PropertyType with
-                | t when t = typeof<float> -> Column.OfLazyArray(p.Name, arrayOfProp<'r,float>(rows_a, p), n)
-                | t when t = typeof<int> -> Column.OfLazyArray(p.Name, arrayOfProp<'r,int>(rows_a, p), n)
-                | t when t = typeof<string> -> Column.OfLazyArray(p.Name, arrayOfProp<'r,string>(rows_a, p), n)
-                | t when t = typeof<DateTime> -> Column.OfLazyArray(p.Name, arrayOfProp<'r,DateTime>(rows_a, p), n)
-                | t when t = typeof<bool> -> Column.OfLazyArray(p.Name, arrayOfProp<'r,bool>(rows_a, p), n)
-                | t -> invalidArg "rows" (sprintf "Property '%s' has type '%A' which is not a valid table column type" p.Name t))
-        Table(columns)
+        Table.Mapd (props |> Array.map (fun name -> t.[name])) d_createR t
 
     static member Empty: Table = emptyTable        
     
@@ -339,7 +340,6 @@ type Table private (columns : Column list, height : int) =
             let deleg = Funcs.toDelegate transform
             let colArrays = cs |> Array.map(fun n -> table.[n].Rows.ToUntypedList() |> box)
             deleg.DynamicInvoke(colArrays) :?> 'c
-            
 
     static member Load (reader:System.IO.TextReader, settings:Angara.Data.DelimitedFile.ReadSettings) : Table =
         let cols = 
@@ -352,7 +352,7 @@ type Table private (columns : Column list, height : int) =
                 | Angara.Data.DelimitedFile.ColumnType.Boolean  -> Column.OfArray (schema.Name, data :?> ImmutableArray<bool>)
                 | Angara.Data.DelimitedFile.ColumnType.DateTime -> Column.OfArray (schema.Name, data :?> ImmutableArray<DateTime>)
                 | Angara.Data.DelimitedFile.ColumnType.String   -> Column.OfArray (schema.Name, data :?> ImmutableArray<string>))
-        new Table(cols |> Seq.toList)
+        Table(cols |> Seq.toList)
     static member Load (reader:System.IO.TextReader) : Table = 
         Table.Load (reader, Angara.Data.DelimitedFile.ReadSettings.Default)
     static member Load (path: string, settings:Angara.Data.DelimitedFile.ReadSettings) : Table = 
@@ -372,3 +372,18 @@ type Table private (columns : Column list, height : int) =
         Table.Save (table, writer, settings)
     static member Save (table:Table, path: string) : unit =
         Table.Save (table, path, Angara.Data.DelimitedFile.WriteSettings.Default)
+       
+and Table<'r>(rows : ImmutableArray<'r>) = 
+    inherit Table(Table.ColumnsOfRows rows |> Seq.toList, rows.Length)
+
+    member x.Rows : ImmutableArray<'r> = rows
+
+    override x.ToRows<'s>() : 's seq = 
+        // Implementation issue: cannot invoke base.ToRows<'s>() here because of undocumented (?) F# compiler property;
+        // if I don't use the mutual types recursion (i.e. "and Table<'r>"), "base.ToRows" works well here; but then I cannot 
+        // create Table<'r> instances from the static methods "OfRows" of the Table type.
+        // That's why I call static method Table.ToRows<'s>() instead of base.ToRows<'s>().
+        match typeof<'s> with
+        | t when t = typeof<'r> -> rows |> coerce
+        | _ -> Table.ToRows<'s>(x)
+    

@@ -26,6 +26,8 @@ let ``Combination of functions ToRows and OfRows returns a record array identica
     let table = Table.OfRows p
     let rows = table.ToRows<ValidTypesRec>() |> Seq.toArray
     Assert.AreEqual(p, rows)
+    Assert.AreEqual(p, table.Rows |> Seq.toArray)
+    Assert.AreEqual(table.RowsCount, table.Rows.Length)
 
 
 [<Test; Category("CI")>]
@@ -60,6 +62,8 @@ let ``Table.OfRows for a non-record``() =
     Assert.AreEqual(2, t.RowsCount, "rows count")
     Assert.AreEqual("A", t.[0].Rows.[0].AsString, "0,0")
     Assert.AreEqual("B", t.["Prop"].Rows.[1].AsString, "0,1")
+    Assert.AreEqual("A", t.Rows.[0].Prop)
+    Assert.AreEqual("B", t.Rows.[1].Prop)
 
 [<Test; Category("CI"); ExpectedException(typeof<System.Collections.Generic.KeyNotFoundException>)>]
 let ``Table.ToRows fails when table has no column for a property``() =

@@ -28,6 +28,8 @@ let inline invalidCast message = raise (new System.InvalidCastException(message)
 
 let inline notFound message = raise (new System.Collections.Generic.KeyNotFoundException(message))
 
+let inline raiseDiffHeights() = invalidOp("Given columns are of different heights")
+
 let getRecordProperties (typeR : System.Type) =    
     typeR.GetProperties()
     |> Seq.choose(fun p -> 
@@ -37,7 +39,7 @@ let getRecordProperties (typeR : System.Type) =
     |> Seq.sortBy snd
     |> Seq.map fst
 
-let arrayOfProp<'r,'p> (rows: 'r[], p:System.Reflection.PropertyInfo) =
+let arrayOfProp<'r,'p> (rows: ImmutableArray<'r>, p:System.Reflection.PropertyInfo) =
     lazy(
         let n = rows.Length
         let bld = ImmutableArray.CreateBuilder<'p>(n)
