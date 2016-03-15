@@ -233,3 +233,5 @@ and [<Class>] Table<'r> =
     inherit Table
     new : rows:ImmutableArray<'r> -> Table<'r>
     member Rows : ImmutableArray<'r>
+    member AddRows : 'r seq -> Table<'r>
+    member AddRow : 'r -> Table<'r>

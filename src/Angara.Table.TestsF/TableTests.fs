@@ -14,7 +14,7 @@ let toArr (imar:ImmutableArray<'a>) =
     imar.CopyTo arr
     arr
 
-
+type RecLatLon = { Lat : float; Lon : float }
 type ValidTypesRec = { TypeString:string; TypeInt:int; TypeFloat: float; TypeBool: bool; TypeDate: System.DateTime }
 type InvalidTypesRec = { TypeDecimal:System.Decimal }
 type [<Class>] PubPropClass() = 
@@ -263,3 +263,17 @@ let ``Filters table rows by a single integer column`` (table: Table) (filterBy: 
         | StringColumn v -> Column.OfArray(co.Name, mask |> Array.map (fun i -> v.Value.[i]))
         | BooleanColumn v -> Column.OfArray(co.Name, mask |> Array.map (fun i -> v.Value.[i]))
         | DateColumn v -> Column.OfArray(co.Name, mask |> Array.map (fun i -> v.Value.[i]))) |> areEqualColumnsForSerialization cf)
+
+
+[<Test; Category("CI")>]
+let ``Table.AddRows and Table.AddRow add rows to a typed table``() =
+    let t = Table.OfRows([ {Lat=0.0;Lon=0.0}; {Lat=1.0;Lon=2.0} ])
+    let t2 = t.AddRow({Lat=2.0;Lon=1.0}).AddRows([{Lat=3.0;Lon=4.0}])
+
+    Assert.AreEqual(4, t2.RowsCount, "rows count")
+    Assert.AreEqual(2, t2.Count, "columns count")
+    Assert.AreEqual([|{Lat=0.0;Lon=0.0};{Lat=1.0;Lon=2.0};{Lat=2.0;Lon=1.0};{Lat=3.0;Lon=4.0}|], t2.Rows |> Seq.toArray, "rows")
+    Assert.AreEqual([|0.0;1.0;2.0;3.0|], t2.["Lat"].Rows.AsReal |> Seq.toArray, "lat column by name")
+    Assert.AreEqual([|0.0;1.0;2.0;3.0|], t2.[0].Rows.AsReal |> Seq.toArray, "lat column by index")
+    Assert.AreEqual([|0.0;2.0;1.0;4.0|], t2.["Lon"].Rows.AsReal |> Seq.toArray, "lon column by name")
+    Assert.AreEqual([|0.0;2.0;1.0;4.0|], t2.[1].Rows.AsReal |> Seq.toArray, "lon column by index")

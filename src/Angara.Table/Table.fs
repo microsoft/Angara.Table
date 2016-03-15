@@ -386,4 +386,7 @@ and Table<'r>(rows : ImmutableArray<'r>) =
         match typeof<'s> with
         | t when t = typeof<'r> -> rows |> coerce
         | _ -> Table.ToRows<'s>(x)
+
+    member x.AddRows (r : 'r seq) : Table<'r> = Table<'r>(rows.AddRange r)
+    member x.AddRow (r: 'r) : Table<'r> = Table<'r>(rows.Add r)
     
