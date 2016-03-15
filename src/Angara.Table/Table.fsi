@@ -57,9 +57,7 @@ type Column =
 [<Class>]
 type Table = 
     interface IEnumerable<Column> 
-
-    new : columns : Column seq -> Table
-
+    
     /// Gets a count of the total number of columns in the table.
     member Count : int with get
     /// Gets a column by its index.
@@ -88,7 +86,13 @@ type Table =
     /// - Otherwise, then `'r` has default constructor and for each public writable property there must be a column of same name and type as the property.
     member ToRows<'r> : unit -> 'r seq
 
-    /// Builds and returns a table such that each public property of a given type `'r` 
+    /// Builds a table from a finite sequence of columns.
+    /// All given columns must be of same height. 
+    /// Duplicate column names are allowed.
+    /// Order of columns in the table is same as in the input sequence.
+    static member OfColumns : columns:Column seq -> Table
+
+    /// Builds a table such that each public property of a given type `'r` 
     /// becomes the table column with the name and type identical to the property;
     /// each table row corresponds to an element of the input sequence with the order respected.
     /// If the type `'r` is an F# record, the order of columns is identical to the record properties order.

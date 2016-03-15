@@ -56,17 +56,17 @@ type Generators =
                         let! colN = Gen.choose(0, 1 + int(sqrt(float(size))))
                         return! Gen.listOfLength colN Arb.generate<Column>
                     })
-                    return new Table (cols)
+                    return Table.OfColumns (cols)
                 }
 
             override x.Shrinker (table:Table) =
                 let shrinkNamedCol (col:Column) = 
                     let names = Arb.toShrink (Arb.Default.String()) col.Name
                     let cols = Arb.toShrink (Generators.Column()) col
-                    names |> Seq.map(fun n -> cols |> Seq.map(fun c -> Table([Column.OfColumnValues(n, c.Rows, c.Height)]))) |> Seq.concat
+                    names |> Seq.map(fun n -> cols |> Seq.map(fun c -> Table.OfColumns([Column.OfColumnValues(n, c.Rows, c.Height)]))) |> Seq.concat
 
                 if table.Count > 1 then
-                    let t = table |> Seq.map(fun c -> new Table(table |> Seq.filter(fun c2 -> c2 <> c))) |> Seq.toArray
+                    let t = table |> Seq.map(fun c -> Table.OfColumns(table |> Seq.filter(fun c2 -> c2 <> c))) |> Seq.toArray
                     upcast t
                 else if table.Count = 1 then 
                     shrinkNamedCol table.[0]

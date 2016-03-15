@@ -20,11 +20,11 @@ let buildHtmlLib() =
 
 [<Test; Category("CI")>]
 let ``Serialization of a table to Json``() =
-    let table = Table([ Column.OfArray("int", [| 1; 2; 3 |])
-                        Column.OfArray("float", [| 1.1; 1.2; 1.3 |])
-                        Column.OfArray("string", [| "a"; "b"; "c" |])
-                        Column.OfArray("bool", [| true; false; true |])
-                        Column.OfArray("date", [| System.DateTime(2020, 1, 1); System.DateTime(2020, 1, 2); System.DateTime(2020, 1, 3) |])])
+    let table = Table.OfColumns([   Column.OfArray("int", [| 1; 2; 3 |])
+                                    Column.OfArray("float", [| 1.1; 1.2; 1.3 |])
+                                    Column.OfArray("string", [| "a"; "b"; "c" |])
+                                    Column.OfArray("bool", [| true; false; true |])
+                                    Column.OfArray("date", [| System.DateTime(2020, 1, 1); System.DateTime(2020, 1, 2); System.DateTime(2020, 1, 3) |])])
 
     let lib = buildHtmlLib()
     let infoSet = table |> ArtefactSerializer.Serialize lib  
@@ -63,7 +63,7 @@ let ``Serialization of empty table`` () =
 
 [<Test; Category("CI")>]
 let ``Serialization of a table with a cell containing string 'null'`` () =
-    let table = Table([Column.OfArray(":'}", [| null; "" |])])
+    let table = Table.OfColumns([Column.OfArray(":'}", [| null; "" |])])
     
     let lib = buildReinstateLib()    
     let table2 = table |> ArtefactSerializer.Serialize lib |> ArtefactSerializer.Deserialize lib :?> Table
@@ -76,9 +76,9 @@ let ``Serialization of a table with a cell containing string 'null'`` () =
 
 [<Test; Category("CI")>]
 let ``Serialization of table with empty column name`` () =
-    let table = Table([Column.OfArray("", [|true;true;true;false|])
-                       Column.OfArray("VxD    ", [|-2.0; -2.0; System.Double.NaN; -2.666667|])
-                       Column.OfArray("\9K*", [|true;false;false;false|])])
+    let table = Table.OfColumns([   Column.OfArray("", [|true;true;true;false|])
+                                    Column.OfArray("VxD    ", [|-2.0; -2.0; System.Double.NaN; -2.666667|])
+                                    Column.OfArray("\9K*", [|true;false;false;false|])])
     let lib = buildReinstateLib()
     let table2 = table |> ArtefactSerializer.Serialize lib |> ArtefactSerializer.Deserialize lib :?> Table
     Assert.IsTrue(Angara.Data.TestsF.Common.areEqualTablesForCsv table table2)
@@ -100,6 +100,6 @@ let ``Adding a column with different length than existing`` () =
     
 [<Test; Category("CI"); ExpectedException>]
 let ``Creating a table from two columns with different lengths`` () =
-    let _ = Table([Column.OfArray("a", [| 1 |])
-                   Column.OfArray("b", [| 1; 2 |])])
+    let _ = Table.OfColumns([   Column.OfArray("a", [| 1 |])
+                                Column.OfArray("b", [| 1; 2 |])])
     ()

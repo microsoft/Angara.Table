@@ -186,6 +186,8 @@ type Table private (columns : Column list, height : int) =
 
     override x.ToString() = String.Join("\n", columns |> Seq.map (fun c -> c.ToString()))
 
+    static member OfColumns (columns: Column seq) = Table(columns)
+
     static member OfRows<'r>(rows : 'r seq) =
         let typeR = typeof<'r>
         let rows_a = rows |> Seq.toArray
