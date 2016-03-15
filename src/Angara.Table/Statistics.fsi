@@ -59,8 +59,8 @@ type ColumnSummary =
 /// else None
 val TryCorrelation : table:Table -> (string[] * float[][]) option
 
-/// If at least two of the columns are real or int then Column Names * Correlations
-/// else throw an exception
+/// If at least two of the table columns are real or int then returns (Column Names) * (Correlations)
+/// else throws an exception.
 val Correlation : table:Table -> (string[] * float[][])
 
 /// Returns some simple statistical properties of a column.

@@ -61,6 +61,7 @@
     <Compile Include="CsvWriteTests.fs" />
     <Compile Include="TableTests.fs" />
     <Compile Include="TableSerializerTests.fs" />
+    <Compile Include="StatisticsTests.fs" />
     <Content Include="packages.config" />
     <None Include="tests\All types of data test.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
