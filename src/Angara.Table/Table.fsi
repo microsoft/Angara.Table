@@ -54,6 +54,7 @@ type [<Class>] Column =
 /// Represents a table wich is an immutable list of named columns.
 /// The type is thread safe.
 type [<Class>] Table = 
+    new : columns : Column seq -> Table
     interface IEnumerable<Column> 
     
     /// Gets a count of the total number of columns in the table.
@@ -102,6 +103,8 @@ type [<Class>] Table =
     /// If the type `'r` is an F# record, the order of columns is identical to the record properties order.
     /// If there is a public property having a type that is not valid for a table column, the function fails with an exception.
     static member OfRows<'r> : ImmutableArray<'r> -> Table<'r>
+
+    static member OfMatrix<'v> : columnNames:ImmutableArray<string> * matrixRows:ImmutableArray<ImmutableArray<'v>> -> MatrixTable<'v>
 
     /// Creates a new, empty table
     static member Empty : Table
@@ -235,3 +238,16 @@ and [<Class>] Table<'r> =
     member Rows : ImmutableArray<'r>
     member AddRows : 'r seq -> Table<'r>
     member AddRow : 'r -> Table<'r>
+
+and [<Class>] MatrixTable<'v> =
+    inherit Table
+    private new : columns:Column list * matrixRows : ImmutableArray<ImmutableArray<'v>> -> MatrixTable<'v>
+    new : columnsNames:ImmutableArray<string> * matrixRows:ImmutableArray<ImmutableArray<'v>> -> MatrixTable<'v>
+
+    member Matrix : ImmutableArray<ImmutableArray<'v>>
+    
+    member AddColumns : (string*ImmutableArray<'v>) seq -> MatrixTable<'v>
+    member AddColumn : string*ImmutableArray<'v> -> MatrixTable<'v>
+
+    member AddRows : ImmutableArray<'v> seq -> MatrixTable<'v>
+    member AddRow : ImmutableArray<'v> -> MatrixTable<'v>

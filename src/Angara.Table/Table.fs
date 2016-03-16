@@ -163,6 +163,8 @@ type Table internal (columns : Column list, height : int) =
     static member OfColumns (columns: Column seq) : Table = Table(columns)
     static member OfRows<'r> (rows : 'r seq) : Table<'r> = Table<'r>(rows |> ImmutableArray.CreateRange)
     static member OfRows<'r> (rows : ImmutableArray<'r>) : Table<'r> = Table<'r>(rows)
+    static member OfMatrix<'v> (columnNames:ImmutableArray<string>, matrixRows : ImmutableArray<ImmutableArray<'v>>) : MatrixTable<'v> = 
+        MatrixTable<'v>(columnNames, matrixRows)
 
     static member internal ColumnsOfRows<'r>(rows : ImmutableArray<'r>) : Column seq =
         let typeR = typeof<'r>
@@ -389,4 +391,45 @@ and Table<'r>(rows : ImmutableArray<'r>) =
 
     member x.AddRows (r : 'r seq) : Table<'r> = Table<'r>(rows.AddRange r)
     member x.AddRow (r: 'r) : Table<'r> = Table<'r>(rows.Add r)
+
+and MatrixTable<'v> private (columns: Column list, matrixRows : ImmutableArray<ImmutableArray<'v>>) =
+    inherit Table(columns)
+
+    do 
+        if matrixRows.Length > 0 then
+            let n = matrixRows.[0].Length
+            if n <> columns.Length then invalidArg "columns" "Number of columns is different than given rows length"
+            for i in 1 .. matrixRows.Length-1 do
+                if matrixRows.[i].Length <> n then invalidArg "matrixRows" "There are rows of different length"
+
+    new(columnsNames: ImmutableArray<string>, matrixRows : ImmutableArray<ImmutableArray<'v>>) =
+        MatrixTable<'v>(
+            columnsOfMatrix (matrixRows, columnsNames.Length)
+            |> Seq.mapi (fun i cv -> Column.OfLazyArray(columnsNames.[i], cv, matrixRows.Length)) |> Seq.toList,
+            matrixRows)
+
+    member x.Matrix : ImmutableArray<ImmutableArray<'v>> = matrixRows
     
+    member x.AddColumns (columns : (string*ImmutableArray<'v>) seq) : MatrixTable<'v> =
+        let columns = columns |> Seq.cache
+        let cols = columns |> Seq.map snd |> Seq.toArray
+        let n = cols.Length
+        let m = x.Count
+        let rows_bld = ImmutableArray.CreateBuilder<ImmutableArray<'v>>(matrixRows.Length)
+        for irow in 0..matrixRows.Length-1 do
+            let slice_bld = ImmutableArray.CreateBuilder<'v>(n + m)
+            slice_bld.AddRange(matrixRows.[irow])
+            for icol in 0..n-1 do slice_bld.Add(cols.[icol].[irow])
+            rows_bld.Add (slice_bld.MoveToImmutable())
+        let rows2 = rows_bld.MoveToImmutable()
+        let columnsEx = columns |> Seq.map(fun (n,v) -> Column.OfArray(n,v)) |> Seq.toList
+        let columns2 = List.append x.Columns columnsEx
+        MatrixTable<'v>(columns2, rows2)     
+
+    member x.AddColumn (name:string, values:ImmutableArray<'v>) = x.AddColumns([name,values])
+
+    member x.AddRows (rows : ImmutableArray<'v> seq) : MatrixTable<'v> = 
+        let rows2 = matrixRows.AddRange(rows)
+        MatrixTable<'v>(ImmutableArray.CreateRange(x |> Seq.map(fun c -> c.Name)), rows2)
+
+    member x.AddRow (row : ImmutableArray<'v>) : MatrixTable<'v> = x.AddRows [row]

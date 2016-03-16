@@ -52,3 +52,14 @@ let inline immToArray (imm: ImmutableArray<'a>) =
     let arr = Array.zeroCreate imm.Length
     imm.CopyTo(arr)
     arr
+
+let columnsOfMatrix (matrixRows : ImmutableArray<ImmutableArray<'v>>, colN: int) =
+    let rowsCount = matrixRows.Length
+    Seq.init colN (fun colInd ->
+        lazy(
+            let bld = ImmutableArray.CreateBuilder<'v>(rowsCount)
+            bld.Count <- rowsCount
+            for rowInd in 0..rowsCount-1 do
+                bld.[rowInd] <- matrixRows.[rowInd].[colInd]
+            bld.MoveToImmutable()
+        ))
