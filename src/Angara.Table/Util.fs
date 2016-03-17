@@ -28,6 +28,9 @@ let inline invalidCast message = raise (new System.InvalidCastException(message)
 
 let inline notFound message = raise (new System.Collections.Generic.KeyNotFoundException(message))
 
+let inline assertLength (len:int) (imm:ImmutableArray<'a>) : ImmutableArray<'a> = 
+    if imm.Length <> len then invalidOp "The actual array length differs from the promised" else imm
+
 let inline raiseDiffHeights() = invalidOp("Given columns are of different heights")
 
 let getRecordProperties (typeR : System.Type) =    
@@ -53,13 +56,22 @@ let inline immToArray (imm: ImmutableArray<'a>) =
     imm.CopyTo(arr)
     arr
 
-let columnsOfMatrix (matrixRows : ImmutableArray<ImmutableArray<'v>>, colN: int) =
-    let rowsCount = matrixRows.Length
-    Seq.init colN (fun colInd ->
-        lazy(
-            let bld = ImmutableArray.CreateBuilder<'v>(rowsCount)
-            bld.Count <- rowsCount
-            for rowInd in 0..rowsCount-1 do
-                bld.[rowInd] <- matrixRows.[rowInd].[colInd]
-            bld.MoveToImmutable()
-        ))
+let inline toImmutableArray (sq: 'a seq) : ImmutableArray<'a> =
+    match sq with
+    | :? ImmutableArray<'a> as imm -> imm
+    | :? ('a array) as arr -> ImmutableArray.Create<'a> arr
+    | _ -> ImmutableArray.CreateRange sq
+
+let columnsOfMatrix (matrixRows : ImmutableArray<ImmutableArray<'v>>) =
+    match matrixRows.Length with
+    | 0 -> Array.empty
+    | n -> 
+        [| for colInd in 0..matrixRows.[0].Length-1 do
+            yield lazy(
+                let bld = ImmutableArray.CreateBuilder<'v>(n)
+                bld.Count <- n
+                for rowInd in 0..n-1 do
+                    bld.[rowInd] <- matrixRows.[rowInd].[colInd]
+                bld.MoveToImmutable()) |]
+                
+

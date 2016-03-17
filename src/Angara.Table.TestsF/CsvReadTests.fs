@@ -300,6 +300,7 @@ let ``Column index converted to name and back gives an original index`` (index: 
 
 [<Test; Category("CI")>]
 let ``Column index to name`` () =
+    Assert.Throws(typeof<System.ArgumentException>, fun () -> ignore (Helpers.indexToName -1)) |> ignore
     Assert.AreEqual("A", Helpers.indexToName 0)
     Assert.AreEqual("Z", Helpers.indexToName 25)
     Assert.AreEqual("AA", Helpers.indexToName 26)
@@ -359,8 +360,8 @@ let ``Read a table from an empty file without a header``() =
     
 [<Test; Category("CI")>]
 let ``Write without header really doesn't writes the header``() =
-    let t = Table.OfColumns([ Column.OfArray("lat", [|1.0;2.0;3.0|])
-                              Column.OfArray("lon", [|11.0;21.0;31.0|]) ])
+    let t = Table.OfColumns([ Column.CreateReal ("lat", [|1.0;2.0;3.0|])
+                              Column.CreateReal ("lon", [|11.0;21.0;31.0|]) ])
     use ms = new MemoryStream()
     Table.Save(t, new StreamWriter(ms), { WriteSettings.Default with SaveHeader = false })
     ms.Position <- 0L

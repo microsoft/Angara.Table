@@ -117,9 +117,9 @@ A table can be created from a finite sequence of columns:
 *)
 
 let table = 
-    Table(
+    Table.OfColumns
         [ Column.OfArray ("x", [| for i in 0..99 -> float(i) / 10.0  |])
-          Column.OfArray ("sin(x)", [| for i in 0..99 -> sin (float(i) / 10.0) |]) ])
+          Column.OfArray ("sin(x)", [| for i in 0..99 -> sin (float(i) / 10.0) |]) ]
 
 (**
 To add a column to a table, you can use the static function `Table.Add` which creates 
@@ -182,18 +182,36 @@ let sin_avg = table.["sin(x)"].Rows.AsReal |> Seq.average
 (*** include-value:sin_avg ***)
 
 (**
-### Table as Collection of Rows _to do_
+
+
+### Table as Collection of Rows 
+
+
 
 There are several ways how rows can be represented to construct a table. First is to use `Table.ofRecords` which builds a table
 from a sequence of record type instances, when one instance is one row and record field is a column: *)
 
-let records : Wheat[] = [| (* ... *) |]
-let tableWheat = Table.ofRows records
+type SinX = { x: float; ``sin(x)``: float }
 
-(** Appending a table with a row:
+let tableSinX : Table<SinX> = 
+    Table.OfRows [| for i in 0..99 -> { x = float(i) / 10.0; ``sin(x)`` = sin (float(i) / 10.0) } |]
+
+(*** include-value:tableSinX ***)
+
+(** 
+The function `Table.OfRows<'r>` returns an instance of type `Table<'r>` inherited from `Table`, 
+such that each public property of a given type `'r` 
+becomes the table column with the name and type identical to the property;
+each table row corresponds to an element of the input sequence with the order respected.
+If the type `'r` is an F# record, the order of columns is identical to the record properties order.
+If there is a public property having a type that is not valid for a table column, the function fails with an exception.
+and each row is represented as an intance of the type `'r`, so that public properties of the type correspond to columns of the table.
 *)
 
- tableWheat.AddRow row
+(** The type `Table<'r>` allows efficiently appending a table with new rows:
+*)
+
+let tableSinX' = tableSinX.AddRows [| for i in 100..199 -> { x = float(i) / 10.0; ``sin(x)`` = sin (float(i) / 10.0) } |]
 
 (**
 Second way is to use `Table.ofTuples2`, `Table.ofTuples3` etc which builds a table from a sequence of tuples,
@@ -251,19 +269,19 @@ To create a matrix table, use `Table.OfMatrix` and provide column names and the 
 *)
 
 let matrix = 
-    ImmutableArray.Create(
-        [| ImmutableArray.Create([|11;12;13|])
-           ImmutableArray.Create([|21;22;23|]) |])
+    ImmutableArray.Create<ImmutableArray<int>>
+        [| ImmutableArray.Create<int> [|11;12;13|]
+           ImmutableArray.Create<int> [|21;22;23|] |]
 
-let tableMatrix = Table.OfMatrix (["a"; "b"], matrix)
+let tableMatrix = Table.OfMatrix (ImmutableArray.CreateRange ["a"; "b"], matrix)
 
 (**
 Matrix table allows adding columns and rows using `AddRows`, `AddRow` and `AddColumns`, `AddColumn` functions:
 *)
 
 tableMatrix
-    .AddColumn("c", ImmutableArray.Create([|14;24;34|]))
-    .AddRow(ImmutableArray.Create([|31;32;33;34|]))
+    .AddColumn("c", ImmutableArray.Create<int> [|14;24;34|])
+    .AddRow(ImmutableArray.Create<int> [|31;32;33;34|])
 
 (**
 

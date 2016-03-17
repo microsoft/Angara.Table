@@ -7,13 +7,13 @@ open System.Collections.Immutable
 module internal Helpers = 
     let colGen<'a> (name:string) = gen {
         let! arr = Gen.sized(fun size -> Gen.arrayOfLength size Arb.generate<'a>)
-        return Column.OfLazyArray(name, lazy(ImmutableArray.Create<'a>(arr)), arr.Length)
+        return Column.CreateFromUntyped(name, arr)
     }
 
     let colShrink<'a> (name:string) (values: ImmutableArray<'a>) : Column seq = 
         let arr = Array.zeroCreate values.Length 
         values.CopyTo(arr)
-        Arb.toShrink (Arb.Default.Array<'a>()) (arr) |> Seq.map (fun arr2 -> Column.OfArray (name, arr2))
+        Arb.toShrink (Arb.Default.Array<'a>()) (arr) |> Seq.map (fun arr2 -> Column.CreateFromUntyped(name, arr2))
 
 type Generators =
     /// Same as default string generator, but uses Environment.NewLine without individual \r, \n.
@@ -63,7 +63,7 @@ type Generators =
                 let shrinkNamedCol (col:Column) = 
                     let names = Arb.toShrink (Arb.Default.String()) col.Name
                     let cols = Arb.toShrink (Generators.Column()) col
-                    names |> Seq.map(fun n -> cols |> Seq.map(fun c -> Table.OfColumns([Column.OfColumnValues(n, c.Rows, c.Height)]))) |> Seq.concat
+                    names |> Seq.map(fun n -> cols |> Seq.map(fun c -> Table.OfColumns([Column.Create(n, c.Rows, c.Height)]))) |> Seq.concat
 
                 if table.Count > 1 then
                     let t = table |> Seq.map(fun c -> Table.OfColumns(table |> Seq.filter(fun c2 -> c2 <> c))) |> Seq.toArray

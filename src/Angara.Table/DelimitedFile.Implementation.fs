@@ -207,7 +207,7 @@ module internal Helpers =
         | t when t = typeof<System.Int32>   -> ColumnType.Integer
         | _ -> failwith "Unexpected column type"
 
-    let internal chars = ['A'..'Z']
+    let internal chars = [|'A'..'Z'|]
 
     /// Produces a non-empty string to be used as a name of a column with the given index.
     /// The produced names are similar to Excel column names; e.g.

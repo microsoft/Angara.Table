@@ -7,4 +7,5 @@
       "../Funcs.fs"
       "../Util.fs"
       "../Table.fs"
+      "../Statistics.fs"
       "../Serializers.fs"

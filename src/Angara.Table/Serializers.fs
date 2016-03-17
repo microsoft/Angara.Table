@@ -81,7 +81,7 @@ type TableReinstateSerializer() =
                     | "DateTime" -> lazyTake(data, i) |> ColumnValues.DateColumn
                     | "Boolean"  -> lazyTake(data, i) |> ColumnValues.BooleanColumn
                     | ct -> failwithf "Unexpected column type: '%s'" ct
-                Column.OfColumnValues (cmap.["name"].ToStringValue(), rows, height))
+                Column.Create (cmap.["name"].ToStringValue(), rows, height))
         Table.OfColumns(columns |> Seq.toList)
 
     interface ISerializer<Table> with

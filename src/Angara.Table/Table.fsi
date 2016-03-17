@@ -44,11 +44,21 @@ type [<Class>] Column =
     member Rows : ColumnValues with get
     /// Gets a count of the total number of values in the column.
     member Height : int with get 
-    static member OfArray : name:string * rows:'a[] -> Column
-    static member OfArray : name:string * rows:ImmutableArray<'a> -> Column
-    static member OfArray : name:string * rows:System.Array -> Column
-    static member OfLazyArray  : name:string * rows:Lazy<ImmutableArray<'a>> * count:int -> Column
-    static member OfColumnValues : name:string * rows:ColumnValues * count:int -> Column
+
+    static member CreateInt : name:string * rows:int seq * ?count:int -> Column
+    static member CreateReal : name:string * rows:float seq * ?count:int -> Column
+    static member CreateString : name:string * rows:string seq * ?count:int -> Column
+    static member CreateBoolean : name:string * rows:bool seq * ?count:int -> Column
+    static member CreateDate : name:string * rows:DateTime seq * ?count:int -> Column
+
+    static member CreateInt : name:string * rows:Lazy<ImmutableArray<int>> * count:int -> Column
+    static member CreateReal : name:string * rows:Lazy<ImmutableArray<float>> * count:int -> Column
+    static member CreateString : name:string * rows:Lazy<ImmutableArray<string>> * count:int -> Column
+    static member CreateBoolean : name:string * rows:Lazy<ImmutableArray<bool>> * count:int -> Column
+    static member CreateDate : name:string * rows:Lazy<ImmutableArray<DateTime>> * count:int -> Column
+    
+    static member Create : name:string * rows:ColumnValues * count:int -> Column
+    static member CreateFromUntyped : name:string * rows:System.Array -> Column
 
 
 /// Represents a table wich is an immutable list of named columns.
@@ -104,7 +114,11 @@ type [<Class>] Table =
     /// If there is a public property having a type that is not valid for a table column, the function fails with an exception.
     static member OfRows<'r> : ImmutableArray<'r> -> Table<'r>
 
-    static member OfMatrix<'v> : columnNames:ImmutableArray<string> * matrixRows:ImmutableArray<ImmutableArray<'v>> -> MatrixTable<'v>
+    static member OfMatrix<'v> : matrixRows:'v seq seq * ?columnNames:string seq -> MatrixTable<'v>
+    static member OfMatrix<'v> : matrixRows:'v[] seq * ?columnNames:string seq -> MatrixTable<'v>
+    static member OfMatrix<'v> : matrixRows:ImmutableArray<'v> seq * ?columnNames:string seq -> MatrixTable<'v>
+
+    static member DefaultColumnName: columnIndex:int -> string
 
     /// Creates a new, empty table
     static member Empty : Table
@@ -201,6 +215,8 @@ type [<Class>] Table =
     /// Builds a new table that contains columns of both given tables. Duplicate column names are allowed.
     static member Append : table1:Table -> table2:Table -> Table
 
+    static member AppendMatrix : table1:MatrixTable<'v> -> table2:MatrixTable<'v> -> MatrixTable<'v>
+
     /// <summary>Builds a new table that contains columns of the given table appended with columns of a table produced by the
     /// given function applied to the arrays of given table columns.</summary>
     /// <remarks>
@@ -241,13 +257,13 @@ and [<Class>] Table<'r> =
 
 and [<Class>] MatrixTable<'v> =
     inherit Table
-    private new : columns:Column list * matrixRows : ImmutableArray<ImmutableArray<'v>> -> MatrixTable<'v>
-    new : columnsNames:ImmutableArray<string> * matrixRows:ImmutableArray<ImmutableArray<'v>> -> MatrixTable<'v>
+    new : matrixRows:ImmutableArray<'v> seq * columnsNames:string seq option -> MatrixTable<'v>
 
-    member Matrix : ImmutableArray<ImmutableArray<'v>>
-    
-    member AddColumns : (string*ImmutableArray<'v>) seq -> MatrixTable<'v>
-    member AddColumn : string*ImmutableArray<'v> -> MatrixTable<'v>
+    member Columns : ImmutableArray<ImmutableArray<'v>>
+    member Rows : ImmutableArray<ImmutableArray<'v>> 
+    member Item : row:int*col:int -> 'v with get 
 
+    member AddRows : 'v seq seq -> MatrixTable<'v>
+    member AddRows : 'v[] seq -> MatrixTable<'v>
     member AddRows : ImmutableArray<'v> seq -> MatrixTable<'v>
-    member AddRow : ImmutableArray<'v> -> MatrixTable<'v>
+    member AddRow : 'v seq -> MatrixTable<'v>

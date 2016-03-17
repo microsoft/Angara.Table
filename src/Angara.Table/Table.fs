@@ -86,16 +86,10 @@ type Column private (name:string, values: ColumnValues, height: int) =
     
     override this.ToString() = sprintf "%s[%d]: %O" this.Name height this.Rows
 
-    static member OfColumnValues (name:string, values:ColumnValues, count: int) : Column =
+    static member Create (name:string, values:ColumnValues, count: int) : Column =
         Column(name, values, count)
-
-    static member OfArray (name:string, rows:'a[]) : Column =
-        Column.OfArray(name, ImmutableArray.Create<'a>(rows))
-
-    static member OfArray<'a> (name:string, rows:ImmutableArray<'a>) : Column =
-        Column.OfLazyArray (name, Lazy.CreateFromValue(rows), rows.Length)
-
-    static member OfArray (name:string, rows:System.Array) : Column =
+        
+    static member CreateFromUntyped (name:string, rows:System.Array) : Column =
         match rows with
         | null -> raise (new ArgumentNullException("rows"))
         | rows ->
@@ -107,18 +101,64 @@ type Column private (name:string, values: ColumnValues, height: int) =
                 | et when et = typeof<DateTime> -> lazy (ImmutableArray.Create<DateTime>(rows :?> DateTime[])) |> DateColumn 
                 | et when et = typeof<Boolean>  -> lazy (ImmutableArray.Create<Boolean>(rows :?> Boolean[])) |> BooleanColumn 
                 | et -> failwithf "Unexpected array element type `%A`" et
-            Column.OfColumnValues(name, columnValues, rows.Length)
+            Column.Create(name, columnValues, rows.Length)
+            
+    static member CreateInt (name:string, rows:Lazy<ImmutableArray<int>>, count: int) : Column =
+        if rows = null then nullArg "rows"
+        Column(name, IntColumn rows, count)
 
-    static member OfLazyArray (name:string, lazyRows:Lazy<ImmutableArray<'a>>, count: int) : Column =
-        let values =
-            match typeof<'a> with
-            | t when t = typeof<int>      -> coerce lazyRows |> ColumnValues.IntColumn    
-            | t when t = typeof<float>    -> coerce lazyRows |> ColumnValues.RealColumn   
-            | t when t = typeof<string>   -> coerce lazyRows |> ColumnValues.StringColumn 
-            | t when t = typeof<DateTime> -> coerce lazyRows |> ColumnValues.DateColumn   
-            | t when t = typeof<bool>     -> coerce lazyRows |> ColumnValues.BooleanColumn  
-            | t -> raise (new NotSupportedException(sprintf "Type '%A' is not a valid column type" t))
-        Column(name, values, count)
+    static member CreateReal (name:string, rows:Lazy<ImmutableArray<float>>, count: int) : Column =
+        if rows = null then nullArg "rows"
+        Column(name, RealColumn rows, count)
+        
+    static member CreateString (name:string, rows:Lazy<ImmutableArray<string>>, count: int) : Column =
+        if rows = null then nullArg "rows"
+        Column(name, StringColumn rows, count)
+        
+    static member CreateBoolean (name:string, rows:Lazy<ImmutableArray<bool>>, count: int) : Column =
+        if rows = null then nullArg "rows"
+        Column(name, BooleanColumn rows, count)
+        
+    static member CreateDate (name:string, rows:Lazy<ImmutableArray<DateTime>>, count: int) : Column =
+        if rows = null then nullArg "rows"
+        Column(name, DateColumn rows, count)
+        
+    static member private CreateLazyArray<'a>(rows:'a seq, count: int option) : Lazy<ImmutableArray<'a>> * int =
+        match count with
+        | Some n -> lazy(toImmutableArray rows |> assertLength n), n
+        | None -> let imm = toImmutableArray rows in imm |> Lazy.CreateFromValue, imm.Length
+
+    static member CreateInt (name:string, rows:int seq, ?count: int) : Column =
+        let values, count = Column.CreateLazyArray(rows, count) 
+        Column.CreateInt(name, values, count)
+
+    static member CreateReal (name:string, rows:float seq, ?count: int) : Column =
+        let values, count = Column.CreateLazyArray(rows, count) 
+        Column.CreateReal(name, values, count)
+
+    static member CreateString (name:string, rows:string seq, ?count: int) : Column =
+        let values, count = Column.CreateLazyArray(rows, count) 
+        Column.CreateString(name, values, count)
+
+    static member CreateBoolean (name:string, rows:bool seq, ?count: int) : Column =
+        let values, count = Column.CreateLazyArray(rows, count) 
+        Column.CreateBoolean(name, values, count)
+
+    static member CreateDate (name:string, rows:DateTime seq, ?count: int) : Column =
+        let values, count = Column.CreateLazyArray(rows, count) 
+        Column.CreateDate(name, values, count)
+
+    static member internal Create (name:string, rows: ImmutableArray<'a>) : Column =
+       Column.Create(name, Lazy.CreateFromValue rows, rows.Length)
+
+    static member internal Create (name:string, rows: Lazy<ImmutableArray<'a>>, count: int) : Column =
+        match typeof<'a> with
+        | t when t = typeof<float> -> Column.CreateReal(name, rows |> coerce<_,Lazy<ImmutableArray<float>>>, count)
+        | t when t = typeof<int> -> Column.CreateInt(name, rows |> coerce<_,Lazy<ImmutableArray<int>>>, count)
+        | t when t = typeof<string> -> Column.CreateString(name, rows |> coerce<_,Lazy<ImmutableArray<string>>>, count)
+        | t when t = typeof<bool> -> Column.CreateBoolean(name, rows |> coerce<_,Lazy<ImmutableArray<bool>>>, count)
+        | t when t = typeof<DateTime> -> Column.CreateDate(name, rows |> coerce<_,Lazy<ImmutableArray<DateTime>>>, count)
+        | t -> invalidArg "rows" (sprintf "Element type of the given array is not a valid column type (%A)" t)
 
 type Table internal (columns : Column list, height : int) =
     static let emptyTable : Table = Table(List.Empty, 0)
@@ -156,15 +196,25 @@ type Table internal (columns : Column list, height : int) =
         member x.GetEnumerator() : System.Collections.IEnumerator = ((columns |> Seq.ofList) :> System.Collections.IEnumerable).GetEnumerator()
 
     abstract ToRows<'r> : unit -> 'r seq
-    default x.ToRows<'r>() : 'r seq = Table.ToRows x
+    default x.ToRows<'r>() : 'r seq = Table.columnsToRows x
 
     override x.ToString() = String.Join("\n", columns |> Seq.map (fun c -> c.ToString()))
 
     static member OfColumns (columns: Column seq) : Table = Table(columns)
+
     static member OfRows<'r> (rows : 'r seq) : Table<'r> = Table<'r>(rows |> ImmutableArray.CreateRange)
     static member OfRows<'r> (rows : ImmutableArray<'r>) : Table<'r> = Table<'r>(rows)
-    static member OfMatrix<'v> (columnNames:ImmutableArray<string>, matrixRows : ImmutableArray<ImmutableArray<'v>>) : MatrixTable<'v> = 
-        MatrixTable<'v>(columnNames, matrixRows)
+
+    static member OfMatrix<'v> (matrixRows : 'v seq seq, ?columnNames:string seq) : MatrixTable<'v> = 
+        MatrixTable<'v>(matrixRows |> Seq.map toImmutableArray, columnNames)
+
+    static member OfMatrix<'v> (matrixRows : 'v[] seq, ?columnNames:string seq) : MatrixTable<'v> = 
+        MatrixTable<'v>(matrixRows |> Seq.map toImmutableArray, columnNames)
+
+    static member OfMatrix<'v> (matrixRows : ImmutableArray<'v> seq, ?columnNames:string seq) : MatrixTable<'v> = 
+        MatrixTable<'v>(matrixRows, columnNames)
+
+    static member DefaultColumnName (columnIndex:int) = Angara.Data.DelimitedFile.Helpers.indexToName columnIndex
 
     static member internal ColumnsOfRows<'r>(rows : ImmutableArray<'r>) : Column seq =
         let typeR = typeof<'r>
@@ -178,14 +228,14 @@ type Table internal (columns : Column list, height : int) =
                 typeR.GetProperties(Reflection.BindingFlags.Instance ||| Reflection.BindingFlags.Public) |> Seq.filter (fun p -> p.CanRead)
         props |> Seq.map(fun p ->
             match p.PropertyType with
-            | t when t = typeof<float> -> Column.OfLazyArray(p.Name, arrayOfProp<'r,float>(rows, p), n)
-            | t when t = typeof<int> -> Column.OfLazyArray(p.Name, arrayOfProp<'r,int>(rows, p), n)
-            | t when t = typeof<string> -> Column.OfLazyArray(p.Name, arrayOfProp<'r,string>(rows, p), n)
-            | t when t = typeof<DateTime> -> Column.OfLazyArray(p.Name, arrayOfProp<'r,DateTime>(rows, p), n)
-            | t when t = typeof<bool> -> Column.OfLazyArray(p.Name, arrayOfProp<'r,bool>(rows, p), n)
+            | t when t = typeof<float> -> Column.CreateReal(p.Name, arrayOfProp<'r,float>(rows, p), n)
+            | t when t = typeof<int> -> Column.CreateInt(p.Name, arrayOfProp<'r,int>(rows, p), n)
+            | t when t = typeof<string> -> Column.CreateString(p.Name, arrayOfProp<'r,string>(rows, p), n)
+            | t when t = typeof<DateTime> -> Column.CreateDate(p.Name, arrayOfProp<'r,DateTime>(rows, p), n)
+            | t when t = typeof<bool> -> Column.CreateBoolean(p.Name, arrayOfProp<'r,bool>(rows, p), n)
             | t -> invalidArg "rows" (sprintf "Property '%s' has type '%A' which is not a valid table column type" p.Name t))
 
-    static member internal ToRows<'r>(t: Table) : 'r seq =
+    static member internal columnsToRows<'r>(t: Table) : 'r seq =
         let typeR = typeof<'r>
         let d_createR, props = 
             match typeR.GetCustomAttributes(typeof<CompilationMappingAttribute>, false) 
@@ -230,15 +280,29 @@ type Table internal (columns : Column list, height : int) =
         let mask = table |> Table.Map columnNames predicate |> Seq.toArray
         let mutable n = 0
         for i = 0 to mask.Length-1 do if mask.[i] then n <- n + 1
-        let newColumns = table.Columns |> List.map (fun c -> Column.OfColumnValues (c.Name, ColumnValues.Select mask c.Rows, n))
+        let newColumns = table.Columns |> List.map (fun c -> Column.Create (c.Name, ColumnValues.Select mask c.Rows, n))
         Table(newColumns, n)
 
     static member Filteri (columnNames:seq<string>) (predicate:int->'a) (table:Table) : Table =
         let mask = table |> Table.Mapi columnNames predicate |> Seq.toArray
         let mutable n = 0
         for i = 0 to mask.Length-1 do if mask.[i] then n <- n + 1
-        let newColumns = table.Columns |> List.map (fun c -> Column.OfColumnValues (c.Name, ColumnValues.Select mask c.Rows, n))
+        let newColumns = table.Columns |> List.map (fun c -> Column.Create (c.Name, ColumnValues.Select mask c.Rows, n))
         Table(newColumns, n)
+
+    static member AppendMatrix (table1: MatrixTable<'v>) (table2: MatrixTable<'v>) =
+        if table1.RowsCount <> table2.RowsCount then invalidArg "table2" "Rows counts in the given matrix tables are different"
+        let rowsCount = table1.RowsCount
+        let m, n = table1.Count, table2.Count
+        let cols = table2.Columns
+        let rows_bld = ImmutableArray.CreateBuilder<ImmutableArray<'v>>(rowsCount)
+        for irow in 0..rowsCount-1 do
+            let slice_bld = ImmutableArray.CreateBuilder<'v>(n + m)
+            slice_bld.AddRange table1.Rows.[irow]
+            slice_bld.AddRange table2.Rows.[irow]
+            rows_bld.Add (slice_bld.MoveToImmutable())
+        let rows3 = rows_bld.MoveToImmutable()
+        MatrixTable<'v>(((table1 :> Table).Columns) @ ((table2 :> Table).Columns), rows3)   
 
     static member Append (table1:Table) (table2:Table) : Table =
         if table1.RowsCount = table2.RowsCount then Table(table1.Columns @ table2.Columns, table1.RowsCount) else raiseDiffHeights()
@@ -303,7 +367,7 @@ type Table internal (columns : Column list, height : int) =
     static member private MapToColumn_a<'a,'b,'c> (columnNames:seq<string>) (newColumnName:string) (map:('a->'b)) (table:Table) : Table =
         let columnArray = Table.Map<'a,'b,'c> columnNames map table |> ImmutableArray.CreateRange
         if table.Columns |> List.exists (fun c -> c.Name = newColumnName) then table |> Table.Remove [newColumnName] else table
-        |> Table.Add (Column.OfArray(newColumnName, columnArray))
+        |> Table.Add (Column.Create(newColumnName, columnArray))
 
     static member private reflectedMapToColumn_a = typeof<Table>.GetMethod("MapToColumn_a", Reflection.BindingFlags.Static ||| Reflection.BindingFlags.NonPublic)
 
@@ -319,7 +383,7 @@ type Table internal (columns : Column list, height : int) =
     static member private MapiToColumn_a<'a,'c> (columnNames:seq<string>) (newColumnName:string) (map:(int->'a)) (table:Table) : Table =
         let columnArray = Table.Mapi<'a,'c> columnNames map table |> ImmutableArray.CreateRange
         if table.Columns |> List.exists (fun c -> c.Name = newColumnName) then table |> Table.Remove [newColumnName] else table
-        |> Table.Add (Column.OfArray(newColumnName, columnArray))
+        |> Table.Add (Column.Create(newColumnName, columnArray))
 
     static member private reflectedMapiToColumn_a = typeof<Table>.GetMethod("MapiToColumn_a", Reflection.BindingFlags.Static ||| Reflection.BindingFlags.NonPublic)
 
@@ -349,11 +413,11 @@ type Table internal (columns : Column list, height : int) =
             |> Angara.Data.DelimitedFile.Implementation.Read settings
             |> Seq.map(fun (schema, data) ->                 
                 match schema.Type with
-                | Angara.Data.DelimitedFile.ColumnType.Double   -> Column.OfArray (schema.Name, data :?> ImmutableArray<float>)
-                | Angara.Data.DelimitedFile.ColumnType.Integer  -> Column.OfArray (schema.Name, data :?> ImmutableArray<int>)
-                | Angara.Data.DelimitedFile.ColumnType.Boolean  -> Column.OfArray (schema.Name, data :?> ImmutableArray<bool>)
-                | Angara.Data.DelimitedFile.ColumnType.DateTime -> Column.OfArray (schema.Name, data :?> ImmutableArray<DateTime>)
-                | Angara.Data.DelimitedFile.ColumnType.String   -> Column.OfArray (schema.Name, data :?> ImmutableArray<string>))
+                | Angara.Data.DelimitedFile.ColumnType.Double   -> Column.CreateReal (schema.Name, data :?> ImmutableArray<float>)
+                | Angara.Data.DelimitedFile.ColumnType.Integer  -> Column.CreateInt (schema.Name, data :?> ImmutableArray<int>)
+                | Angara.Data.DelimitedFile.ColumnType.Boolean  -> Column.CreateBoolean (schema.Name, data :?> ImmutableArray<bool>)
+                | Angara.Data.DelimitedFile.ColumnType.DateTime -> Column.CreateDate (schema.Name, data :?> ImmutableArray<DateTime>)
+                | Angara.Data.DelimitedFile.ColumnType.String   -> Column.CreateString (schema.Name, data :?> ImmutableArray<string>))
         Table(cols |> Seq.toList)
     static member Load (reader:System.IO.TextReader) : Table = 
         Table.Load (reader, Angara.Data.DelimitedFile.ReadSettings.Default)
@@ -387,13 +451,15 @@ and Table<'r>(rows : ImmutableArray<'r>) =
         // That's why I call static method Table.ToRows<'s>() instead of base.ToRows<'s>().
         match typeof<'s> with
         | t when t = typeof<'r> -> rows |> coerce
-        | _ -> Table.ToRows<'s>(x)
+        | _ -> Table.columnsToRows<'s>(x)
 
     member x.AddRows (r : 'r seq) : Table<'r> = Table<'r>(rows.AddRange r)
     member x.AddRow (r: 'r) : Table<'r> = Table<'r>(rows.Add r)
 
-and MatrixTable<'v> private (columns: Column list, matrixRows : ImmutableArray<ImmutableArray<'v>>) =
+and MatrixTable<'v> internal (columns: Column list, matrixRows : ImmutableArray<ImmutableArray<'v>>) =
     inherit Table(columns)
+
+    let columnValues = lazy(columns |> Seq.map(fun c -> c.Rows.ToImmutableArray<'v>()) |> toImmutableArray)
 
     do 
         if matrixRows.Length > 0 then
@@ -402,34 +468,26 @@ and MatrixTable<'v> private (columns: Column list, matrixRows : ImmutableArray<I
             for i in 1 .. matrixRows.Length-1 do
                 if matrixRows.[i].Length <> n then invalidArg "matrixRows" "There are rows of different length"
 
-    new(columnsNames: ImmutableArray<string>, matrixRows : ImmutableArray<ImmutableArray<'v>>) =
+    new(matrixRows : ImmutableArray<'v> seq, columnsNames: string seq option) =
+        let rows = matrixRows |> toImmutableArray
+        let colValues = columnsOfMatrix rows
+        let names = defaultArg columnsNames (Seq.init colValues.Length Table.DefaultColumnName)
         MatrixTable<'v>(
-            columnsOfMatrix (matrixRows, columnsNames.Length)
-            |> Seq.mapi (fun i cv -> Column.OfLazyArray(columnsNames.[i], cv, matrixRows.Length)) |> Seq.toList,
-            matrixRows)
+            Seq.zip names colValues 
+            |> Seq.mapi (fun i (nm,cv) -> Column.Create(nm, cv, rows.Length)) |> Seq.toList,
+            rows)
 
-    member x.Matrix : ImmutableArray<ImmutableArray<'v>> = matrixRows
-    
-    member x.AddColumns (columns : (string*ImmutableArray<'v>) seq) : MatrixTable<'v> =
-        let columns = columns |> Seq.cache
-        let cols = columns |> Seq.map snd |> Seq.toArray
-        let n = cols.Length
-        let m = x.Count
-        let rows_bld = ImmutableArray.CreateBuilder<ImmutableArray<'v>>(matrixRows.Length)
-        for irow in 0..matrixRows.Length-1 do
-            let slice_bld = ImmutableArray.CreateBuilder<'v>(n + m)
-            slice_bld.AddRange(matrixRows.[irow])
-            for icol in 0..n-1 do slice_bld.Add(cols.[icol].[irow])
-            rows_bld.Add (slice_bld.MoveToImmutable())
-        let rows2 = rows_bld.MoveToImmutable()
-        let columnsEx = columns |> Seq.map(fun (n,v) -> Column.OfArray(n,v)) |> Seq.toList
-        let columns2 = List.append x.Columns columnsEx
-        MatrixTable<'v>(columns2, rows2)     
+    member x.Columns : ImmutableArray<ImmutableArray<'v>> = columnValues.Value
+    member x.Rows : ImmutableArray<ImmutableArray<'v>> = matrixRows
+    member x.Item with get(row:int, col:int) = matrixRows.[row].[col]
+   
+    member x.AddRows (rows : 'v seq seq) : MatrixTable<'v> = 
+        x.AddRows(rows |> Seq.map toImmutableArray)
 
-    member x.AddColumn (name:string, values:ImmutableArray<'v>) = x.AddColumns([name,values])
+    member x.AddRows (rows : 'v[] seq) : MatrixTable<'v> = 
+        x.AddRows(rows |> Seq.map toImmutableArray)
 
     member x.AddRows (rows : ImmutableArray<'v> seq) : MatrixTable<'v> = 
-        let rows2 = matrixRows.AddRange(rows)
-        MatrixTable<'v>(ImmutableArray.CreateRange(x |> Seq.map(fun c -> c.Name)), rows2)
+        MatrixTable<'v>(matrixRows.AddRange rows, x |> Seq.map(fun c -> c.Name) |> Some)
 
-    member x.AddRow (row : ImmutableArray<'v>) : MatrixTable<'v> = x.AddRows [row]
+    member x.AddRow (row : 'v seq) : MatrixTable<'v> = x.AddRows [row]

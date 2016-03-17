@@ -34,48 +34,48 @@ let ``When reading the written table we get a table that equals original table``
 [<Test; Category("CI")>]
 let ``When reading the written table we get a table that equals original table - case 8`` () =
     Table.Empty 
-    |> Table.Add (Column.OfArray("0&", [| true; true |])) 
-    |> Table.Add (Column.OfArray("", [| null; "" |])) 
+    |> Table.Add (Column.CreateBoolean("0&", [| true; true |])) 
+    |> Table.Add (Column.CreateString("", [| null; "" |])) 
     |> CheckReadWrite { DelimitedFile.ReadSettings.Default with InferNullStrings = true } { DelimitedFile.WriteSettings.Default with AllowNullStrings = true }
 
 
 [<Test; Category("CI")>]
 let ``When reading the written table we get a table that equals original table - case 7`` () =
-    Table.Empty |> Table.Add (Column.OfArray("a", [| "10" |])) |> CheckReadWrite { DelimitedFile.ReadSettings.Default with DelimitedFile.ColumnTypes = Some(fun _ -> Some(typeof<string>)) } DelimitedFile.WriteSettings.Default
+    Table.Empty |> Table.Add (Column.CreateString("a", [| "10" |])) |> CheckReadWrite { DelimitedFile.ReadSettings.Default with DelimitedFile.ColumnTypes = Some(fun _ -> Some(typeof<string>)) } DelimitedFile.WriteSettings.Default
 
 [<Test; Category("CI")>]
 let ``When reading the written table we get a table that equals original table - case 6`` () =
     Table.Empty 
-    |> Table.Add (Column.OfArray(new System.String([| '\009'; '\029'; 'o'; '\001'; 'w'; '\025' |]), [| false; true; false; false |]))
-    |> Table.Add (Column.OfArray("", [| true; false; true; true |]))
+    |> Table.Add (Column.CreateBoolean(new System.String([| '\009'; '\029'; 'o'; '\001'; 'w'; '\025' |]), [| false; true; false; false |]))
+    |> Table.Add (Column.CreateBoolean("", [| true; false; true; true |]))
     |> CheckReadWrite DelimitedFile.ReadSettings.Default DelimitedFile.WriteSettings.Default
 
 [<Test; Category("CI")>]
 let ``When reading the written table we get a table that equals original table - case 5`` () =
     Table.Empty 
-    |> Table.Add (Column.OfArray(new System.String([| '\020' |]), [| System.DateTime(69, 8, 6, 14, 04, 56, 132) |]))
-    |> Table.Add(Column.OfArray("", [|true|]))
+    |> Table.Add (Column.CreateDate(new System.String([| '\020' |]), [| System.DateTime(69, 8, 6, 14, 04, 56, 132) |]))
+    |> Table.Add(Column.CreateBoolean("", [|true|]))
     |> CheckReadWrite DelimitedFile.ReadSettings.Default DelimitedFile.WriteSettings.Default
 
 [<Test; Category("CI")>]
 let ``When reading the written table we get a table that equals original table - case 4`` () =
-    Table.Empty |> Table.Add (Column.OfArray(new System.String([| '\009' |]), [| 1.0 + 2.0/3.0; 1.0 |])) |> CheckReadWrite DelimitedFile.ReadSettings.Default DelimitedFile.WriteSettings.Default
+    Table.Empty |> Table.Add (Column.CreateReal(new System.String([| '\009' |]), [| 1.0 + 2.0/3.0; 1.0 |])) |> CheckReadWrite DelimitedFile.ReadSettings.Default DelimitedFile.WriteSettings.Default
 
 [<Test; Category("CI")>]
 let ``When reading the written table we get a table that equals original table - case 3`` () =
     Table.Empty 
-    |> Table.Add (Column.OfArray("Prh", [| 2.0; -2.0; 0.0; 2.0; -1.0 |]))
-    |> Table.Add(Column.OfArray("", [| true; true; false; true; false |] ))
+    |> Table.Add (Column.CreateReal("Prh", [| 2.0; -2.0; 0.0; 2.0; -1.0 |]))
+    |> Table.Add(Column.CreateBoolean("", [| true; true; false; true; false |] ))
     |> CheckReadWrite DelimitedFile.ReadSettings.Default DelimitedFile.WriteSettings.Default
 
 [<Test; Category("CI")>]
 let ``When reading the written table we get a table that equals original table - case 1`` () =
-    Table.Empty |> Table.Add (Column.OfArray("Q", Array.empty<string>)) |> CheckReadWrite DelimitedFile.ReadSettings.Default DelimitedFile.WriteSettings.Default
+    Table.Empty |> Table.Add (Column.CreateString("Q", Array.empty<string>)) |> CheckReadWrite DelimitedFile.ReadSettings.Default DelimitedFile.WriteSettings.Default
 
 [<Test; Category("CI")>]
 let ``When reading the written table we get a table that equals original table - case 2`` () =
-    Table.Empty |> Table.Add (Column.OfArray("Q", Array.empty<float>)) |> CheckReadWrite { DelimitedFile.ReadSettings.Default with DelimitedFile.ColumnTypes = Some(fun _ -> Some(typeof<float>)) } DelimitedFile.WriteSettings.Default
+    Table.Empty |> Table.Add (Column.CreateReal("Q", Array.empty<float>)) |> CheckReadWrite { DelimitedFile.ReadSettings.Default with DelimitedFile.ColumnTypes = Some(fun _ -> Some(typeof<float>)) } DelimitedFile.WriteSettings.Default
 
 [<Test; Category("CI")>]
 let ``When reading the written table we get a table that equals original table - empty column name`` () =
-    Table.Empty |> Table.Add (Column.OfArray("", [|-2.0|])) |> CheckReadWrite DelimitedFile.ReadSettings.Default DelimitedFile.WriteSettings.Default
+    Table.Empty |> Table.Add (Column.CreateReal("", [|-2.0|])) |> CheckReadWrite DelimitedFile.ReadSettings.Default DelimitedFile.WriteSettings.Default
