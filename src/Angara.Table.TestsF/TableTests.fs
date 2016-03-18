@@ -277,3 +277,13 @@ let ``Table.AddRows and Table.AddRow add rows to a typed table``() =
     Assert.AreEqual([|0.0;1.0;2.0;3.0|], t2.[0].Rows.AsReal |> Seq.toArray, "lat column by index")
     Assert.AreEqual([|0.0;2.0;1.0;4.0|], t2.["Lon"].Rows.AsReal |> Seq.toArray, "lon column by name")
     Assert.AreEqual([|0.0;2.0;1.0;4.0|], t2.[1].Rows.AsReal |> Seq.toArray, "lon column by index")
+
+[<Test; Category("CI")>]
+let ``Typed table from untyped``() =
+    let t = Table.OfColumns([Column.CreateReal("Lat", [0.0;1.0]); Column.CreateReal("Lon", [0.0;2.0])])
+    let t2 = t.ToRows<RecLatLon>() |> Table.OfRows
+    Assert.AreEqual([|0.0;1.0|], t2.["Lat"].Rows.AsReal |> Seq.toArray, "lat column")
+    Assert.AreEqual([|0.0;2.0|], t2.["Lon"].Rows.AsReal |> Seq.toArray, "lon column")
+    Assert.AreEqual([ {Lat=0.0;Lon=0.0}; {Lat=1.0;Lon=2.0} ] |> List.toSeq, t2.Rows, "rows")
+    Assert.AreEqual([ {Lat=0.0;Lon=0.0}; {Lat=1.0;Lon=2.0} ] |> List.toSeq, t2.ToRows<RecLatLon>(), "toRows")
+
