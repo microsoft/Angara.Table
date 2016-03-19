@@ -34,19 +34,32 @@ structure represents an array that cannot be changed once it is created. Use of
 [Lazy<'a>](https://msdn.microsoft.com/en-us/library/dd233247.aspx) enables evaluation of
 the column array on demand. 
 
-There are several static functions to build a column from name and values:
+To build a column from name and values, there are overloaded functions 
+`Column.CreateInt`, `Column.CreateReal`, `Column.CreateString`, `Column.CreateBoolean`, `Column.CreateDate`
+as well as `Column.Create`. They allow:
 
-- `Column.OfArray` creates a column from an array of one of the valid column types. If a mutable array is given, 
-it is copied to guarantee immutability of the column; otherwise, if an immutable array is given, it is used without copying.*)
-let cx = Column.OfArray ("x", [| for i in 0..99 -> float(i) / 10.0  |])
+- Create a column from a sequence of valid type. If the given sequence is a mutable array, 
+it is copied to guarantee immutability of the column; if the sequence is an immutable array,
+it is used without copying:*)
+
+let cx = Column.CreateReal ("x", [| for i in 0..99 -> float(i) / 10.0  |])
+
+(** 
+- Create a lazy column whose values are computed on demand. 
+If the given sequence is not an array and its length is also provided, it will be enumerated when and if
+the column values are first time accessed: *)
+
+let cx_lazy = Column.CreateReal ("x", seq{ for i in 0..99 -> float(i) / 10.0  }, 100)
+
 (**
-- `Column.OfLazyArray` creates a column from a lazy immutable array of one of the valid types. This function requires a user to provide
-a length of the given lazy array. Evalutation of the array will be performed when the column rows are first time accessed.*)
-let cx' = Column.OfLazyArray ("x", lazy(ImmutableArray.CreateRange(seq{ for i in 0..99 -> float(i) / 10.0 })), 100)
+- Another way to create a lazy column is to use overloads which take a lazy immutable array.
+These functions require a user to provide a length of the given array. 
+Evalutation of the array will be performed when the column rows are first time accessed.*)
+let cx_lazy2 = Column.CreateReal ("x", lazy(ImmutableArray.CreateRange(seq{ for i in 0..99 -> float(i) / 10.0 })), 100)
 (**
-- `Colum.OfColumnValues` creates a column from an instance of `ColumnValues` discriminated union. This is a type safe function since
-validity of the array type is checked on compilation; also this function allows to create a new column from values of another column.*)
-let cx'' = Column.OfColumnValues ("x", RealColumn(lazy(ImmutableArray.CreateRange(seq{ for i in 0..99 -> float(i) / 10.0 }))), 100)
+- Rename a column. `Colum.Create` creates a column from an instance of `ColumnValues` discriminated union. 
+This function allows to create a new column from values of another column:*)
+let cx2 = Column.Create ("x2", cx_lazy.Rows, cx_lazy.Height)
 
 (**
 ### Getting Column Values
@@ -118,8 +131,8 @@ A table can be created from a finite sequence of columns:
 
 let table = 
     Table.OfColumns
-        [ Column.OfArray ("x", [| for i in 0..99 -> float(i) / 10.0  |])
-          Column.OfArray ("sin(x)", [| for i in 0..99 -> sin (float(i) / 10.0) |]) ]
+        [ Column.CreateReal ("x", [| for i in 0..99 -> float(i) / 10.0  |])
+          Column.CreateReal ("sin(x)", [| for i in 0..99 -> sin (float(i) / 10.0) |]) ]
 
 (**
 To add a column to a table, you can use the static function `Table.Add` which creates 
@@ -133,8 +146,8 @@ In the following example the resulting `table` is identical to the `table` of th
 
 let table =
     Table.Empty 
-    |> Table.Add (Column.OfArray ("x", [| for i in 0..99 -> float(i) / 10.0  |]))
-    |> Table.Add (Column.OfArray ("sin(x)", [| for i in 0..99 -> sin (float(i) / 10.0) |]))
+    |> Table.Add (Column.CreateReal ("x", [| for i in 0..99 -> float(i) / 10.0  |]))
+    |> Table.Add (Column.CreateReal ("sin(x)", [| for i in 0..99 -> sin (float(i) / 10.0) |]))
 
 (** To remove columns from a table by names, you can use `Table.Remove`: *)
 
@@ -581,7 +594,6 @@ type ColumnValues =
 
 (*** define:typedef-Table ***)
 type Table = 
-    new : columns : Column seq -> Table
     interface IEnumerable<Column> 
     /// Gets a count of the total number of columns in the table.
     member Count : int with get

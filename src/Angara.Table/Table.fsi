@@ -113,11 +113,14 @@ type [<Class>] Table =
     /// If the type `'r` is an F# record, the order of columns is identical to the record properties order.
     /// If there is a public property having a type that is not valid for a table column, the function fails with an exception.
     static member OfRows<'r> : ImmutableArray<'r> -> Table<'r>
-
+    /// Builds a matrix table such that all columns have same type. Matrix table
+    /// exposes its content as a two-dimensional array as well as a collection of columns.
+    /// If column names are missed, the default names are given; see `Table.DefaultColumnName` function.
     static member OfMatrix<'v> : matrixRows:'v seq seq * ?columnNames:string seq -> MatrixTable<'v>
     static member OfMatrix<'v> : matrixRows:'v[] seq * ?columnNames:string seq -> MatrixTable<'v>
     static member OfMatrix<'v> : matrixRows:ImmutableArray<'v> seq * ?columnNames:string seq -> MatrixTable<'v>
-
+    /// Returns a default column from a column index. The produced names are similar to Excel column names; e.g.
+    /// "A", "B", ..., "Z", "AA", "AB", ...
     static member DefaultColumnName: columnIndex:int -> string
 
     /// Creates a new, empty table
@@ -214,7 +217,7 @@ type [<Class>] Table =
 
     /// Builds a new table that contains columns of both given tables. Duplicate column names are allowed.
     static member Append : table1:Table -> table2:Table -> Table
-
+    /// Builds a new matrix table by concatenting columns of two given matrix tables. Duplicate column names are allowed.
     static member AppendMatrix : table1:MatrixTable<'v> -> table2:MatrixTable<'v> -> MatrixTable<'v>
 
     /// <summary>Builds a new table that contains columns of the given table appended with columns of a table produced by the
