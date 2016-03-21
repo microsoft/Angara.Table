@@ -44,10 +44,11 @@ let getRecordProperties (typeR : System.Type) =
 
 let arrayOfProp<'r,'p> (rows: ImmutableArray<'r>, p:System.Reflection.PropertyInfo) =
     lazy(
+        let dlg = System.Delegate.CreateDelegate(typeof<System.Func<'r,'p>>, p.GetGetMethod()) :?> System.Func<'r,'p>
         let n = rows.Length
         let bld = ImmutableArray.CreateBuilder<'p>(n)
         bld.Count <- n
-        for i in 0..n-1 do bld.[i] <- p.GetValue(rows.[i]) :?> 'p
+        for i in 0..n-1 do bld.[i] <- dlg.Invoke(rows.[i])
         bld.MoveToImmutable()
     )
 
