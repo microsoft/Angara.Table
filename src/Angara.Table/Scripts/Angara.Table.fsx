@@ -477,7 +477,7 @@ the column `"x"` is between 0 and 1:
 let table_filter_x = table |> Table.Filter ["x"] (fun x -> x >= 0.0 && x <= 1.0) 
 (*** include-value: table_filter_x ***)
 
-(** To get a subset of table rows, use the function `Table.Filteri`. The following example builds a table that contains only first 10 rows of the original table: *)
+(** To get a subset of table rows by row index, use the function `Table.Filteri`. The following example builds a table that contains only first 10 rows of the original table: *)
 
 let table_10rows = table |> Table.Filteri [] (fun i -> i < 10)
 
