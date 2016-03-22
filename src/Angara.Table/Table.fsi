@@ -139,11 +139,6 @@ type [<Class>] Table =
     /// The function `Table.Filter` returns a new table containing only the rows of the table for which the given predicate returns `true`.
     /// The predicate gets values of the given columns only.
     /// The generic predicate function is only partially defined.
-    /// If there are:
-    ///     1 column, predicate should be predicate:('a->bool), where 'a is the type of the column, so 'b = bool
-    ///     2 columns, predicate:('b>'c->bool), where 'b and 'c are the types of the columns, so 'b = 'c->bool
-    ///     3 columns, predicate:('b->'c->'d->bool), where 'b, 'c and 'd are the types of the columns, so 'a = 'b->'c->'d
-    ///     n...
     static member Filter : columnNames:seq<string> -> predicate:('a->'b) -> table:Table -> Table
 
     /// The function `Table.Filter` returns a new table containing only the rows of the table for which the given predicate returns `true`.
