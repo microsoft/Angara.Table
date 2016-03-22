@@ -364,37 +364,37 @@ type Table internal (columns : Column list, height : int) =
                 for i = 1 to columns.Length do row.[i] <- colArrays.[i-1].[rowIdx]
                 deleg.DynamicInvoke(row) :?> 'c)
         
-    static member private MapToColumn_a<'a,'b,'c> (columnNames:seq<string>) (newColumnName:string) (map:('a->'b)) (table:Table) : Table =
+    static member private MapToColumn_a<'a,'b,'c> (newColumnName:string) (columnNames:seq<string>) (map:('a->'b)) (table:Table) : Table =
         let columnArray = Table.Map<'a,'b,'c> columnNames map table |> ImmutableArray.CreateRange
         if table.Columns |> List.exists (fun c -> c.Name = newColumnName) then table |> Table.Remove [newColumnName] else table
         |> Table.Add (Column.Create(newColumnName, columnArray))
 
     static member private reflectedMapToColumn_a = typeof<Table>.GetMethod("MapToColumn_a", Reflection.BindingFlags.Static ||| Reflection.BindingFlags.NonPublic)
 
-    static member MapToColumn(columnNames:seq<string>) (newColumnName:string) (map:('a->'b)) (table:Table) : Table =
+    static member MapToColumn (newColumnName:string) (columnNames:seq<string>) (map:('a->'b)) (table:Table) : Table =
         let names = columnNames |> Seq.toArray
         match names.Length with
-        | 0 | 1 -> Table.MapToColumn_a<'a,'b,'b> names newColumnName map table
+        | 0 | 1 -> Table.MapToColumn_a<'a,'b,'b> newColumnName names map table
         | n -> 
             let res = Funcs.getNthResultType n map
             let mapTable = Table.reflectedMapToColumn_a.MakeGenericMethod( typeof<'a>, typeof<'b>, res )
-            mapTable.Invoke(null, [|box names; box newColumnName; box map; box table|]) :?> Table
+            mapTable.Invoke(null, [|box newColumnName; box names; box map; box table|]) :?> Table
     
-    static member private MapiToColumn_a<'a,'c> (columnNames:seq<string>) (newColumnName:string) (map:(int->'a)) (table:Table) : Table =
+    static member private MapiToColumn_a<'a,'c> (newColumnName:string) (columnNames:seq<string>) (map:(int->'a)) (table:Table) : Table =
         let columnArray = Table.Mapi<'a,'c> columnNames map table |> ImmutableArray.CreateRange
         if table.Columns |> List.exists (fun c -> c.Name = newColumnName) then table |> Table.Remove [newColumnName] else table
         |> Table.Add (Column.Create(newColumnName, columnArray))
 
     static member private reflectedMapiToColumn_a = typeof<Table>.GetMethod("MapiToColumn_a", Reflection.BindingFlags.Static ||| Reflection.BindingFlags.NonPublic)
 
-    static member MapiToColumn(columnNames:seq<string>) (newColumnName:string) (map:(int->'a)) (table:Table) : Table =
+    static member MapiToColumn (newColumnName:string) (columnNames:seq<string>) (map:(int->'a)) (table:Table) : Table =
         let names = columnNames |> Seq.toArray
         match names.Length with
-        | 0 -> Table.MapiToColumn_a<'a,'a> names newColumnName map table
+        | 0 -> Table.MapiToColumn_a<'a,'a> newColumnName names map table
         | n -> 
             let res = Funcs.getNthResultType (n+1) map
             let mapTable = Table.reflectedMapiToColumn_a.MakeGenericMethod( typeof<'a>, res )
-            mapTable.Invoke(null, [|box names; box newColumnName; box map; box table|]) :?> Table
+            mapTable.Invoke(null, [|box newColumnName; box names; box map; box table|]) :?> Table
 
     static member Transform<'a,'b,'c> (columnNames:seq<string>) (transform:(ImmutableArray<'a>->'b)) (table:Table) : 'c =
         let cs = Seq.toArray columnNames

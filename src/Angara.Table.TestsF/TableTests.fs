@@ -90,7 +90,7 @@ let ``Table.OfRows fails when property has invalid type``() =
 [<Test; Category("CI")>]
 let ``MapToColumn replaces existing column - one column to another existing column``() =
     let t = Table.OfColumns ([Column.Create("a", [|0;1|]); Column.Create("b", [|0;1|])])
-    let t2 = Table.MapToColumn ["b"] "a" (fun a -> a + 1) t
+    let t2 = Table.MapToColumn "a" ["b"] (fun a -> a + 1) t
     Assert.AreEqual(2, t2.Count, "number of columns")
     Assert.AreEqual(["b"; "a"], t2 |> colNames, "names of columns") // new 'a' added to the end
     Assert.AreEqual([|1;2|], t2.["a"].Rows.AsInt |> toArr, "array of t2.a")
@@ -98,7 +98,7 @@ let ``MapToColumn replaces existing column - one column to another existing colu
 [<Test; Category("CI")>]
 let ``MapToColumn replaces existing column - one column to itself``() =
     let t = Table.OfColumns ([Column.Create("a", [|0;1|]); Column.Create("b", [|0;1|])])
-    let t2 = Table.MapToColumn ["a"] "a" (fun a -> a + 1) t
+    let t2 = Table.MapToColumn "a" ["a"] (fun a -> a + 1) t
     Assert.AreEqual(2, t2.Count, "number of columns")
     Assert.AreEqual(["b"; "a"], t2 |> colNames, "names of columns") // new 'a' added to the end
     Assert.AreEqual([|1;2|], t2.["a"].Rows.AsInt |> toArr, "array of t2.a")
@@ -106,7 +106,7 @@ let ``MapToColumn replaces existing column - one column to itself``() =
 [<Test; Category("CI")>]
 let ``MapToColumn replaces existing column - 2 columns``() =
     let t = Table.OfColumns ([Column.Create("a", [|0;1|]); Column.Create("b", [|0;1|])])
-    let t2 = Table.MapToColumn ["a"; "b"] "a" (fun a b -> a + b + 1) t
+    let t2 = Table.MapToColumn "a" ["a"; "b"] (fun a b -> a + b + 1) t
     Assert.AreEqual(2, t2.Count, "number of columns")
     Assert.AreEqual(["b"; "a"], t2 |> colNames, "names of columns") // new 'a' added to the end
     Assert.AreEqual([|1;3|], t2.["a"].Rows.AsInt |> toArr, "array of t2.a")
@@ -124,14 +124,14 @@ let TableF_MapiToColumn_ManyArgs() =
         |> Table.Add(Column.Create("g", [|7|])) 
         |> Table.Add(Column.Create("h", [|8|])) 
         |> Table.Add(Column.Create("i", [|9|]))  
-    let table2 = table |> Table.MapiToColumn ["a"; "b"; "c"; "d"; "e"; "f"; "g"; "h"; "i"] "$" (fun idx a b c d e f g h i -> idx)
+    let table2 = table |> Table.MapiToColumn "$" ["a"; "b"; "c"; "d"; "e"; "f"; "g"; "h"; "i"] (fun idx a b c d e f g h i -> idx)
     let col : int[] = table2.["$"].Rows.AsInt |> toArr
     Assert.AreEqual([|0|], col, "Array of the column '$' produced by MapiToColumn")
 
 [<Test; Category("CI")>]
 let TableF_MapiToColumn_OneArg() =
     let table:Table = Table.OfColumns ([Column.Create("a", [|1|])])
-    let table2 = table |> Table.MapiToColumn ["a"] "$" (fun idx (a:int) -> idx)
+    let table2 = table |> Table.MapiToColumn "$" ["a"] (fun idx (a:int) -> idx)
     let col : int[] = table2.["$"].Rows.AsInt |> toArr
     Assert.AreEqual([|0|], col, "Array of the column '$' produced by MapiToColumn")
 
@@ -139,7 +139,7 @@ let TableF_MapiToColumn_OneArg() =
 [<Test; Category("CI")>]
 let TableF_MapiToColumn_ZeroArg() =
     let table:Table = Table.OfColumns ([Column.Create("a", [|1|])])
-    let table2 = table |> Table.MapiToColumn [] "$" (fun idx -> idx)
+    let table2 = table |> Table.MapiToColumn "$" [] (fun idx -> idx)
     let col : int[] = table2.["$"].Rows.AsInt |> toArr
     Assert.AreEqual([|0|], col, "Array of the column '$' produced by MapiToColumn")
 
@@ -156,14 +156,14 @@ let TableF_MapToColumn_ManyArgs() =
         |> Table.Add(Column.Create("g", [|7|])) 
         |> Table.Add(Column.Create("h", [|8|])) 
         |> Table.Add(Column.Create("i", [|9|]))  
-    let table2 = table |> Table.MapToColumn ["a"; "b"; "c"; "d"; "e"; "f"; "g"; "h"; "i"] "$" (fun a b c d e f g h i -> true)
+    let table2 = table |> Table.MapToColumn "$" ["a"; "b"; "c"; "d"; "e"; "f"; "g"; "h"; "i"] (fun a b c d e f g h i -> true)
     let col : bool[] = table2.["$"].Rows.AsBoolean |> toArr
     Assert.AreEqual([|true|], col, "Array of the column '$' produced by MapToColumn")
 
 [<Test; Category("CI")>]
 let TableF_MapToColumn_OneArg() =
     let table:Table = Table.OfColumns ([Column.Create("a", [|1|])])
-    let table2 = table |> Table.MapToColumn ["a"] "$" (fun a -> a > 0)
+    let table2 = table |> Table.MapToColumn "$" ["a"] (fun a -> a > 0)
     let col : bool[] = table2.["$"].Rows.AsBoolean |> toArr
     Assert.AreEqual([|true|], col, "Array of the column '$' produced by MapToColumn")
 
@@ -171,7 +171,7 @@ let TableF_MapToColumn_OneArg() =
 [<Test; Category("CI")>]
 let TableF_MapToColumn_ZeroArg() =
     let table:Table = Table.OfColumns ([Column.Create("a", [|1|])])
-    let table2 = table |> Table.MapToColumn [] "$" (fun () -> true)
+    let table2 = table |> Table.MapToColumn "$" [] (fun () -> true)
     let col : bool[] = table2.["$"].Rows.AsBoolean |> toArr
     Assert.AreEqual([|true|], col, "Array of the column '$' produced by MapToColumn")
 
