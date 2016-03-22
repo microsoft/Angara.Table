@@ -103,23 +103,23 @@ type Column private (name:string, values: ColumnValues, height: int) =
                 | et -> failwithf "Unexpected array element type `%A`" et
             Column.Create(name, columnValues, rows.Length)
             
-    static member CreateInt (name:string, rows:Lazy<ImmutableArray<int>>, count: int) : Column =
+    static member CreateLazy (name:string, rows:Lazy<ImmutableArray<int>>, count: int) : Column =
         if rows = null then nullArg "rows"
         Column(name, IntColumn rows, count)
 
-    static member CreateReal (name:string, rows:Lazy<ImmutableArray<float>>, count: int) : Column =
+    static member CreateLazy (name:string, rows:Lazy<ImmutableArray<float>>, count: int) : Column =
         if rows = null then nullArg "rows"
         Column(name, RealColumn rows, count)
         
-    static member CreateString (name:string, rows:Lazy<ImmutableArray<string>>, count: int) : Column =
+    static member CreateLazy (name:string, rows:Lazy<ImmutableArray<string>>, count: int) : Column =
         if rows = null then nullArg "rows"
         Column(name, StringColumn rows, count)
         
-    static member CreateBoolean (name:string, rows:Lazy<ImmutableArray<bool>>, count: int) : Column =
+    static member CreateLazy (name:string, rows:Lazy<ImmutableArray<bool>>, count: int) : Column =
         if rows = null then nullArg "rows"
         Column(name, BooleanColumn rows, count)
         
-    static member CreateDate (name:string, rows:Lazy<ImmutableArray<DateTime>>, count: int) : Column =
+    static member CreateLazy (name:string, rows:Lazy<ImmutableArray<DateTime>>, count: int) : Column =
         if rows = null then nullArg "rows"
         Column(name, DateColumn rows, count)
         
@@ -128,36 +128,36 @@ type Column private (name:string, values: ColumnValues, height: int) =
         | Some n -> lazy(toImmutableArray rows |> assertLength n), n
         | None -> let imm = toImmutableArray rows in imm |> Lazy.CreateFromValue, imm.Length
 
-    static member CreateInt (name:string, rows:int seq, ?count: int) : Column =
+    static member Create (name:string, rows:int seq, ?count: int) : Column =
         let values, count = Column.CreateLazyArray(rows, count) 
-        Column.CreateInt(name, values, count)
+        Column.CreateLazy(name, values, count)
 
-    static member CreateReal (name:string, rows:float seq, ?count: int) : Column =
+    static member Create (name:string, rows:float seq, ?count: int) : Column =
         let values, count = Column.CreateLazyArray(rows, count) 
-        Column.CreateReal(name, values, count)
+        Column.CreateLazy(name, values, count)
 
-    static member CreateString (name:string, rows:string seq, ?count: int) : Column =
+    static member Create (name:string, rows:string seq, ?count: int) : Column =
         let values, count = Column.CreateLazyArray(rows, count) 
-        Column.CreateString(name, values, count)
+        Column.CreateLazy(name, values, count)
 
-    static member CreateBoolean (name:string, rows:bool seq, ?count: int) : Column =
+    static member Create (name:string, rows:bool seq, ?count: int) : Column =
         let values, count = Column.CreateLazyArray(rows, count) 
-        Column.CreateBoolean(name, values, count)
+        Column.CreateLazy(name, values, count)
 
-    static member CreateDate (name:string, rows:DateTime seq, ?count: int) : Column =
+    static member Create (name:string, rows:DateTime seq, ?count: int) : Column =
         let values, count = Column.CreateLazyArray(rows, count) 
-        Column.CreateDate(name, values, count)
+        Column.CreateLazy(name, values, count)
 
     static member internal Create (name:string, rows: ImmutableArray<'a>) : Column =
        Column.Create(name, Lazy.CreateFromValue rows, rows.Length)
 
     static member internal Create (name:string, rows: Lazy<ImmutableArray<'a>>, count: int) : Column =
         match typeof<'a> with
-        | t when t = typeof<float> -> Column.CreateReal(name, rows |> coerce<_,Lazy<ImmutableArray<float>>>, count)
-        | t when t = typeof<int> -> Column.CreateInt(name, rows |> coerce<_,Lazy<ImmutableArray<int>>>, count)
-        | t when t = typeof<string> -> Column.CreateString(name, rows |> coerce<_,Lazy<ImmutableArray<string>>>, count)
-        | t when t = typeof<bool> -> Column.CreateBoolean(name, rows |> coerce<_,Lazy<ImmutableArray<bool>>>, count)
-        | t when t = typeof<DateTime> -> Column.CreateDate(name, rows |> coerce<_,Lazy<ImmutableArray<DateTime>>>, count)
+        | t when t = typeof<float> -> Column.CreateLazy(name, rows |> coerce<_,Lazy<ImmutableArray<float>>>, count)
+        | t when t = typeof<int> -> Column.CreateLazy(name, rows |> coerce<_,Lazy<ImmutableArray<int>>>, count)
+        | t when t = typeof<string> -> Column.CreateLazy(name, rows |> coerce<_,Lazy<ImmutableArray<string>>>, count)
+        | t when t = typeof<bool> -> Column.CreateLazy(name, rows |> coerce<_,Lazy<ImmutableArray<bool>>>, count)
+        | t when t = typeof<DateTime> -> Column.CreateLazy(name, rows |> coerce<_,Lazy<ImmutableArray<DateTime>>>, count)
         | t -> invalidArg "rows" (sprintf "Element type of the given array is not a valid column type (%A)" t)
 
 type Table internal (columns : Column list, height : int) =
@@ -228,11 +228,11 @@ type Table internal (columns : Column list, height : int) =
                 typeR.GetProperties(Reflection.BindingFlags.Instance ||| Reflection.BindingFlags.Public) |> Seq.filter (fun p -> p.CanRead)
         props |> Seq.map(fun p ->
             match p.PropertyType with
-            | t when t = typeof<float> -> Column.CreateReal(p.Name, arrayOfProp<'r,float>(rows, p), n)
-            | t when t = typeof<int> -> Column.CreateInt(p.Name, arrayOfProp<'r,int>(rows, p), n)
-            | t when t = typeof<string> -> Column.CreateString(p.Name, arrayOfProp<'r,string>(rows, p), n)
-            | t when t = typeof<DateTime> -> Column.CreateDate(p.Name, arrayOfProp<'r,DateTime>(rows, p), n)
-            | t when t = typeof<bool> -> Column.CreateBoolean(p.Name, arrayOfProp<'r,bool>(rows, p), n)
+            | t when t = typeof<float> -> Column.CreateLazy(p.Name, arrayOfProp<'r,float>(rows, p), n)
+            | t when t = typeof<int> -> Column.CreateLazy(p.Name, arrayOfProp<'r,int>(rows, p), n)
+            | t when t = typeof<string> -> Column.CreateLazy(p.Name, arrayOfProp<'r,string>(rows, p), n)
+            | t when t = typeof<DateTime> -> Column.CreateLazy(p.Name, arrayOfProp<'r,DateTime>(rows, p), n)
+            | t when t = typeof<bool> -> Column.CreateLazy(p.Name, arrayOfProp<'r,bool>(rows, p), n)
             | t -> invalidArg "rows" (sprintf "Property '%s' has type '%A' which is not a valid table column type" p.Name t))
 
     static member internal columnsToRows<'r>(t: Table) : 'r seq =
@@ -413,11 +413,11 @@ type Table internal (columns : Column list, height : int) =
             |> Angara.Data.DelimitedFile.Implementation.Read settings
             |> Seq.map(fun (schema, data) ->                 
                 match schema.Type with
-                | Angara.Data.DelimitedFile.ColumnType.Double   -> Column.CreateReal (schema.Name, data :?> ImmutableArray<float>)
-                | Angara.Data.DelimitedFile.ColumnType.Integer  -> Column.CreateInt (schema.Name, data :?> ImmutableArray<int>)
-                | Angara.Data.DelimitedFile.ColumnType.Boolean  -> Column.CreateBoolean (schema.Name, data :?> ImmutableArray<bool>)
-                | Angara.Data.DelimitedFile.ColumnType.DateTime -> Column.CreateDate (schema.Name, data :?> ImmutableArray<DateTime>)
-                | Angara.Data.DelimitedFile.ColumnType.String   -> Column.CreateString (schema.Name, data :?> ImmutableArray<string>))
+                | Angara.Data.DelimitedFile.ColumnType.Double   -> Column.Create (schema.Name, data :?> ImmutableArray<float>)
+                | Angara.Data.DelimitedFile.ColumnType.Integer  -> Column.Create (schema.Name, data :?> ImmutableArray<int>)
+                | Angara.Data.DelimitedFile.ColumnType.Boolean  -> Column.Create (schema.Name, data :?> ImmutableArray<bool>)
+                | Angara.Data.DelimitedFile.ColumnType.DateTime -> Column.Create (schema.Name, data :?> ImmutableArray<DateTime>)
+                | Angara.Data.DelimitedFile.ColumnType.String   -> Column.Create (schema.Name, data :?> ImmutableArray<string>))
         Table(cols |> Seq.toList)
     static member Load (reader:System.IO.TextReader) : Table = 
         Table.Load (reader, Angara.Data.DelimitedFile.ReadSettings.Default)

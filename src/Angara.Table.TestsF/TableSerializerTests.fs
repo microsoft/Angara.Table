@@ -20,11 +20,11 @@ let buildHtmlLib() =
 
 [<Test; Category("CI")>]
 let ``Serialization of a table to Json``() =
-    let table = Table.OfColumns([   Column.CreateInt("int", [| 1; 2; 3 |])
-                                    Column.CreateReal("float", [| 1.1; 1.2; 1.3 |])
-                                    Column.CreateString("string", [| "a"; "b"; "c" |])
-                                    Column.CreateBoolean("bool", [| true; false; true |])
-                                    Column.CreateDate("date", [| System.DateTime(2020, 1, 1); System.DateTime(2020, 1, 2); System.DateTime(2020, 1, 3) |])])
+    let table = Table.OfColumns([   Column.Create("int", [| 1; 2; 3 |])
+                                    Column.Create("float", [| 1.1; 1.2; 1.3 |])
+                                    Column.Create("string", [| "a"; "b"; "c" |])
+                                    Column.Create("bool", [| true; false; true |])
+                                    Column.Create("date", [| System.DateTime(2020, 1, 1); System.DateTime(2020, 1, 2); System.DateTime(2020, 1, 3) |])])
 
     let lib = buildHtmlLib()
     let infoSet = table |> ArtefactSerializer.Serialize lib  
@@ -36,7 +36,7 @@ let ``Serialization of a table to Json``() =
 [<Test; Category("CI")>]
 let ``Table with one float column is serialized``() =
     let data = [| 3.1415; 2.87; -1.0 |]
-    let column = Column.CreateReal("col1", data)
+    let column = Column.Create("col1", data)
     let table = Table.Empty |> Table.Add column
 
     let lib = buildReinstateLib()
@@ -63,7 +63,7 @@ let ``Serialization of empty table`` () =
 
 [<Test; Category("CI")>]
 let ``Serialization of a table with a cell containing string 'null'`` () =
-    let table = Table.OfColumns([Column.CreateString(":'}", [| null; "" |])])
+    let table = Table.OfColumns([Column.Create(":'}", [| null; "" |])])
     
     let lib = buildReinstateLib()    
     let table2 = table |> ArtefactSerializer.Serialize lib |> ArtefactSerializer.Deserialize lib :?> Table
@@ -76,9 +76,9 @@ let ``Serialization of a table with a cell containing string 'null'`` () =
 
 [<Test; Category("CI")>]
 let ``Serialization of table with empty column name`` () =
-    let table = Table.OfColumns([   Column.CreateBoolean("", [|true;true;true;false|])
-                                    Column.CreateReal("VxD    ", [|-2.0; -2.0; System.Double.NaN; -2.666667|])
-                                    Column.CreateBoolean("\9K*", [|true;false;false;false|])])
+    let table = Table.OfColumns([   Column.Create("", [|true;true;true;false|])
+                                    Column.Create("VxD    ", [|-2.0; -2.0; System.Double.NaN; -2.666667|])
+                                    Column.Create("\9K*", [|true;false;false;false|])])
     let lib = buildReinstateLib()
     let table2 = table |> ArtefactSerializer.Serialize lib |> ArtefactSerializer.Deserialize lib :?> Table
     Assert.IsTrue(Angara.Data.TestsF.Common.areEqualTablesForCsv table table2)
@@ -94,12 +94,12 @@ let ``A deserialized serialized table is identical to the original table`` (tabl
 let ``Adding a column with different length than existing`` () =
     let _ = 
         Table.Empty 
-        |> Table.Add (Column.CreateInt("a", [| 1 |]))
-        |> Table.Add (Column.CreateInt("b", [| 1; 2 |]))
+        |> Table.Add (Column.Create("a", [| 1 |]))
+        |> Table.Add (Column.Create("b", [| 1; 2 |]))
     ()
     
 [<Test; Category("CI"); ExpectedException>]
 let ``Creating a table from two columns with different lengths`` () =
-    let _ = Table.OfColumns([   Column.CreateInt("a", [| 1 |])
-                                Column.CreateInt("b", [| 1; 2 |])])
+    let _ = Table.OfColumns([   Column.Create("a", [| 1 |])
+                                Column.Create("b", [| 1; 2 |])])
     ()

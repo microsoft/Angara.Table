@@ -34,32 +34,30 @@ structure represents an array that cannot be changed once it is created. Use of
 [Lazy<'a>](https://msdn.microsoft.com/en-us/library/dd233247.aspx) enables evaluation of
 the column array on demand. 
 
-To build a column from name and values, there are overloaded functions 
-`Column.CreateInt`, `Column.CreateReal`, `Column.CreateString`, `Column.CreateBoolean`, `Column.CreateDate`
-as well as `Column.Create`. They allow:
+To create a column, use overloaded static methods `Column.Create` and `Column.CreateLazy`.
 
-- Create a column from a sequence of valid type. If the given sequence is a mutable array, 
-it is copied to guarantee immutability of the column; if the sequence is an immutable array,
-it is used without copying:*)
+- Use `Column.Create` to build a column from a string name and a sequence of values. 
+If the given sequence is a mutable array, it is copied to guarantee immutability of the column; 
+if the sequence is an immutable array, it is used as is without copying; 
+otherwise, if none of above, an immutable array is built from the sequence. *)
 
-let cx = Column.CreateReal ("x", [| for i in 0..99 -> float(i) / 10.0  |])
+let cx = Column.Create ("x", seq{ for i in 0..99 -> float(i) / 10.0  })
 
 (** 
-- Create a lazy column whose values are computed on demand. 
-If the given sequence is not an array and its length is also provided, it will be enumerated when and if
-the column values are first time accessed: *)
+- If you provide an optional argument `count` to the `Column.Create`, the given sequence will be enumerated
+only when the column values are first time accessed. The given `count` is the number of elements in the sequence.
+If the real sequence length will be different than specified, a runtime exception will occur when values are requested. *)
 
-let cx_lazy = Column.CreateReal ("x", seq{ for i in 0..99 -> float(i) / 10.0  }, 100)
+let lazyCx = Column.Create ("x", seq{ for i in 0..99 -> float(i) / 10.0  }, 100)
 
 (**
-- Another way to create a lazy column is to use overloads which take a lazy immutable array.
-These functions require a user to provide a length of the given array. 
-Evalutation of the array will be performed when the column rows are first time accessed.*)
-let cx_lazy2 = Column.CreateReal ("x", lazy(ImmutableArray.CreateRange(seq{ for i in 0..99 -> float(i) / 10.0 })), 100)
+- Another way to create a lazy column is to use `Column.CreateLazy` which takes a `Lazy` instance producing an immutable array and the number of elements.
+Evalutation of the array will be performed when the column values are first time accessed.*)
+let lazyCx' = Column.CreateLazy ("x", lazy(ImmutableArray.Create<float> [| for i in 0..99 -> float(i) / 10.0 |]), 100)
+
 (**
-- Rename a column. `Colum.Create` creates a column from an instance of `ColumnValues` discriminated union. 
-This function allows to create a new column from values of another column:*)
-let cx2 = Column.Create ("x2", cx_lazy.Rows, cx_lazy.Height)
+- To build a column with same values but different name, call `Colum.Create` and pass an instance of the `ColumnValues`. *)
+let cx2 = Column.Create ("x2", cx.Rows, cx.Height)
 
 (**
 ### Getting Column Values
@@ -89,7 +87,7 @@ let x : ImmutableArray<float> = cx.Rows.AsReal
 
 (*** include-value:x ***)
 
-(** Also, the `ColumnValues` allows getting an individual data value by an index; again, 
+(** Also, the type `ColumnValues` allows getting an individual data value by an index; again, 
 there is a generic approach based on `match` and a succinct approach when a certain type is expected.
 
 The following example returns a median of the ordered column `cx` when type is unknown:
@@ -131,8 +129,8 @@ A table can be created from a finite sequence of columns:
 
 let table = 
     Table.OfColumns
-        [ Column.CreateReal ("x", [| for i in 0..99 -> float(i) / 10.0  |])
-          Column.CreateReal ("sin(x)", [| for i in 0..99 -> sin (float(i) / 10.0) |]) ]
+        [ Column.Create ("x", [| for i in 0..99 -> float(i) / 10.0  |])
+          Column.Create ("sin(x)", [| for i in 0..99 -> sin (float(i) / 10.0) |]) ]
 
 (**
 To add a column to a table, you can use the static function `Table.Add` which creates 
@@ -146,23 +144,19 @@ In the following example the resulting `table` is identical to the `table` of th
 
 let table =
     Table.Empty 
-    |> Table.Add (Column.CreateReal ("x", [| for i in 0..99 -> float(i) / 10.0  |]))
-    |> Table.Add (Column.CreateReal ("sin(x)", [| for i in 0..99 -> sin (float(i) / 10.0) |]))
+    |> Table.Add (Column.Create ("x", [| for i in 0..99 -> float(i) / 10.0  |]))
+    |> Table.Add (Column.Create ("sin(x)", [| for i in 0..99 -> sin (float(i) / 10.0) |]))
 
 (** To remove columns from a table by names, you can use `Table.Remove`: *)
 
 let table2 = table |> Table.Remove ["sin(x)"]
 
-(** Alternatively, you can filter a table as a sequence of columns and create a new table instance. *)
+(** The `Table` implements the `IEnumerable<Column>` interface and you can manipulate with a table 
+as a sequence of columns. For example, the following code removes all columns but first: *)
 
-(**
+let table3 = table |> Seq.take 1 |> Table.OfColumns
 
-The `Table` implements the `IEnumerable<Column>` interface and exposes members
-`Count` and `Item` that allow to get a count of the total number of columns in the table
-and get a column by its index or name.
-
-The following example prints a schema of the table without evalutation of the columns values:
-*)
+(** The following example prints a schema of the table without evalutation of the columns values: *)
 (*** define-output:table-as-seq ***)
 table
 |> Seq.iteri (fun colIdx col ->
@@ -176,10 +170,11 @@ table
 
 (*** include-output:table-as-seq ***)  
 
-(** 
-The indexed properties `Table.Item` and `Table.TryItem` return a column by its index or name. If a column is not found,
-an exception is thrown; if there are two or more columns with the given name,
-the first column having the name is returned.
+(** The `Table` exposes members `Count`, `Item` and `TryItem` that allow to get a count of the total number of columns in the table
+and get a column by its index or name.
+
+In particular, the `Table.Item` is an indexed property finding a column. If a column is not found,
+an exception is thrown; if there are two or more columns with the given name, the first column having the name is returned.
 
 The example gets a name of a table column with index 1: *)
 
@@ -199,47 +194,8 @@ let sin_avg = table.["sin(x)"].Rows.AsReal |> Seq.average
 
 ### Table as Collection of Rows 
 
-
-
-There are several ways how rows can be represented to construct a table. First is to use `Table.ofRecords` which builds a table
-from a sequence of record type instances, when one instance is one row and record field is a column: *)
-
-type SinX = { x: float; ``sin(x)``: float }
-
-let tableSinX : Table<SinX> = 
-    Table.OfRows [| for i in 0..99 -> { x = float(i) / 10.0; ``sin(x)`` = sin (float(i) / 10.0) } |]
-
-(*** include-value:tableSinX ***)
-
-(** 
-The function `Table.OfRows<'r>` returns an instance of type `Table<'r>` inherited from `Table`, 
-such that each public property of a given type `'r` 
-becomes the table column with the name and type identical to the property;
-each table row corresponds to an element of the input sequence with the order respected.
-If the type `'r` is an F# record, the order of columns is identical to the record properties order.
-If there is a public property having a type that is not valid for a table column, the function fails with an exception.
-and each row is represented as an intance of the type `'r`, so that public properties of the type correspond to columns of the table.
-*)
-
-(** The type `Table<'r>` allows efficiently appending a table with new rows:
-*)
-
-let tableSinX' = tableSinX.AddRows [| for i in 100..199 -> { x = float(i) / 10.0; ``sin(x)`` = sin (float(i) / 10.0) } |]
-
-(**
-Second way is to use `Table.ofTuples2`, `Table.ofTuples3` etc which builds a table from a sequence of tuples,
-when one tuple instance is one row and tuple elements are columns; columns names are given separately: *)
-//  
-//let tuples : (float*float*float)[] = [| (*...*) |]
-//
-//let tableWheat = Table.ofTuples3 ("lat", "lon", "wheat") tuples  
-  
-(** Third way is to use `Table.OfRows: columnNames:string seq -> rows:System.Array seq -> Table` which creates a table from 
-a sequence of `System.Array` instances and a sequence of column names. *)
-
-(**
-
-A number of rows in the table is available through the property `Table.RowsCount`:
+A table can be viewed as a collection of rows as well. 
+A number of rows in the table is available through the property `RowsCount`:
 *)
 
 (*** define-output:rowscount ***)
@@ -250,8 +206,6 @@ printf "Rows count: %d" table.RowsCount
 
 There are three ways to perform row-wise data access:
 
-* If table schema is known and can be represented as a record, you can use the generic function `Table.ToRows<'r>` which returns `'r seq`,
-one instance of `'r` for each row.
 * Get column values then do explicit slicing:
 *)
 let rows : (float*float) seq = 
@@ -270,31 +224,88 @@ let rows' : (float*float) seq =
 
 (*** include-value:rows' ***)
 
+(** 
+* If table schema is known and a row can be represented as a record, you can use the generic function `Table.ToRows<'r>` which returns `'r seq`,
+one instance of `'r` for each of the rows. Note that the record may not have a property for each of the table columns. *)
+
+type SinX = { x: float; ``sin(x)``: float }
+let rows'' : SinX seq = table.ToRows<SinX>()
+
+(*** include-value:rows'' ***)
+
+(** 
+The function `Table.OfRows<'r>` returns an instance of type `Table<'r>` inherited from `Table`, 
+such that each public property of a given type `'r` 
+becomes the table column with the name and type identical to the property;
+each table row corresponds to an element of the input sequence with the order respected.
+If the type `'r` is an F# record, the order of columns is identical to the record properties order.
+If there is a public property having a type that is not valid for a table column, the function fails with an exception.
+
+*)
+
+let tableSinX : Table<SinX> = Table.OfRows rows''
+(*** include-value:tableSinX ***)
+
+(** The `Table<'r>` exposes the `Rows` property which returns table rows as `ImmutableArray<'r>`: *)
+
+let sinRow : SinX = tableSinX.Rows.[0]
+
+(*** include-value:sinRow ***)
+
+(** The type `Table<'r>` allows efficiently appending a table with new rows:
+*)
+
+let tableSinX' = 
+    tableSinX.AddRows (seq{ for i in 100..199 -> { x = float(i) / 10.0; ``sin(x)`` = sin (float(i) / 10.0) } })
+
+(*** include-value:tableSinX' ***)
+
 (**
 
 ### Table as Matrix
 
-Matrix table is represented as `Angara.Data.MatrixTable<'v>` inherited from `Angara.Data.Table`, where
-type `'v` is a matrix value type, i.e. all columns of the table have same type which must be a valid column type.
+A special case is when all table columns have same type; we call it a matrix table and there is a specific
+type `MatrixTable<'v>` which inherits from `Table` and allows efficiently get values both by rows and columns, 
+and extend the table in both directions.
 
-To create a matrix table, use `Table.OfMatrix` and provide column names and the matrix as an array of rows:
+To create a matrix table, use `Table.OfMatrix` and provide the matrix as a sequence of rows:
 
 *)
 
-let matrix = 
-    ImmutableArray.Create<ImmutableArray<int>>
-        [| ImmutableArray.Create<int> [|11;12;13|]
-           ImmutableArray.Create<int> [|21;22;23|] |]
-
-let tableMatrix = Table.OfMatrix (ImmutableArray.CreateRange ["a"; "b"], matrix)
-
+let tableMatrix = Table.OfMatrix [| [|11;12;13|]; [|21;22;23|] |]
+(*** include-value:tableMatrix ***)
 (**
-Matrix table allows adding columns and rows using `AddRows`, `AddRow` and `AddColumns`, `AddColumn` functions:
+Additionally, you can provide optional names for columns; if not, the columns get default names
+"A", "B", ..., "Z", "AA", "AB", .... To get a default column name from a column index, use function
+`Table.DefaultColumnName`.
+
+The properties `Rows` and `Columns` return two-dimensional immutable arrays containing table values 
+by rows and by columns respectively:
 *)
 
-tableMatrix
-    .AddColumn("c", ImmutableArray.Create<int> [|14;24;34|])
-    .AddRow(ImmutableArray.Create<int> [|31;32;33;34|])
+let matrixRows = tableMatrix.Rows
+(*** include-value:matrixRows ***)
+
+let matrixCols = tableMatrix.Columns
+(*** include-value:matrixCols ***)
+
+(** To get a value from row and column indices, use the indexed property `Item`: *)
+
+let value = tableMatrix.[0, 0]
+(*** include-value:value ***)
+
+(** Matrix table allows adding rows using `AddRows` and `AddRow` functions: *)
+
+let tableMatrix' = tableMatrix.AddRow [|31;32;33|]
+(*** include-value:tableMatrix' ***)
+
+(** To add columns, concatenate two matrix tables having same element type and height using 
+function `Table.AppendMatrix`: *)
+
+let tableMatrix'' = 
+    Table.OfMatrix ([| [|14|]; [|24|] |], [Table.DefaultColumnName 3])
+    |> Table.AppendMatrix tableMatrix 
+(*** include-value:tableMatrix'' ***)
 
 (**
 
@@ -325,26 +336,25 @@ To load a table from a delimited text file, such as CSV file, or using given `Te
 let table = Table.Load("table.csv")
 
 (** 
-`Table.Load` performs columns types inference from text, but numeric values are always read as `float` 
+`Table.Load` performs columns types inference from text. Note that numeric values are always read as `float` 
 and never as `int` to avoid ambiguity. If you need an integer column, you can provide custom settings to the 
 `Load` function with specific `ColumnTypes` function.
 *)
 
-(** Typed load: *)
+(** To load a typed table, use the following snippet: *)
 
-//let table = Table.Load<SinX> "table.csv"
+let tableSinX : Table<SinX> = 
+    (Table.Load "table.csv").ToRows<SinX>()
+    |> Table.OfRows
 
 
 
-(**Also there are overloaded functions `Load` and `Save` that allow to provide custom settings,
-such as specific delimiter, header, support of null strings, and prefefined columns count and types.
-*)
+(**The overloaded functions `Load` and `Save` allow to provide custom settings,
+such as specific delimiter, header, support of null strings, and prefefined columns count and types. *)
 
 (**
 
-
 ## Table Operations
-
 
 
 [Angara.Data.Table](angara-data-table.html) exposes a set of functions that should simplify a code
@@ -384,7 +394,7 @@ let table3 =
         table
         |> Seq.mapi (fun i c -> 
             match c.Name with
-            | "x" -> Column.OfColumnValues (sprintf "x (%d)" i, c.Rows, c.Height)
+            | "x" -> Column.Create (sprintf "x (%d)" i, c.Rows, c.Height)
             | _ -> c))
 
 (**
@@ -476,104 +486,7 @@ let table_10rows = table |> Table.Filteri [] (fun i -> i < 10)
 
 `Table.Append`
 `Table.Transform`
-`Table.AppendTransform`
-
-### Grouping Rows _to do_
-
-`Table.GroupBy`
-
-### Ordering Rows _to do_
-
-`Table.OrderBy`
-
-### Statistics _to do_
-
-`Table.Summary`
-`Table.TrySummary`
-`Table.Correlation`
-`Table.TryCorrelation`
-`Table.Pdf`
-`Table.TryPdf`
-
-*)
-
-(**
-# Samples _to do_
-
-## Titanic survivor analysis
-
-The following example computes the survival rates for the different passenger classes.
-The original data is taken from [https://www.kaggle.com/c/titanic](https://www.kaggle.com/c/titanic).
-*)
-
-(** Having the table functions: *)
-//
-//let GroupBy (colName : string) (projection : 'a -> 'b) (table : Table) : ('b * Table) seq =
-//    Table.ToArray<'a[]> colName table 
-//    |> Array.groupBy projection 
-//    |> Seq.map(fun (key: 'b, _) ->
-//        key, table |> Table.Filter [colName] (fun (v:'a) -> projection v = key))
-//
-//let OrderBy<'a,'b when 'b : comparison> (colName: string) (projection : 'a -> 'b) (table : Table) : Table =
-//    let order = 
-//        Table.ToArray<'a[]> colName table
-//        |> Array.mapi (fun i v -> (i, projection v)) 
-//        |> Array.sortBy snd |> Array.map fst
-//    let cols =
-//        table.Columns |> Seq.mapi(fun i c -> 
-//            table.Names.[i],            
-//            match Column.Type c with
-//            | t when t = typeof<float> -> Column.New(lazy(let arr:float[] = Column.ToArray c in Array.init arr.Length (fun i -> arr.[order.[i]])))
-//            | t when t = typeof<int> -> Column.New(lazy(let arr:int[] = Column.ToArray c in Array.init arr.Length (fun i -> arr.[order.[i]])))
-//            | t when t = typeof<string> -> Column.New(lazy(let arr:string[] = Column.ToArray c in Array.init arr.Length (fun i -> arr.[order.[i]])))
-//            | t when t = typeof<System.DateTime> -> Column.New(lazy(let arr:System.DateTime[] = Column.ToArray c in Array.init arr.Length (fun i -> arr.[order.[i]])))
-//            | t when t = typeof<bool> -> Column.New(lazy(let arr:bool[] = Column.ToArray c  in Array.init arr.Length (fun i -> arr.[order.[i]])))
-//            | _ -> failwith "Unexpected column type")
-//    Table(cols)
-//
-//let OfTuples3<'a,'b,'c> (names: string*string*string) (rows : ('a*'b*'c) seq) : Table =
-//    let na, nb, nc = names   
-//    let ca, cb, cc = rows |> Seq.toArray |> Array.unzip3
-//    Table([na; nb; nc], [Column.New ca; Column.New cb; Column.New cc])
-//
-//(** then - untyped solution: *)
-//
-//let survivors =         
-//    Table.Load(@"data\titanic.csv",
-//               { DelimitedFile.ReadSettings.Default with 
-//                     ColumnTypes = Some(fun (_,name) -> match name with "Survived" | "Pclass"-> Some typeof<int> | _ -> None) })
-//    |> GroupBy "Pclass" id 
-//    |> Seq.map(fun (pclass:int, table) -> 
-//        let stat = table |> Table.ToArray<int[]> "Survived" |> Array.countBy id |> Array.sortBy fst |> Array.map snd
-//        pclass, stat.[0], stat.[1])
-//    |> OfTuples3 ("Pclass", "Died", "Survived") 
-//    |> Table.MapToColumn ["Died"; "Survived"] "Died" (fun (died:int) (survived:int) -> 100.0*(float died)/(float (died + survived)))
-//    |> Table.MapToColumn ["Died"] "Survived" (fun (died:float) -> 100.0 - died)
-//    |> OrderBy<int,int> "Pclass" id
-
-(*** include-value: survivors ***)
-
-(** Typed solution: *)
-
-//type Passenger = { Pclass: int; Survived: int }
-//type Survivors = { Pclass: int; Survived: float; Died: float }
-//
-//let survivors : Table<Survivors> =         
-//    Table.Load<Passenger> @"data\titanic.csv"
-//    |> GroupBy (fun (p:Passenger) -> p.Pclass) 
-//    |> Seq.map(fun (pclass:int, table:Table<Passenger>) -> 
-//        let stat = table?Survived |> Array.countBy id |> Array.sortBy fst |> Array.map snd
-//        { Pclass = pclass; Survived = float(stat.[0]); Died = float(stat.[1]) })
-//    |> OfRecords
-//    |> Table.Map (fun (s:Survivors) -> 
-//        { Pclass = pclass; 
-//          Died = 100.0*s.Died/(s.Died + s.Survived)
-//          Survived = 100.0*s.Survived/(s.Died + s.Survived))
-//    |> OrderBy (fun (s:Survivors) -> s.Pclass)
-//
-//let pclass1 : Survivors = survivors.[0];
-
-(*** include-value: survivors ***)
+`Table.AppendTransform` *)
 
 (*** define:typedef-Column ***)
 type Column =

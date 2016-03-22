@@ -45,17 +45,22 @@ type [<Class>] Column =
     /// Gets a count of the total number of values in the column.
     member Height : int with get 
 
-    static member CreateInt : name:string * rows:int seq * ?count:int -> Column
-    static member CreateReal : name:string * rows:float seq * ?count:int -> Column
-    static member CreateString : name:string * rows:string seq * ?count:int -> Column
-    static member CreateBoolean : name:string * rows:bool seq * ?count:int -> Column
-    static member CreateDate : name:string * rows:DateTime seq * ?count:int -> Column
+    /// Creates a column from string name, a sequence of values and an optional count of the number of values.
+    static member Create : name:string * rows:int seq * ?count:int -> Column                                 
+    /// Creates a column from string name, a sequence of values and an optional count of the number of values.
+    static member Create : name:string * rows:float seq * ?count:int -> Column                               
+    /// Creates a column from string name, a sequence of values and an optional count of the number of values.
+    static member Create : name:string * rows:string seq * ?count:int -> Column                              
+    /// Creates a column from string name, a sequence of values and an optional count of the number of values.
+    static member Create : name:string * rows:bool seq * ?count:int -> Column                                
+    /// Creates a column from string name, a sequence of values and an optional count of the number of values.
+    static member Create : name:string * rows:DateTime seq * ?count:int -> Column
 
-    static member CreateInt : name:string * rows:Lazy<ImmutableArray<int>> * count:int -> Column
-    static member CreateReal : name:string * rows:Lazy<ImmutableArray<float>> * count:int -> Column
-    static member CreateString : name:string * rows:Lazy<ImmutableArray<string>> * count:int -> Column
-    static member CreateBoolean : name:string * rows:Lazy<ImmutableArray<bool>> * count:int -> Column
-    static member CreateDate : name:string * rows:Lazy<ImmutableArray<DateTime>> * count:int -> Column
+    static member CreateLazy : name:string * rows:Lazy<ImmutableArray<int>> * count:int -> Column
+    static member CreateLazy : name:string * rows:Lazy<ImmutableArray<float>> * count:int -> Column
+    static member CreateLazy : name:string * rows:Lazy<ImmutableArray<string>> * count:int -> Column
+    static member CreateLazy : name:string * rows:Lazy<ImmutableArray<bool>> * count:int -> Column
+    static member CreateLazy : name:string * rows:Lazy<ImmutableArray<DateTime>> * count:int -> Column
     
     static member Create : name:string * rows:ColumnValues * count:int -> Column
     static member CreateFromUntyped : name:string * rows:System.Array -> Column
@@ -64,7 +69,6 @@ type [<Class>] Column =
 /// Represents a table wich is an immutable list of named columns.
 /// The type is thread safe.
 type [<Class>] Table = 
-    new : columns : Column seq -> Table
     interface IEnumerable<Column> 
     
     /// Gets a count of the total number of columns in the table.
@@ -253,14 +257,13 @@ type [<Class>] Table =
 
 and [<Class>] Table<'r> =
     inherit Table
-    new : rows:ImmutableArray<'r> -> Table<'r>
+
     member Rows : ImmutableArray<'r>
     member AddRows : 'r seq -> Table<'r>
     member AddRow : 'r -> Table<'r>
 
 and [<Class>] MatrixTable<'v> =
     inherit Table
-    new : matrixRows:ImmutableArray<'v> seq * columnsNames:string seq option -> MatrixTable<'v>
 
     member Columns : ImmutableArray<ImmutableArray<'v>>
     member Rows : ImmutableArray<ImmutableArray<'v>> 
