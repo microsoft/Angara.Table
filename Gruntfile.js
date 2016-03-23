@@ -54,6 +54,12 @@ module.exports = function (grunt) {
                 src: "src/Angara.TableJS/scripts/angara.tablejs.d.ts",
                 dest: "dist/",
                 flatten: true
+            },
+            tablejs: {
+                expand: true,
+                src: "src/Angara.TableJS/scripts/Table.js",
+                dest: "dist/",
+                flatten: true
             }
         },
         uglify: {
