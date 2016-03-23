@@ -345,7 +345,7 @@ type Table internal (columns : Column list, height : int) =
         match columns.Length with
         | 0 -> // map must be (unit->'b) and 'c = 'b; length of the result equals table row count            
             match box map with
-            | :? (int -> 'c) as map0 -> Seq.init table.Count map0
+            | :? (int -> 'c) as map0 -> Seq.init table.RowsCount map0
             | _ -> failwith "Unexpected type of the given function `map`"
         | 1 -> // 1 column; map must be ('a->'c)
             match columns.[0].Rows, box map with

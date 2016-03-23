@@ -287,3 +287,12 @@ let ``Typed table from untyped``() =
     Assert.AreEqual([ {Lat=0.0;Lon=0.0}; {Lat=1.0;Lon=2.0} ] |> List.toSeq, t2.Rows, "rows")
     Assert.AreEqual([ {Lat=0.0;Lon=0.0}; {Lat=1.0;Lon=2.0} ] |> List.toSeq, t2.ToRows<RecLatLon>(), "toRows")
 
+[<Test; Category("CI")>]
+let ``Bug when filtered table has less rows than expected``() =
+    let c1 = Column.Create("a", Array.init 100 id)
+    let c2 = Column.Create("b", Array.init 100 id)
+    let t = Table.OfColumns [c1;c2]
+    let t2 = Table.Filteri [] (fun i -> true) t
+
+    System.Diagnostics.Trace.WriteLine (sprintf "t has %d rows; t2 has %d rows" t.RowsCount t2.RowsCount)
+    Assert.AreEqual(100, t2.RowsCount);
