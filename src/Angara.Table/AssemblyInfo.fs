@@ -6,7 +6,7 @@ open System.Runtime.InteropServices
 
 module internal Const =
     [<Literal>]
-    let Version = "0.1.0"
+    let Version = "0.1.1"
 
 [<assembly: AssemblyTitle("Angara.Table")>]
 [<assembly: AssemblyDescription("A library that contains types for table representation and operations to manipulate with tables as well as save and load them from text files such as CSV files.")>]
