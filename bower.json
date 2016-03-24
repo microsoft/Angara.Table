@@ -31,7 +31,9 @@
     "typings",
     "Gruntfile.js",
     "package.json",
-    "tsd.json"
+    "tsd.json",
+    "SetVersion.js",
+    "NuGet.Config"
   ],
   "dependencies": {
     "modernizr": "~2.8.3",

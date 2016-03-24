@@ -147,7 +147,7 @@
             // it is called only after the _drawSummary which makes initial settings for the 'chart', too.
             if (pdf) {
                 var drawArgs = {};
-                drawArgs.fill = "lightblue";
+                drawArgs.fill = "#E8F3FF";
 
                 if (typeof (pdf.x) === 'undefined' || typeof (pdf.f) === 'undefined') {
                     drawArgs.y1 = [];
