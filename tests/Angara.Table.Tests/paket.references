@@ -1,0 +1,11 @@
+Angara.Serialization
+System.Collections.Immutable
+
+group Test
+NUnit
+NUnit.Runners
+FsCheck
+FsCheck.NUnit
+FsUnit
+Newtonsoft.Json
+Angara.Serialization.Json

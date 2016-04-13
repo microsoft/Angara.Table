@@ -200,6 +200,7 @@ type [<Class>] Table =
     /// Saves the table to a delimited text stream using given writer.
     static member Save : table:Table * writer:System.IO.TextWriter * settings:Angara.Data.DelimitedFile.WriteSettings -> unit
 
+    /// A table that stores rows as a collection of typed objects.
 and [<Class>] Table<'r> =
     inherit Table
 
@@ -207,6 +208,7 @@ and [<Class>] Table<'r> =
     member AddRows : 'r seq -> Table<'r>
     member AddRow : 'r -> Table<'r>
 
+    /// A table with columns of same type.
 and [<Class>] MatrixTable<'v> =
     inherit Table
 

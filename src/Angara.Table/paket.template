@@ -1,0 +1,25 @@
+type project
+title
+    ##ProjectName##
+owners
+    Microsoft Research
+authors 
+    Microsoft Research; MSU ITIS Lab 
+projectUrl
+    http://github.com/Microsoft/Angara.Table
+iconUrl
+    https://raw.githubusercontent.com/Microsoft/Angara.Table/master/docs/files/img/logo.png
+licenseUrl
+    http://github.com/Microsoft/Angara.Table/blob/master/LICENSE.txt
+requireLicenseAcceptance
+    false
+copyright
+    Copyright 2016
+tags
+    table csv
+summary
+    A .NET library to work with tables.
+description
+    A library that contains types for table representation and operations to manipulate with tables as well as save and load them from text files such as CSV files.
+
+

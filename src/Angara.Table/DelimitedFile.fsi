@@ -31,7 +31,8 @@ type ReadSettings =
       /// If true, the first line is considered as a header of the table.
       /// This header will contain names corresponding to the fields in the file
       /// and should contain the same number of fields as the records in
-      /// the rest of the file. Otherwise, if false, the first line is a data line and columns are named as A, B, C... using radix 26.
+      /// the rest of the file. Otherwise, if false, the first line is a data line and columns are named as A, B, C..., Z, AA, AB, ...
+      /// ; see `Table.DefaultColumnName` function.
       HasHeader: bool
       /// An optional value that allows a user to provide an expected number of columns. If number of actually read columns differs from expected, then reading fails.
       ColumnsCount : int option

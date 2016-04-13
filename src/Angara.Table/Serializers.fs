@@ -181,7 +181,7 @@ type TableHtmlSerializer() =
 
 
 // Registers proper serializers in given libraries.
-let Register(libraries: SerializerLibrary seq) =
+let Register(libraries: ISerializerLibrary seq) =
     for lib in libraries do
         match lib.Name with
         | "Reinstate" -> 
