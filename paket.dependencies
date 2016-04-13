@@ -5,6 +5,7 @@ nuget System.Collections.Immutable 1.1.36
 
 group Build
   source https://nuget.org/api/v2
+nuget npm.js
   nuget SourceLink.Fake
   nuget FAKE
   nuget FSharp.Formatting

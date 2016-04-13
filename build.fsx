@@ -334,6 +334,7 @@ Target "ReleaseDocs" (fun _ ->
 
 #load "paket-files/build/fsharp/FAKE/modules/Octokit/Octokit.fsx"
 open Octokit
+open Fake.NpmHelper
 
 Target "Release" (fun _ ->
     let user =
@@ -365,6 +366,23 @@ Target "Release" (fun _ ->
     |> Async.RunSynchronously
 )
 
+Target "Npm" (fun _ ->
+    Npm (fun p ->
+            { p with
+                Command = Install Standard
+                WorkingDirectory = "./"
+            })
+)
+
+Target "Grunt" (fun _ ->
+    let grunt = tryFindFileOnPath (if isUnix then "grunt" else "grunt.cmd")
+    let errorCode = 
+        match grunt with
+        | Some g -> Shell.Exec(g)
+        | None -> -1
+    ()
+)
+
 Target "BuildPackage" DoNothing
 
 // --------------------------------------------------------------------------------------
@@ -381,6 +399,10 @@ Target "All" DoNothing
   ==> "GenerateDocs"
   ==> "All"
   =?> ("ReleaseDocs",isLocalBuild)
+
+"Npm"
+  ==> "Grunt"
+  ==> "All"
 
 "All"
 #if MONO

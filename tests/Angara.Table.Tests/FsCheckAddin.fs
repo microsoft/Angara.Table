@@ -1,4 +1,4 @@
-﻿namespace FsCheck.NUnit.Addin
+namespace FsCheck.NUnit.Examples
 
 open NUnit.Core.Extensibility
 
@@ -12,5 +12,4 @@ type FsCheckAddin() =
             let tcBuilder = new FsCheckTestCaseBuilder()
             host.GetExtensionPoint("TestCaseBuilders").Install(tcBuilder)
             true
-
 
