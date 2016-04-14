@@ -3,22 +3,13 @@ nuget Angara.Serialization
 nuget Angara.Statistics
 nuget System.Collections.Immutable 1.1.36
 
-group Build
-  source https://nuget.org/api/v2
-nuget npm.js
-  nuget SourceLink.Fake
-  nuget FAKE
-  nuget FSharp.Formatting
-
-  github fsharp/FAKE modules/Octokit/Octokit.fsx
 
 group Test
-  source https://nuget.org/api/v2
-  
-nuget Angara.Serialization.Json
-nuget FsCheck
-nuget FsCheck.NUnit
-nuget FsUnit
-nuget Newtonsoft.Json
+  source https://nuget.org/api/v2  
+  nuget Angara.Serialization.Json
+  nuget FsCheck
+  nuget FsCheck.NUnit
+  nuget FsUnit
+  nuget Newtonsoft.Json
   nuget NUnit ~> 2
   nuget NUnit.Runners ~> 2
