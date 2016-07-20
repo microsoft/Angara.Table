@@ -1,15 +1,15 @@
 source https://nuget.org/api/v2
-nuget Angara.Serialization
-nuget Angara.Statistics
+nuget Angara.Serialization ~> 0.2.0
+nuget Angara.Statistics ~> 0.1
 nuget System.Collections.Immutable 1.1.36
 
 
 group Test
   source https://nuget.org/api/v2  
-  nuget Angara.Serialization.Json
+  nuget Angara.Serialization.Json ~> 0.2.0
   nuget FsCheck
   nuget FsCheck.NUnit
   nuget FsUnit
-  nuget Newtonsoft.Json
+  nuget Newtonsoft.Json >= 8.0.3
   nuget NUnit ~> 2
   nuget NUnit.Runners ~> 2

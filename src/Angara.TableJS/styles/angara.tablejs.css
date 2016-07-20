@@ -17,6 +17,7 @@
 
 .content-chart {
     height: 120px;
+    z-index: 0;
 }
 
 .titleCommand {
@@ -70,7 +71,7 @@ table.dataTable {
 
     .table-correlationView .legend {
         margin-top: 20px;
-        width: 190px;
+        margin-bottom: 20px;          
     }
 
     .table-correlationView .highlighted {
@@ -196,6 +197,7 @@ table.dataTable {
         -moz-column-count: 1;
         -webkit-column-count: 1;
         column-count: 1;
+        z-index: 1;
         /*border: 1px solid red;*/
     }
 

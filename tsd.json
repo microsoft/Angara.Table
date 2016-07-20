@@ -6,7 +6,7 @@
   "bundle": "typings/tsd.d.ts",
   "installed": {
     "jquery/jquery.d.ts": {
-      "commit": "641df27e73ca67fa7199a3deedae104198d41a17"
+      "commit": "91d45c49a3b5cd6a0abbf5f319c1406fd4f2b1e7"
     }
   }
 }

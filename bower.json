@@ -38,7 +38,7 @@
   "dependencies": {
     "modernizr": "~2.8.3",
     "rxjs": "~4.0.6",
-    "idd": "~1.1.4",
+    "idd": "1.3.x",
     "jquery": "~2.1.4",
     "DataTables": "~1.9.4"
   },

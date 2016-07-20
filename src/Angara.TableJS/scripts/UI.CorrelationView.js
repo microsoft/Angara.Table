@@ -25,7 +25,7 @@
         element.append(msgDiv);
 
         var figureDiv = $("<div class='figure' data-idd-plot='figure'></div>");
-        figureDiv.html('<div data-idd-plot="heatmap" data-idd-name="Pearson&#39;s correlation" data-idd-style="palette:-1=Red,White=0,Blue=1"></div><div data-idd-plot="grid" data-idd-name="grid" data-idd-placement="center" data-idd-style="stroke: DarkGray; thickness: 1px"></div><div data-idd-plot="selectedCell" data-idd-name="selectedCell" data-idd-placement="center"></div><div data-idd-plot="markers" data-idd-name="pies" data-idd-placement="center"></div>');
+        figureDiv.html('<div data-idd-plot="heatmap" data-idd-name="Correlation" data-idd-style="palette:-1=Red,White=0,Blue=1"></div><div data-idd-plot="grid" data-idd-name="grid" data-idd-placement="center" data-idd-style="stroke: DarkGray; thickness: 1px"></div><div data-idd-plot="selectedCell" data-idd-name="selectedCell" data-idd-placement="center"></div><div data-idd-plot="markers" data-idd-name="pies" data-idd-placement="center"></div>');
         correlationViewContainer.append(figureDiv);
         var figure = InteractiveDataDisplay.asPlot(figureDiv);
         figure.isToolTipEnabled = false;
@@ -33,7 +33,7 @@
             
         var legendDiv = $("<div class='legend'></div>")
         correlationViewContainer.append(legendDiv);
-        var heatmap = figure.get("Pearson's correlation");
+        var heatmap = figure.get("Correlation");
         heatmap.legend = new InteractiveDataDisplay.Legend(heatmap, legendDiv);
 
         correlationViewContainer.append($("<div class='legendHint hint'>click on a cell to see details here</div><div class='selectedPair' style='display:none;'>Pearson's correlation coefficient between "+
@@ -84,7 +84,7 @@
                         msgDiv.css("display", "none");
                         var r = result.r;
                         pcc = result.r;
-                        var heatmap = figure.get("Pearson's correlation");
+                        var heatmap = figure.get("Correlation");
                         var pies = figure.get("pies");
                         var n = Object.keys(r).length + 1 //r.length + 1;
                         varsN = n;
@@ -117,7 +117,7 @@
                                 x[i] = i;
                             }
 
-                            heatmap.draw({ x: x, y: x, f: f });
+                            heatmap.draw({ x: x, y: x, values: f, colorPalette: colorPalette });
                             pies.draw({ x: xp, y: yp, value: fp, color: fp, colorPalette: colorPalette, radius: 0.45, shape: TableViewer.PiesMarker });
 
                             if (isSchemaChanged) {
