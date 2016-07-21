@@ -1,4 +1,9 @@
-## Unreleased
+
+##
+
+* Uses IDD 1.4.x
+
+##
 
 * Uses IDD version 1.3.0
 * Fixes bug when summary tile showed text below chart.

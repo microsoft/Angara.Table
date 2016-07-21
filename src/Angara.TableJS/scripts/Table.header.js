@@ -3,8 +3,8 @@
 	// Define as an AMD module if possible
 	if ( typeof define === 'function' && define.amd )
 	{
-	    define( ['jquery', 'idd', 'jquery.dataTables', 'css!jquery.dataTables-css', 'css!idd-css', 'css!angara.tablejs'], function($, InteractiveDataDisplay){
-			var TableViewer = factory ({}, $, InteractiveDataDisplay);
+	    define( ['jquery', 'idd', 'jquery.dataTables', 'css!jquery.dataTables-css', 'css!idd-css', 'css!angara.tablejs'], function($, Charting){
+			var TableViewer = factory ({}, $, Charting.InteractiveDataDisplay);
 			return TableViewer;
 		});
 	}
