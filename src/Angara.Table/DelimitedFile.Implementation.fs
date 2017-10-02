@@ -313,15 +313,14 @@ type internal Implementation =
         let colCount = schema.Length
 
         // Read string lines from the stream and modify column types in 'schema' depending on data items, if required
-        let rows =
-            Seq.append [firstRow] (Seq.initInfinite(fun _ -> reader |> splitRow delimiter))
-            |> Seq.takeWhile Option.isSome
-            |> Seq.map(fun _items ->
-                let items = ensureLength colCount _items.Value
-                do inferColumnTypes schema items // modifies schema
-                items)
-        let rows = rows |> Seq.toArray
-        let rowsCount = rows.Length
+        let rows = new List<string[]>()
+        let mutable cur = firstRow
+        while cur.IsSome do
+            let items = ensureLength colCount cur.Value
+            do inferColumnTypes schema items // modifies schema
+            rows.Add(items) |> ignore;
+            cur <- (splitRow delimiter reader)
+        let rowsCount = rows.Count
 
         let finalSchema = schema |> Array.map(fun s -> { Name = s.Name; Type = match s.Type with Some(t) -> t | None -> ColumnType.String } )
 
@@ -330,15 +329,15 @@ type internal Implementation =
             [|
                 for colIndex = 0 to finalSchema.Length-1 do
                     let colType = finalSchema.[colIndex].Type
-                    yield 
+                    yield
                         match colType with
-                        | ColumnType.String when settings.InferNullStrings -> 
-                            seq{ for i = 0 to rowsCount-1 do 
-                                 yield rows.[i].[colIndex] 
+                        | ColumnType.String when settings.InferNullStrings ->
+                            seq{ for row in rows do
+                                 yield row.[colIndex]
                             } |> toImmutableArray :> System.Collections.IList
                         | ColumnType.String -> // when not(settings.InferNullStrings)
-                            seq{ for i = 0 to rowsCount-1 do 
-                                 yield match rows.[i].[colIndex] with null -> String.Empty | s -> s 
+                            seq{ for row in rows do
+                                 yield match row.[colIndex] with null -> String.Empty | s -> s
                             } |> toImmutableArray :> System.Collections.IList
                         | ColumnType.Double ->
                             seq{ 
