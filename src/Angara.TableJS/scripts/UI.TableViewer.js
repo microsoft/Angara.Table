@@ -1,5 +1,5 @@
 ﻿(function (TableViewer, $) {
-    TableViewer.show = function (htmlElement /*HTMLElement*/, content /*TableSource or TableDescription*/) {
+    TableViewer.show = function (htmlElement /*HTMLElement*/, content /*TableSource or TableDescription*/, initialView /* "summary" (default), "data", "correlation" */) {
         var tableSource;
         if(typeof content["getDataAsync"] !== "undefined") // TableSource
             tableSource = content;
@@ -76,7 +76,13 @@
                 if (container.is('.table-correlationView')) control.dispose();
             };
         }
-        showSummary();
+        if(initialView == "data")
+            showData();
+        else if(initialView == "correlation")
+            showCorrelation();
+        else 
+            showSummary();
+
         return {
             dispose: function () {
                 if (_destroyActiveControl) _destroyActiveControl();

@@ -2,19 +2,6 @@
 module.exports = function (grunt) {
 
     grunt.initConfig({
-        bower: {
-            install: {
-                options: {
-                    targetDir: 'src/Angara.TableJS/lib',
-                    layout: 'byType',
-                    install: true,
-                    verbose: false,
-                    cleanTargetDir: false,
-                    cleanBowerDir: false,
-                    bowerOptions: {}
-                }
-            }
-        },
         concat: {
             "tablejs": {
                 dest: "dist/angara.tablejs.js",
@@ -73,17 +60,6 @@ module.exports = function (grunt) {
                 }
             }
         },
-        wiredep: {
-            task: {
-                src: [
-                  'src/Angara.TableJS/samples/*.html'
-                ],
-
-                options: {
-                    // https://github.com/taptapship/wiredep#configuration
-                }
-            }
-        },
         tsd: {
             refresh: {
                 options: {
@@ -109,9 +85,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-clean');
-    grunt.loadNpmTasks('grunt-bower-task');
-    grunt.loadNpmTasks('grunt-wiredep');
     grunt.loadNpmTasks('grunt-tsd');
-    grunt.registerTask('build', ['clean', 'concat', 'uglify', 'copy', 'wiredep']);
-    grunt.registerTask('default', ['bower', 'tsd', 'build']);
+    grunt.registerTask('build', ['clean', 'concat', 'uglify', 'copy']);
+    grunt.registerTask('default', ['tsd', 'build']);
 };

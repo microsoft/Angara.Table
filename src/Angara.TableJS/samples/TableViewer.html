@@ -3,15 +3,14 @@
 <head>
     <title></title>
     <meta charset="utf-8" />
-    <link rel="stylesheet" href="../../../bower_components/idd/dist/idd.css" />
-    <link rel="stylesheet" href="../../../bower_components/idd/dist/chartViewer.css" />
-    <script src="../../../bower_components/jquery/dist/jquery.js"></script>
-    <script src="../../../bower_components/modernizr/modernizr.js"></script>
-    <script src="../../../bower_components/rxjs/dist/rx.all.js"></script>
-    <script src="../../../bower_components/jqueryui/jquery-ui.js"></script>
-    <script src="../../../bower_components/idd/dist/idd.js"></script>
-    <script src="../../../bower_components/idd/dist/chartViewer.js"></script>
-    <script src="../../../bower_components/DataTables/media/js/jquery.dataTables.js"></script>
+    <link rel="stylesheet" href="../../../node_modules/interactive-data-display/dist/idd.css" />
+    <script src="../../../node_modules/jquery/dist/jquery.js"></script>
+    <script src="../../../node_modules/npm-modernizr/modernizr.js"></script>
+    <script src="../../../node_modules/rx/dist/rx.all.js"></script>
+    <script src="../../../node_modules/jqueryui/jquery-ui.js"></script>
+    <script src="../../../node_modules/interactive-data-display/dist/idd.js"></script>
+    <script src="../../../node_modules/jquery-mousewheel/jquery.mousewheel.js"></script>
+    <script src="../../../node_modules/datatables.net/js/jquery.dataTables.js"></script>
     
     <link href="../../../dist/angara.tablejs.css" rel="stylesheet" />
     <link href="../styles/samples.css" rel="stylesheet" />    
@@ -45,7 +44,7 @@
                          ["aaa","bbb","ccc","ddd","eee","fff","ggg","hhh","iii","jjj","kkk"],
                          [true,true,true,false,false,true,true,true,true,true,true]],
                 "correlation": { "r": [[0.99]], "c": ["x", "y"] } };
-            TableViewer.show($("#tv"), source);
+            TableViewer.show($("#tv"), source, "summary");
         });
     </script>
 </head>

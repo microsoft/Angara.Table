@@ -1,4 +1,8 @@
 
+* Uses IDD 1.5.3
+* Allows to choose a default tab for Table.JS.
+* Bower Away
+
 ##
 
 * Uses IDD 1.4.x

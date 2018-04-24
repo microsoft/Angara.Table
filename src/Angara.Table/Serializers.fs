@@ -156,15 +156,30 @@ module internal HelpersForHtml =
             member x.Deserialize _ si = failwith "Deserialization is not supported"
 
 open HelpersForHtml      
+
+type TableViewerTab = | TabSummary | TabData | TabCorrelation
         
 type TableHtmlSerializer() = 
+    let mutable defaultTab = TableViewerTab.TabSummary
+    member x.DefaultTab 
+        with get() = defaultTab
+        and set(tab) = defaultTab <- tab
+
     interface ISerializer<Table> with
         member x.TypeId = "Table"
         member x.Serialize resolver (t : Table) = 
             let corrSr = CorrelationSerializer() :> Angara.Serialization.ISerializer<string array * float array array>
             let summarySr = ColumnSummarySerializer() :> Angara.Serialization.ISerializer<ColumnSummary>
             let pdfSr = PdfSerializer() :> Angara.Serialization.ISerializer<float array * float array>
+
+            let initialTab = 
+                match defaultTab with
+                | TabSummary -> "summary"
+                | TabData -> "data"
+                | TabCorrelation -> "correlation"
+
             InfoSet.EmptyMap
+                .AddString("initialTab", initialTab)
                 .AddInt("count", t.Count)
                 .AddInfoSet("correlation", match TableStatistics.TryCorrelation t with
                                            | Some(c) -> corrSr.Serialize resolver c
