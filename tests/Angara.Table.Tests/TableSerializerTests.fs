@@ -103,3 +103,16 @@ let ``Creating a table from two columns with different lengths`` () =
     let _ = Table.OfColumns([   Column.Create("a", [| 1 |])
                                 Column.Create("b", [| 1; 2 |])])
     ()
+
+[<Test; Category("CI")>]
+let ``Serialization of table view`` () =
+    let table = Table.Empty
+    let settings = { TableViewSettings.DefaultPageSize = PageSize.Size25; DefaultTab = TableViewerTab.TabData; HideNaNs = true }
+    let view = { TableView.Table = table; ViewSettings = settings }
+
+    let lib = buildReinstateLib()    
+    let view2 = view |> ArtefactSerializer.Serialize lib |> ArtefactSerializer.Deserialize lib :?> TableView
+
+    Assert.AreEqual(0, view2.Table.Count)
+    Assert.AreEqual(0, view2.Table.RowsCount)
+    Assert.AreEqual(settings, view2.ViewSettings)

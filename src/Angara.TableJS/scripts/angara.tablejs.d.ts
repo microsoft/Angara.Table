@@ -95,6 +95,12 @@ declare module TableViewer {
         correlation: Correlation;
     }
 
+    interface TableViewSettings {
+        defaultTab: string; /* "summary" (default), "data", "correlation" */
+        defaultPageSize: number;
+        hideNaNs: boolean;
+    }
+
     /** Represent a data source for the TableViewer control. 
      *  It is assumed that this type instance wraps a table and metadata collection. */
     interface TableSource {
@@ -104,6 +110,8 @@ declare module TableViewer {
         totalRows: number;
         /** Schema of columns */
         columns: ColumnDefinition[];
+        /** ViewSettings */
+        viewSettings: TableViewSettings;
         /** Asynchronously request a part of all columns data arrays.
          *  Response is an array of data columns, where each data column is an array with an element type depending on the column type.*/
         getDataAsync(startRow: number, rows: number): JQueryPromise<any[][]>;
@@ -126,7 +134,7 @@ declare module TableViewer {
 
     interface Factory {
         /** Shows the table using the given HTML element as a summary, grid and a correlation matrix. */
-        show(domElement: HTMLElement, tableSource: TableSource): Viewer;
+        show(domElement: HTMLElement, tableSource: TableSource, viewSettings: TableViewSettings): Viewer;
         /** Shows the table columns as a collection of tiles with summary.  */
         showSummary(domElement: HTMLElement, tableSource: TableSource): Viewer;
         /** Shows the table as a grid of columns and rows.  */

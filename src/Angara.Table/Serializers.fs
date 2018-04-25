@@ -89,6 +89,41 @@ type TableReinstateSerializer() =
         member x.Deserialize _ (si : InfoSet) = deserializeTable si
         member x.Serialize _ t  = serializeTable t "csv"
 
+        
+type TableViewSettingsSerializer() =
+    interface ISerializer<TableViewSettings> with
+        member x.TypeId = "TableViewSettings"
+        member x.Serialize _ (s: TableViewSettings) =
+            InfoSet.EmptyMap
+                .AddString("defaultTab", s.DefaultTab.ToString())
+                .AddInt("defaultPageSize", int s.DefaultPageSize)
+                .AddBool("hideNaNs", s.HideNaNs)
+
+        member x.Deserialize _ si =
+            let map = si.ToMap()
+            let defaultTab = System.Enum.Parse(typeof<TableViewerTab>, map.["defaultTab"].ToStringValue()) :?> TableViewerTab
+            let defaultPageSize = enum<PageSize> (map.["defaultPageSize"].ToInt())
+            let hideNaNs = map.["hideNaNs"].ToBool()
+            { DefaultTab = defaultTab; DefaultPageSize = defaultPageSize; HideNaNs = hideNaNs }
+
+
+type TableViewReinstateSerializer() = 
+    interface ISerializer<TableView> with
+        member x.TypeId = "TableView"
+        member x.Serialize resolver (tv: TableView) =
+            let tableSr = TableReinstateSerializer() :> Angara.Serialization.ISerializer<Table>
+            let viewSettingsSr = TableViewSettingsSerializer() :> Angara.Serialization.ISerializer<TableViewSettings>
+            InfoSet.EmptyMap
+                .AddInfoSet("table", tableSr.Serialize resolver tv.Table)
+                .AddInfoSet("viewSettings", viewSettingsSr.Serialize resolver tv.ViewSettings)
+
+        member x.Deserialize resolver si =
+            let tableSr = TableReinstateSerializer() :> Angara.Serialization.ISerializer<Table>
+            let viewSettingsSr = TableViewSettingsSerializer() :> Angara.Serialization.ISerializer<TableViewSettings>
+            let map = si.ToMap()
+            let table = tableSr.Deserialize resolver map.["table"]
+            let viewSettings = viewSettingsSr.Deserialize resolver map.["viewSettings"]
+            { Table = table; ViewSettings = viewSettings }
 
 open TableStatistics
 
@@ -155,16 +190,9 @@ module internal HelpersForHtml =
 
             member x.Deserialize _ si = failwith "Deserialization is not supported"
 
-open HelpersForHtml      
-
-type TableViewerTab = | TabSummary | TabData | TabCorrelation
+open HelpersForHtml
         
 type TableHtmlSerializer() = 
-    let mutable defaultTab = TableViewerTab.TabSummary
-    member x.DefaultTab 
-        with get() = defaultTab
-        and set(tab) = defaultTab <- tab
-
     interface ISerializer<Table> with
         member x.TypeId = "Table"
         member x.Serialize resolver (t : Table) = 
@@ -172,14 +200,7 @@ type TableHtmlSerializer() =
             let summarySr = ColumnSummarySerializer() :> Angara.Serialization.ISerializer<ColumnSummary>
             let pdfSr = PdfSerializer() :> Angara.Serialization.ISerializer<float array * float array>
 
-            let initialTab = 
-                match defaultTab with
-                | TabSummary -> "summary"
-                | TabData -> "data"
-                | TabCorrelation -> "correlation"
-
             InfoSet.EmptyMap
-                .AddString("initialTab", initialTab)
                 .AddInt("count", t.Count)
                 .AddInfoSet("correlation", match TableStatistics.TryCorrelation t with
                                            | Some(c) -> corrSr.Serialize resolver c
@@ -195,13 +216,29 @@ type TableHtmlSerializer() =
         member x.Deserialize _ _ = failwith "Table deserialization is not supported"
 
 
+type TableViewHtmlSerializer() = 
+    interface ISerializer<TableView> with
+        member x.TypeId = "TableView"
+        member x.Serialize resolver (tv: TableView) =
+            let tableSr = TableHtmlSerializer() :> Angara.Serialization.ISerializer<Table>
+            let viewSettingsSr = TableViewSettingsSerializer() :> Angara.Serialization.ISerializer<TableViewSettings>
+            InfoSet.EmptyMap
+                .AddInfoSet("table", tableSr.Serialize resolver tv.Table)
+                .AddInfoSet("viewSettings", viewSettingsSr.Serialize resolver tv.ViewSettings)
+
+        member x.Deserialize _ _ = failwith "TableView deserialization is not supported"
+
 // Registers proper serializers in given libraries.
 let Register(libraries: ISerializerLibrary seq) =
     for lib in libraries do
         match lib.Name with
         | "Reinstate" -> 
             lib.Register(TableReinstateSerializer()) 
+            lib.Register(TableViewSettingsSerializer())
+            lib.Register(TableViewReinstateSerializer())
         | "Html" ->
             lib.Register(TableHtmlSerializer())
+            lib.Register(TableViewSettingsSerializer())
+            lib.Register(TableViewHtmlSerializer())
         | _ -> () // nothing to register
 

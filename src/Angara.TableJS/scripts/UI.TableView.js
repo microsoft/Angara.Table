@@ -234,6 +234,9 @@
                 else
                     _formatters = formatters;
 
+                var _hideNaNs = table.table.viewSettings.hideNaNs;
+                var _defaultPageSize = table.table.viewSettings.defaultPageSize;
+
                 var colDefs = new Array(n);
                 var def = function (j, colName) {
                     colDefs[j] = {
@@ -243,7 +246,9 @@
                                 return;
                             } else if (type === "display") {
                                 var val = source[j];
-                                var formatter = _formatters[j]
+                                if (_hideNaNs && isNaN(val) && typeof val == "number")
+                                    return "";
+                                var formatter = _formatters[j];
                                 if (isAutoFormatEnabled && val && formatter) {
                                     return formatter.toString(val);
                                 }
@@ -290,7 +295,7 @@
                         table.saveAttribute("$view-table", JSON.stringify(settings));
                     },
                     aoColumns: colDefs,
-                    iDisplayLength: tableSettings.length || 10,
+                    iDisplayLength: tableSettings.length || _defaultPageSize,
                     iDisplayStart: tableSettings.start || 0,
                     oLanguage: {
                         oPaginate: {

@@ -1,5 +1,6 @@
 define(["jquery", "angara.tablejs", "exports"], function ($, TableViewer, exports) {    
     exports.Show = function (tableSource, container) {
-        TableViewer.show(container, tableSource, tableSource["initialTab"]);
+        tableSource.viewSettings =  { defaultTab: "summary", defaultPageSize: 10, hideNaNs: false };
+        TableViewer.show(container, tableSource);
     };
 });
