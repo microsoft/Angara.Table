@@ -44,7 +44,14 @@
                          ["aaa","bbb","ccc","ddd","eee","fff","ggg","hhh","iii","NaN","kkk"],
                          [true,true,true,false,false,true,true,true,true,true,true]],
                 "correlation": { "r": [[0.99]], "c": ["x", "y"] },
-                "viewSettings": { defaultTab: "data", defaultPageSize: 25, hideNaNs: true }
+                "viewSettings": { 
+                    defaultTab: "data",
+                    defaultPageSize: 25,
+                    hideNaNs: true,
+                    customFormatters: {
+                        "y": function (v) { return (v * 100.0).toFixed(2) + "%"; }
+                    }
+                }
             };
             TableViewer.show($("#tv"), source);
         });

@@ -98,13 +98,15 @@ type TableViewSettingsSerializer() =
                 .AddString("defaultTab", s.DefaultTab.ToString())
                 .AddInt("defaultPageSize", int s.DefaultPageSize)
                 .AddBool("hideNaNs", s.HideNaNs)
+                .AddInfoSet("customFormatters", s.CustomFormatters |> Map.map (fun k v -> InfoSet.String v) |> InfoSet.Map)
 
         member x.Deserialize _ si =
             let map = si.ToMap()
             let defaultTab = System.Enum.Parse(typeof<TableViewerTab>, map.["defaultTab"].ToStringValue()) :?> TableViewerTab
             let defaultPageSize = enum<PageSize> (map.["defaultPageSize"].ToInt())
             let hideNaNs = map.["hideNaNs"].ToBool()
-            { DefaultTab = defaultTab; DefaultPageSize = defaultPageSize; HideNaNs = hideNaNs }
+            let customFormatters = map.["customFormatters"].ToMap() |> Map.map (fun k v -> v.ToStringValue())
+            { DefaultTab = defaultTab; DefaultPageSize = defaultPageSize; HideNaNs = hideNaNs; CustomFormatters = customFormatters }
 
 
 type TableViewReinstateSerializer() = 

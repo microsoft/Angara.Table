@@ -107,7 +107,7 @@ let ``Creating a table from two columns with different lengths`` () =
 [<Test; Category("CI")>]
 let ``Serialization of table view`` () =
     let table = Table.Empty
-    let settings = { TableViewSettings.DefaultPageSize = PageSize.Size25; DefaultTab = TableViewerTab.TabData; HideNaNs = true }
+    let settings = { TableViewSettings.DefaultPageSize = PageSize.Size25; DefaultTab = TableViewerTab.TabData; HideNaNs = true; CustomFormatters = [| "x", "return x.toFixed(2);" |] |> Map.ofArray }
     let view = { TableView.Table = table; ViewSettings = settings }
 
     let lib = buildReinstateLib()    

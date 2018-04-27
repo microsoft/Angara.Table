@@ -99,6 +99,7 @@ declare module TableViewer {
         defaultTab: string; /* "summary" (default), "data", "correlation" */
         defaultPageSize: number;
         hideNaNs: boolean;
+        customFormatters: { [colName: string] : (value: any) => string };
     }
 
     /** Represent a data source for the TableViewer control. 

@@ -186,10 +186,13 @@
                 });
             };
             var n = table.columns.length;
+            var _customFormatters = {};
+            if (table.table.viewSettings.customFormatters)
+                _customFormatters = table.table.viewSettings.customFormatters;
             for (var i = 0; i < n; i++) {
                 var colName = table.columns[i].name;
                 var colType = table.columns[i].type;
-                if (colType != "System.String" && colType != "System.DateTime")
+                if (!_customFormatters[colName] && colType != "System.String" && colType != "System.DateTime")
                     setFormat(table, i, colName, tableui);
             }
         };
@@ -235,10 +238,15 @@
                     _formatters = formatters;
 
                 var _hideNaNs = table.table.viewSettings.hideNaNs;
+                var _customFormatters = {};
+                if (table.table.viewSettings.customFormatters)
+                    _customFormatters = table.table.viewSettings.customFormatters;
+
                 var _defaultPageSize = table.table.viewSettings.defaultPageSize;
 
                 var colDefs = new Array(n);
                 var def = function (j, colName) {
+                    var _customFormatter = _customFormatters[colName];
                     colDefs[j] = {
                         sClass: activeColumnName && activeColumnName == colName ? "active" : undefined,
                         mData: function (source, type, val) {
@@ -248,6 +256,10 @@
                                 var val = source[j];
                                 if (_hideNaNs && isNaN(val) && typeof val == "number")
                                     return "";
+                                
+                                if (_customFormatter)
+                                    return _customFormatter(val);
+
                                 var formatter = _formatters[j];
                                 if (isAutoFormatEnabled && val && formatter) {
                                     return formatter.toString(val);
