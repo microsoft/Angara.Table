@@ -89,7 +89,5 @@
     };
     TableViewer.BoxPlot.prototype = new InteractiveDataDisplay.CanvasPlot;
 
-    $(document).ready(function () {
-        InteractiveDataDisplay.register('boxplot', function (jqDiv, master) { return new TableViewer.BoxPlot(jqDiv, master); });
-    });
+    InteractiveDataDisplay.register('boxplot', function (jqDiv, master) { return new TableViewer.BoxPlot(jqDiv, master); });
 }(TableViewer, InteractiveDataDisplay, $));

@@ -133,6 +133,10 @@ bcrypt-pbkdf@^1.0.0:
   dependencies:
     tweetnacl "^0.14.3"
 
+bindings@^1.2.1:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/bindings/-/bindings-1.3.0.tgz#b346f6ecf6a95f5a815c5839fc7cdb22502f1ed7"
+
 bl@^0.9.3:
   version "0.9.5"
   resolved "https://registry.yarnpkg.com/bl/-/bl-0.9.5.tgz#c06b797af085ea00bc527afc8efcf11de2232054"
@@ -296,6 +300,13 @@ configstore@^0.3.1:
     uuid "^2.0.1"
     xdg-basedir "^1.0.0"
 
+contextify@0.1.x, contextify@~0.1.3:
+  version "0.1.15"
+  resolved "https://registry.yarnpkg.com/contextify/-/contextify-0.1.15.tgz#3d34681d14a5ccbbe609c9ee11eda206b8cf266f"
+  dependencies:
+    bindings "^1.2.1"
+    nan "^2.1.0"
+
 core-util-is@1.0.2, core-util-is@~1.0.0:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/core-util-is/-/core-util-is-1.0.2.tgz#b5fd54220aa2bc5ab57aab7140c940754503c1a7"
@@ -318,6 +329,20 @@ cson-parser@^1.1.0:
   dependencies:
     coffee-script "^1.10.0"
 
+cssom@0.2.x:
+  version "0.2.5"
+  resolved "https://registry.yarnpkg.com/cssom/-/cssom-0.2.5.tgz#2682709b5902e7212df529116ff788cd5b254894"
+
+cssom@0.3.x:
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/cssom/-/cssom-0.3.2.tgz#b8036170c79f07a90ff2f16e22284027a243848b"
+
+cssstyle@>=0.2.3:
+  version "0.2.37"
+  resolved "https://registry.yarnpkg.com/cssstyle/-/cssstyle-0.2.37.tgz#541097234cb2513c83ceed3acddc27ff27987d54"
+  dependencies:
+    cssom "0.3.x"
+
 currently-unhandled@^0.4.1:
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/currently-unhandled/-/currently-unhandled-0.4.1.tgz#988df33feab191ef799a61369dd76c17adf957ea"
@@ -330,18 +355,11 @@ dashdash@^1.12.0:
   dependencies:
     assert-plus "^1.0.0"
 
-datatables.net-dt@1.10.9:
-  version "1.10.9"
-  resolved "https://registry.yarnpkg.com/datatables.net-dt/-/datatables.net-dt-1.10.9.tgz#4ead0f502b09b739a4b3075940ebaaad495f1985"
+datatables.net-dt@DataTables/DataTables#1.9.4:
+  version "1.9.4"
+  resolved "https://codeload.github.com/DataTables/DataTables/tar.gz/36ba2549ad48f6d56d8e5eb71e5f3f272d6da98b"
   dependencies:
-    datatables.net ">=1.10.9"
-    jquery ">=1.7"
-
-datatables.net@>=1.10.9:
-  version "1.10.16"
-  resolved "https://registry.yarnpkg.com/datatables.net/-/datatables.net-1.10.16.tgz#4b052d1082824261b68eed9d22741b711d3d2469"
-  dependencies:
-    jquery ">=1.7"
+    jquery "1.4 - 1.8"
 
 dateformat@1.0.2-1.2.3:
   version "1.0.2-1.2.3"
@@ -832,6 +850,14 @@ hosted-git-info@^2.1.4:
   version "2.6.0"
   resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.6.0.tgz#23235b29ab230c576aab0d4f13fc046b0b038222"
 
+htmlparser@1.7.6:
+  version "1.7.6"
+  resolved "https://registry.yarnpkg.com/htmlparser/-/htmlparser-1.7.6.tgz#6a263c7ee5930f3e5c56fa564011f99e49f80d34"
+
+htmlparser@1.x:
+  version "1.7.7"
+  resolved "https://registry.yarnpkg.com/htmlparser/-/htmlparser-1.7.7.tgz#19e7b3997ff6fbac99ae5a7d2766489efe7e2d0e"
+
 http-signature@~1.1.0:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/http-signature/-/http-signature-1.1.1.tgz#df72e267066cd0ac67fb76adf8e134a8fbcf91bf"
@@ -994,9 +1020,16 @@ jquery-mousewheel@~3.1.13:
   version "3.1.13"
   resolved "https://registry.yarnpkg.com/jquery-mousewheel/-/jquery-mousewheel-3.1.13.tgz#06f0335f16e353a695e7206bf50503cb523a6ee5"
 
-jquery@>=1.7:
-  version "3.3.1"
-  resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.3.1.tgz#958ce29e81c9790f31be7792df5d4d95fc57fbca"
+"jquery@1.4 - 1.8":
+  version "1.8.3"
+  resolved "https://registry.yarnpkg.com/jquery/-/jquery-1.8.3.tgz#cfa2941c05a83d966f21347f759a6d15281c60cc"
+  dependencies:
+    contextify "~0.1.3"
+    htmlparser "1.7.6"
+    jsdom "~0.2.14"
+    location "0.0.1"
+    navigator "~1.0.1"
+    xmlhttprequest "~1.4.2"
 
 jquery@~3.1.1:
   version "3.1.1"
@@ -1023,6 +1056,17 @@ js-yaml@~2.0.5:
 jsbn@~0.1.0:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/jsbn/-/jsbn-0.1.1.tgz#a5e654c2e5a2deb5f201d96cefbca80c0ef2f513"
+
+jsdom@~0.2.14:
+  version "0.2.19"
+  resolved "https://registry.yarnpkg.com/jsdom/-/jsdom-0.2.19.tgz#c0811df73901289ea6a0c825c7bb0c09c8c88629"
+  dependencies:
+    cssom "0.2.x"
+    cssstyle ">=0.2.3"
+    htmlparser "1.x"
+    request "2.x"
+  optionalDependencies:
+    contextify "0.1.x"
 
 jsesc@^0.5.0:
   version "0.5.0"
@@ -1100,6 +1144,10 @@ load-json-file@^1.0.0:
     pify "^2.0.0"
     pinkie-promise "^2.0.0"
     strip-bom "^2.0.0"
+
+location@0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/location/-/location-0.0.1.tgz#fa071d21365dd76661e2271ade8ca1314dc6f580"
 
 lodash@4.0.0:
   version "4.0.0"
@@ -1283,9 +1331,17 @@ moment@2.x.x:
   version "2.22.1"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.22.1.tgz#529a2e9bf973f259c9643d237fda84de3a26e8ad"
 
+nan@^2.1.0:
+  version "2.10.0"
+  resolved "https://registry.yarnpkg.com/nan/-/nan-2.10.0.tgz#96d0cd610ebd58d4b4de9cc0c6828cda99c7548f"
+
 natives@^1.1.0:
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/natives/-/natives-1.1.3.tgz#44a579be64507ea2d6ed1ca04a9415915cf75558"
+
+navigator@~1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/navigator/-/navigator-1.0.1.tgz#ba69c1929a39a9b50eb7e9f5c11178789caf790f"
 
 nested-error-stacks@^1.0.0:
   version "1.0.2"
@@ -2014,6 +2070,10 @@ xdg-basedir@^1.0.0:
   resolved "https://registry.yarnpkg.com/xdg-basedir/-/xdg-basedir-1.0.1.tgz#14ff8f63a4fdbcb05d5b6eea22b36f3033b9f04e"
   dependencies:
     user-home "^1.0.0"
+
+xmlhttprequest@~1.4.2:
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/xmlhttprequest/-/xmlhttprequest-1.4.2.tgz#01453a1d9bed1e8f172f6495bbf4c8c426321500"
 
 xregexp@~2.0.0:
   version "2.0.0"

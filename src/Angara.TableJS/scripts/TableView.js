@@ -2,6 +2,13 @@ define(["jquery", "angara.tablejs", "exports"], function ($, TableViewer, export
     exports.Show = function (tableView, container) {
         var tableSource = tableView["table"];
         var viewSettings = tableView["viewSettings"];
+        if (viewSettings.defaultTab == "TabData")
+            viewSettings.defaultTab = "data";
+        else if (viewSettings.defaultTab == "TabCorrelation")
+            viewSettings.defaultTab = "correlation";
+        else
+            viewSettings.defaultTab = "summary";
+
         if (viewSettings.customFormatters) {
             Object.keys(viewSettings.customFormatters).forEach(function (key) {
                 var ftext = viewSettings.customFormatters[key];
